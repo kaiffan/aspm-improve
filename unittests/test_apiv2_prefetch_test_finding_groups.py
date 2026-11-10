@@ -133,6 +133,32 @@ class PrefetchTestFindingGroupsTest(DojoTestCase):
             f"?prefetch=test cost {one_group} queries with 1 finding group and {six_groups} with 6",
         )
 
+    def test_test_list_and_detail_keep_jira_group_queries_bounded(self):
+        self.client.force_login(self.admin)
+        urls = (
+            f"/api/v2/tests/?id={self.test.pk}",
+            f"/api/v2/tests/{self.test.pk}/",
+        )
+        counts = {url: [] for url in urls}
+        for start, end in ((0, 1), (1, 20), (20, 100)):
+            for index in range(start, end):
+                self._add_group(index)
+            for url in urls:
+                with CaptureQueriesContext(connection) as queries:
+                    response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                data = response.json()
+                if "results" in data:
+                    data, = data["results"]
+                groups = {group["name"]: group["jira_issue"] for group in data["finding_groups"]}
+                self.assertIsNone(groups.pop("group without issue"))
+                self.assertEqual(
+                    sorted((issue["jira_key"], issue["url"]) for issue in groups.values()),
+                    sorted((f"GRP-{index}", f"https://jira.test/browse/GRP-{index}") for index in range(end)),
+                )
+                counts[url].append(len(queries))
+        self.assertTrue(all(len(set(series)) == 1 for series in counts.values()), counts)
+
     def _add_note(self, index):
         note_type, _ = Note_Type.objects.get_or_create(name="Prefetch test note type", description="prefetch")
         note = Notes.objects.create(entry=f"note {index}", author=self.admin, note_type=note_type)

@@ -75,3 +75,17 @@ class ProductSerializer(ActiveUserContactGuardMixin, AuthorizedUsersMemberGuardM
         if hasattr(obj, "prefetched_active_finding_ids"):
             return obj.prefetched_active_finding_ids
         return obj.open_findings_list()
+
+
+class ProductFindingCountSerializer(ProductSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        del fields["findings_list"]
+        return fields
+
+
+class ProductSummarySerializer(ProductFindingCountSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        del fields["findings_count"]
+        return fields

@@ -157,6 +157,59 @@ class TestProductListNPlusOne(APITestCase):
         self.assertEqual(result["id"], visible.pk)
         self.assertEqual(result["findings_list"], visible.open_findings_list())
         self.assertEqual(result["findings_count"], 1)
+        for mode in ("count", "none"):
+            with self.subTest(mode=mode):
+                limited = self.client.get("/api/v2/products/", {"id": f"{visible.pk},{hidden.pk}", "findings": mode})
+                self.assertEqual(limited.status_code, 200)
+                self.assertEqual([p["id"] for p in limited.json()["results"]], [visible.pk])
+                hidden_detail = self.client.get(f"/api/v2/products/{hidden.pk}/", {"findings": mode})
+                self.assertEqual(hidden_detail.status_code, 404)
+
+    def test_product_finding_modes_keep_exact_count_and_skip_id_aggregation(self):
+        product = self._create_product("finding modes")
+        test = Test.objects.get(engagement__product=product)
+        self._create_finding(test, "inactive", active=False)
+        empty = self._create_product("finding modes empty", with_finding=False)
+        for url, params in (
+            ("/api/v2/products/", {"id": f"{product.pk},{empty.pk}", "o": "id"}),
+            (f"/api/v2/products/{product.pk}/", {}),
+        ):
+            full = self.client.get(url, params)
+            self.assertEqual(full.status_code, 200)
+            full_data = full.json()
+            for mode in ("count", "none"):
+                with self.subTest(url=url, mode=mode), CaptureQueriesContext(connection) as queries:
+                    response = self.client.get(url, {**params, "findings": mode})
+                self.assertEqual(response.status_code, 200)
+                data = response.json()
+                full_products = full_data.get("results", [full_data])
+                response_products = data.get("results", [data])
+                self.assertEqual(data.get("count"), full_data.get("count"))
+                expected = []
+                for item in full_products:
+                    row = {key: value for key, value in item.items() if key != "findings_list"}
+                    if mode == "none":
+                        del row["findings_count"]
+                    expected.append(row)
+                self.assertEqual(response_products, expected)
+                finding_queries = [q["sql"].upper() for q in queries if 'FROM "dojo_finding"' in q["sql"]]
+                self.assertEqual(len(finding_queries), int(mode == "count"))
+                if finding_queries:
+                    self.assertIn("COUNT(*)", finding_queries[0])
+                    self.assertNotIn("ARRAY_AGG", finding_queries[0])
+
+    def test_product_detail_loads_count_and_ordered_ids_in_one_query(self):
+        product = self._create_product("detail finding query")
+        test = Test.objects.get(engagement__product=product)
+        self._create_finding(test, "inactive detail", active=False)
+        self._create_finding(test, "second detail")
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(f"/api/v2/products/{product.pk}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["findings_list"], product.open_findings_list())
+        self.assertEqual(data["findings_count"], 2)
+        self.assertEqual(sum('FROM "dojo_finding"' in q["sql"] for q in queries), 1)
 
     @classmethod
     def _v3_enabled(cls):

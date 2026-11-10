@@ -72,7 +72,7 @@ class TestsViewSet(
                 notes_prefetch(),
                 "files",
                 "tags",
-                "finding_group_set__jira_issue",
+                "finding_group_set__jira_issue__jira_project__jira_instance",
             )
             .distinct()
         )

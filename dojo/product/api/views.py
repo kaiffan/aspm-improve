@@ -1,8 +1,8 @@
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import OuterRef, Value
+from django.db.models import Count, OuterRef, Value
 from django.db.models.functions import Coalesce
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -22,7 +22,9 @@ from dojo.models import Endpoint, Finding, Product, Product_API_Scan_Configurati
 from dojo.product.api.filters import ApiProductFilter
 from dojo.product.api.serializer import (
     ProductAPIScanConfigurationSerializer,
+    ProductFindingCountSerializer,
     ProductSerializer,
+    ProductSummarySerializer,
 )
 from dojo.product.queries import (
     get_authorized_product_api_scan_configurations,
@@ -61,7 +63,22 @@ class ProductAPIScanConfigurationViewSet(
         )
 
 
+_findings_parameter = OpenApiParameter(
+    "findings",
+    str,
+    enum=["full", "count", "none"],
+    default="full",
+    description="With count, return the exact active findings count without finding IDs. "
+    "With none, omit both findings_count and findings_list. "
+    "Full includes both fields and is the default.",
+)
+
+
 @extend_schema_view(**schema_with_prefetch())
+@extend_schema_view(
+    list=extend_schema(parameters=[_findings_parameter]),
+    retrieve=extend_schema(parameters=[_findings_parameter]),
+)
 class ProductViewSet(
     prefetch.PrefetchListMixin,
     prefetch.PrefetchRetrieveMixin,
@@ -98,7 +115,7 @@ class ProductViewSet(
             )
             .distinct()
         )
-        if self.action == "list":
+        if self.action in {"list", "retrieve"}:
             return products
 
         base_findings = Finding.objects.filter(
@@ -112,26 +129,56 @@ class ProductViewSet(
             ),
         )
 
+    def _findings_mode(self):
+        if self.action in {"list", "retrieve"} and self.request is not None:
+            return self.request.query_params.get("findings")
+        return None
+
+    def get_serializer_class(self):
+        mode = self._findings_mode()
+        if mode == "count":
+            return ProductFindingCountSerializer
+        if mode == "none":
+            return ProductSummarySerializer
+        return super().get_serializer_class()
+
+    def get_object(self):
+        product = super().get_object()
+        if self.action == "retrieve":
+            self._load_findings_fields([product])
+        return product
+
     def paginate_queryset(self, queryset):
         page = super().paginate_queryset(queryset)
-        if self.action != "list" or not page:
-            return page
+        if self.action == "list" and page:
+            self._load_findings_fields(page)
+        return page
 
-        # Reuse the exact ID lists for the counts. Only query findings for
-        # products that passed authorization, filtering and pagination.
-        findings_by_product = dict(
+    def _load_findings_fields(self, products):
+        mode = self._findings_mode()
+        if mode == "none":
+            return
+
+        # Read findings only for products that passed authorization and filtering.
+        active_findings = (
             Finding.objects.filter(
-                test__engagement__product_id__in=[product.pk for product in page],
+                test__engagement__product_id__in=[product.pk for product in products],
                 active=True,
             )
             .order_by()
             .values_list("test__engagement__product_id")
-            .annotate(finding_ids=ArrayAgg("pk", order_by="pk")),
         )
-        for product in page:
-            product.prefetched_active_finding_ids = findings_by_product.get(product.pk, [])
+        if mode == "count":
+            counts_by_product = dict(active_findings.annotate(count=Count("*")))
+            for product in products:
+                product.active_finding_count = counts_by_product.get(product.pk, 0)
+            return
+
+        # Use the ordered ID lists for both fields in the full response.
+        ids_by_product = dict(active_findings.annotate(finding_ids=ArrayAgg("pk", order_by="pk")))
+        for product in products:
+            product.prefetched_active_finding_ids = ids_by_product.get(product.pk, [])
             product.active_finding_count = len(product.prefetched_active_finding_ids)
-        return page
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

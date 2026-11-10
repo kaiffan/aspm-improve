@@ -1,0 +1,260 @@
+diff --git a/dojo/product/api/serializer.py b/dojo/product/api/serializer.py
+index 4face9f3fa..a54b2633bf 100644
+--- a/dojo/product/api/serializer.py
++++ b/dojo/product/api/serializer.py
+@@ -75,3 +75,17 @@ class ProductSerializer(ActiveUserContactGuardMixin, AuthorizedUsersMemberGuardM
+         if hasattr(obj, "prefetched_active_finding_ids"):
+             return obj.prefetched_active_finding_ids
+         return obj.open_findings_list()
++
++
++class ProductFindingCountSerializer(ProductSerializer):
++    def get_fields(self):
++        fields = super().get_fields()
++        del fields["findings_list"]
++        return fields
++
++
++class ProductSummarySerializer(ProductFindingCountSerializer):
++    def get_fields(self):
++        fields = super().get_fields()
++        del fields["findings_count"]
++        return fields
+diff --git a/dojo/product/api/views.py b/dojo/product/api/views.py
+index 57de3f2ee4..e5e97a709b 100644
+--- a/dojo/product/api/views.py
++++ b/dojo/product/api/views.py
+@@ -1,8 +1,8 @@
+ from django.contrib.postgres.aggregates import ArrayAgg
+-from django.db.models import OuterRef, Value
++from django.db.models import Count, OuterRef, Value
+ from django.db.models.functions import Coalesce
+ from django_filters.rest_framework import DjangoFilterBackend
+-from drf_spectacular.utils import extend_schema, extend_schema_view
++from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+ from rest_framework import mixins, status, viewsets
+ from rest_framework.decorators import action
+ from rest_framework.permissions import IsAuthenticated
+@@ -22,7 +22,9 @@ from dojo.models import Endpoint, Finding, Product, Product_API_Scan_Configurati
+ from dojo.product.api.filters import ApiProductFilter
+ from dojo.product.api.serializer import (
+     ProductAPIScanConfigurationSerializer,
++    ProductFindingCountSerializer,
+     ProductSerializer,
++    ProductSummarySerializer,
+ )
+ from dojo.product.queries import (
+     get_authorized_product_api_scan_configurations,
+@@ -61,7 +63,22 @@ class ProductAPIScanConfigurationViewSet(
+         )
+ 
+ 
++_findings_parameter = OpenApiParameter(
++    "findings",
++    str,
++    enum=["full", "count", "none"],
++    default="full",
++    description="With count, return the exact active findings count without finding IDs. "
++    "With none, omit both findings_count and findings_list. "
++    "Full includes both fields and is the default.",
++)
++
++
+ @extend_schema_view(**schema_with_prefetch())
++@extend_schema_view(
++    list=extend_schema(parameters=[_findings_parameter]),
++    retrieve=extend_schema(parameters=[_findings_parameter]),
++)
+ class ProductViewSet(
+     prefetch.PrefetchListMixin,
+     prefetch.PrefetchRetrieveMixin,
+@@ -98,7 +115,7 @@ class ProductViewSet(
+             )
+             .distinct()
+         )
+-        if self.action == "list":
++        if self.action in {"list", "retrieve"}:
+             return products
+ 
+         base_findings = Finding.objects.filter(
+@@ -112,26 +129,56 @@ class ProductViewSet(
+             ),
+         )
+ 
++    def _findings_mode(self):
++        if self.action in {"list", "retrieve"} and self.request is not None:
++            return self.request.query_params.get("findings")
++        return None
++
++    def get_serializer_class(self):
++        mode = self._findings_mode()
++        if mode == "count":
++            return ProductFindingCountSerializer
++        if mode == "none":
++            return ProductSummarySerializer
++        return super().get_serializer_class()
++
++    def get_object(self):
++        product = super().get_object()
++        if self.action == "retrieve":
++            self._load_findings_fields([product])
++        return product
++
+     def paginate_queryset(self, queryset):
+         page = super().paginate_queryset(queryset)
+-        if self.action != "list" or not page:
+-            return page
++        if self.action == "list" and page:
++            self._load_findings_fields(page)
++        return page
++
++    def _load_findings_fields(self, products):
++        mode = self._findings_mode()
++        if mode == "none":
++            return
+ 
+-        # Reuse the exact ID lists for the counts. Only query findings for
+-        # products that passed authorization, filtering and pagination.
+-        findings_by_product = dict(
++        # Read findings only for products that passed authorization and filtering.
++        active_findings = (
+             Finding.objects.filter(
+-                test__engagement__product_id__in=[product.pk for product in page],
++                test__engagement__product_id__in=[product.pk for product in products],
+                 active=True,
+             )
+             .order_by()
+             .values_list("test__engagement__product_id")
+-            .annotate(finding_ids=ArrayAgg("pk", order_by="pk")),
+         )
+-        for product in page:
+-            product.prefetched_active_finding_ids = findings_by_product.get(product.pk, [])
++        if mode == "count":
++            counts_by_product = dict(active_findings.annotate(count=Count("*")))
++            for product in products:
++                product.active_finding_count = counts_by_product.get(product.pk, 0)
++            return
++
++        # Use the ordered ID lists for both fields in the full response.
++        ids_by_product = dict(active_findings.annotate(finding_ids=ArrayAgg("pk", order_by="pk")))
++        for product in products:
++            product.prefetched_active_finding_ids = ids_by_product.get(product.pk, [])
+             product.active_finding_count = len(product.prefetched_active_finding_ids)
+-        return page
+ 
+     def destroy(self, request, *args, **kwargs):
+         instance = self.get_object()
+diff --git a/dojo/test/api/views.py b/dojo/test/api/views.py
+index 7fb1262109..9bc29520f4 100644
+--- a/dojo/test/api/views.py
++++ b/dojo/test/api/views.py
+@@ -72,7 +72,7 @@ class TestsViewSet(
+                 notes_prefetch(),
+                 "files",
+                 "tags",
+-                "finding_group_set__jira_issue",
++                "finding_group_set__jira_issue__jira_project__jira_instance",
+             )
+             .distinct()
+         )
+diff --git a/unittests/test_api_product_prefetch.py b/unittests/test_api_product_prefetch.py
+index 46a4cead61..14c86957f0 100644
+--- a/unittests/test_api_product_prefetch.py
++++ b/unittests/test_api_product_prefetch.py
+@@ -157,6 +157,59 @@ class TestProductListNPlusOne(APITestCase):
+         self.assertEqual(result["id"], visible.pk)
+         self.assertEqual(result["findings_list"], visible.open_findings_list())
+         self.assertEqual(result["findings_count"], 1)
++        for mode in ("count", "none"):
++            with self.subTest(mode=mode):
++                limited = self.client.get("/api/v2/products/", {"id": f"{visible.pk},{hidden.pk}", "findings": mode})
++                self.assertEqual(limited.status_code, 200)
++                self.assertEqual([p["id"] for p in limited.json()["results"]], [visible.pk])
++                hidden_detail = self.client.get(f"/api/v2/products/{hidden.pk}/", {"findings": mode})
++                self.assertEqual(hidden_detail.status_code, 404)
++
++    def test_product_finding_modes_keep_exact_count_and_skip_id_aggregation(self):
++        product = self._create_product("finding modes")
++        test = Test.objects.get(engagement__product=product)
++        self._create_finding(test, "inactive", active=False)
++        empty = self._create_product("finding modes empty", with_finding=False)
++        for url, params in (
++            ("/api/v2/products/", {"id": f"{product.pk},{empty.pk}", "o": "id"}),
++            (f"/api/v2/products/{product.pk}/", {}),
++        ):
++            full = self.client.get(url, params)
++            self.assertEqual(full.status_code, 200)
++            full_data = full.json()
++            for mode in ("count", "none"):
++                with self.subTest(url=url, mode=mode), CaptureQueriesContext(connection) as queries:
++                    response = self.client.get(url, {**params, "findings": mode})
++                self.assertEqual(response.status_code, 200)
++                data = response.json()
++                full_products = full_data.get("results", [full_data])
++                response_products = data.get("results", [data])
++                self.assertEqual(data.get("count"), full_data.get("count"))
++                expected = []
++                for item in full_products:
++                    row = {key: value for key, value in item.items() if key != "findings_list"}
++                    if mode == "none":
++                        del row["findings_count"]
++                    expected.append(row)
++                self.assertEqual(response_products, expected)
++                finding_queries = [q["sql"].upper() for q in queries if 'FROM "dojo_finding"' in q["sql"]]
++                self.assertEqual(len(finding_queries), int(mode == "count"))
++                if finding_queries:
++                    self.assertIn("COUNT(*)", finding_queries[0])
++                    self.assertNotIn("ARRAY_AGG", finding_queries[0])
++
++    def test_product_detail_loads_count_and_ordered_ids_in_one_query(self):
++        product = self._create_product("detail finding query")
++        test = Test.objects.get(engagement__product=product)
++        self._create_finding(test, "inactive detail", active=False)
++        self._create_finding(test, "second detail")
++        with CaptureQueriesContext(connection) as queries:
++            response = self.client.get(f"/api/v2/products/{product.pk}/")
++        self.assertEqual(response.status_code, 200)
++        data = response.json()
++        self.assertEqual(data["findings_list"], product.open_findings_list())
++        self.assertEqual(data["findings_count"], 2)
++        self.assertEqual(sum('FROM "dojo_finding"' in q["sql"] for q in queries), 1)
+ 
+     @classmethod
+     def _v3_enabled(cls):
+diff --git a/unittests/test_apiv2_prefetch_test_finding_groups.py b/unittests/test_apiv2_prefetch_test_finding_groups.py
+index eae82ebcfe..8aad974f6b 100644
+--- a/unittests/test_apiv2_prefetch_test_finding_groups.py
++++ b/unittests/test_apiv2_prefetch_test_finding_groups.py
+@@ -133,6 +133,32 @@ class PrefetchTestFindingGroupsTest(DojoTestCase):
+             f"?prefetch=test cost {one_group} queries with 1 finding group and {six_groups} with 6",
+         )
+ 
++    def test_test_list_and_detail_keep_jira_group_queries_bounded(self):
++        self.client.force_login(self.admin)
++        urls = (
++            f"/api/v2/tests/?id={self.test.pk}",
++            f"/api/v2/tests/{self.test.pk}/",
++        )
++        counts = {url: [] for url in urls}
++        for start, end in ((0, 1), (1, 20), (20, 100)):
++            for index in range(start, end):
++                self._add_group(index)
++            for url in urls:
++                with CaptureQueriesContext(connection) as queries:
++                    response = self.client.get(url)
++                self.assertEqual(response.status_code, 200)
++                data = response.json()
++                if "results" in data:
++                    data, = data["results"]
++                groups = {group["name"]: group["jira_issue"] for group in data["finding_groups"]}
++                self.assertIsNone(groups.pop("group without issue"))
++                self.assertEqual(
++                    sorted((issue["jira_key"], issue["url"]) for issue in groups.values()),
++                    sorted((f"GRP-{index}", f"https://jira.test/browse/GRP-{index}") for index in range(end)),
++                )
++                counts[url].append(len(queries))
++        self.assertTrue(all(len(set(series)) == 1 for series in counts.values()), counts)
++
+     def _add_note(self, index):
+         note_type, _ = Note_Type.objects.get_or_create(name="Prefetch test note type", description="prefetch")
+         note = Notes.objects.create(entry=f"note {index}", author=self.admin, note_type=note_type)

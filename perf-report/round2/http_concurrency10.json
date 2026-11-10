@@ -1,0 +1,143 @@
+[
+  {
+    "case": "product_detail_large",
+    "url": "/api/v2/products/2/",
+    "port": 48081,
+    "variant": "after",
+    "concurrency": 10,
+    "warmup": 10,
+    "requests": 20,
+    "status": [
+      200
+    ],
+    "p50_ms": 3047.7815,
+    "p95_ms": 3492.895,
+    "rps": 3.2228607828330307,
+    "response_bytes": [
+      3669575
+    ],
+    "samples_ms": [
+      2513.253,
+      2514.448,
+      2515.037,
+      2533.971,
+      2615.678,
+      2652.75,
+      2659.026,
+      2664.408,
+      2724.129,
+      2757.995,
+      3337.568,
+      3351.665,
+      3373.915,
+      3433.129,
+      3447.146,
+      3468.397,
+      3473.312,
+      3487.756,
+      3492.895,
+      3606.18
+    ],
+    "started_at": 1794340896.2034,
+    "ended_at": 1794340905.129704,
+    "wire_sha256": "1a076c756030bfd9227283fcb73a6a23e6969c671a8e3fca43015aca3decb1e1",
+    "response_sha256": "e1f09c5a452bd3efed2afc90fddc33e3a4c025fd0f2049f05e5d62c25f7692ab",
+    "rows": 1,
+    "exact_count": null,
+    "unique_ids": 1
+  },
+  {
+    "case": "product_count_large",
+    "url": "/api/v2/products/?id=2&limit=1&findings=count",
+    "port": 48081,
+    "variant": "after",
+    "concurrency": 10,
+    "warmup": 10,
+    "requests": 20,
+    "status": [
+      200
+    ],
+    "p50_ms": 141.75,
+    "p95_ms": 209.105,
+    "rps": 56.408797375777624,
+    "response_bytes": [
+      779
+    ],
+    "samples_ms": [
+      94.749,
+      103.633,
+      115.561,
+      117.663,
+      125.245,
+      130.161,
+      130.336,
+      130.378,
+      130.598,
+      141.677,
+      141.823,
+      142.277,
+      154.372,
+      157.046,
+      158.102,
+      174.717,
+      201.263,
+      206.712,
+      209.105,
+      209.812
+    ],
+    "started_at": 1794340905.195897,
+    "ended_at": 1794340905.692379,
+    "wire_sha256": "5480b01200360c490f7dbcaf97d830cfbe8132b73bfbfa62a8d5afac367c8fd3",
+    "response_sha256": "a04fe04eb770fac170e7abbc4ce895ed4f27a110f8fd35ea73002898fdf3c157",
+    "rows": 1,
+    "exact_count": 1,
+    "unique_ids": 1
+  },
+  {
+    "case": "product_none_large",
+    "url": "/api/v2/products/?id=2&limit=1&findings=none",
+    "port": 48081,
+    "variant": "after",
+    "concurrency": 10,
+    "warmup": 10,
+    "requests": 20,
+    "status": [
+      200
+    ],
+    "p50_ms": 44.289500000000004,
+    "p95_ms": 60.363,
+    "rps": 186.71143528006064,
+    "response_bytes": [
+      755
+    ],
+    "samples_ms": [
+      36.454,
+      36.737,
+      38.006,
+      38.483,
+      39.78,
+      41.657,
+      43.238,
+      43.508,
+      44.06,
+      44.075,
+      44.504,
+      45.255,
+      45.776,
+      46.45,
+      49.144,
+      50.04,
+      55.547,
+      59.148,
+      60.363,
+      62.307
+    ],
+    "started_at": 1794340905.692835,
+    "ended_at": 1794340906.224776,
+    "wire_sha256": "78e3a70a6df96b660e13e6dc4aaf5f38dfc32f0cd2dd88e5c56d8e4e106b11a6",
+    "response_sha256": "c4a75bff1eeaca9bcdc385395703e771522e76fb56fc6feb08414d59bddbbe49",
+    "rows": 1,
+    "exact_count": 1,
+    "unique_ids": 1
+  }
+]

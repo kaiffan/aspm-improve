@@ -1,0 +1,12 @@
+# Environment
+
+- Apple M5 (arm64), 16 ГиБ RAM, macOS 26.6.1. Docker работает через OrbStack с 10 логическими CPU и лимитом 7,816 ГиБ.
+- DefectDojo Open Source 3.5.100, Django 5.2.17, Django REST Framework 3.18.3, uWSGI за nginx, PostgreSQL 18.6 (aarch64).
+- Исходный API доступен на `localhost:8080`. Его релизный SHA — `334bef02d65a74909fe976b22724526474d5a0f6` с локальными патчами prefetch vulnerability references и FAST OFFSET. SHA исходного Docker-образа начинается с `8b25ecf7d894`, сборки парного прогона с `99bbf6f3ab02`, итоговой сборки с ограничением действия с `c2462750c943`. Хеши файлов обоих исходных патчей совпали в контейнерах.
+- В базе 1 000 000 синтетических findings, ID от 1 до 1 000 000, 13 продуктов, 24 engagements, 96 tests. Генератор `defect_fill_script.py` из соседнего checkout использует bulk-запись. Распределение, связанные сущности, сигналы и дедупликация отличаются от production. Второй найденный том ASPM benchmark содержал 13 960 findings и был исключён.
+- При старте задания рабочий checkout был на `feature/ha-orm-scm-engagements-ui-webhooks` (`207c7740bcd9ac56bd8a496ad30aca3778b41b7b`), основанном на релизе 3.5.100. Staged и tracked diff были пустыми. Два существующих untracked файла — `dojo/notifications/event_events.py` и `dojo/notifications/event_models.py`.
+- В соседнем checkout релизной линии `master` был изменён `dojo/finding/api/views.py` и присутствовал untracked FAST paginator. Его исходники и скрипты сохранены. Для новой работы использован отдельный worktree `codex/api-v2-findings-performance` от `origin/dev` (`71ba3f0e1b8f338384b5c25c396aa2db687909ae`, 3.6.0-dev). Целевые файлы API совпадали с чистым 3.5.100.
+- Для диагностики адаптированы сценарии найденных `benchmark_api.py`, `profile_queries.py`, `explain_offset.py`, `compare_pagination.py` и `check_fast_offset.py`. Для запросов использован существующий admin-токен, переданный по pipe. В файлах есть только метрики, статусы, формы SQL и хеши ответов.
+- Для A/B отдельный nginx маршрутизировал запросы к обоим uWSGI по служебному заголовку. Оба варианта использовали один URL `http://localhost:48080/api/v2/products/?limit=100` и один том PostgreSQL. Параметры БД и лимиты контейнеров сохранены. Регрессии выполнялись в отдельном Compose-проекте с отдельным PostgreSQL-томом.
+
+Переменные окружения, entrypoint и лимиты CPU, памяти и процессов обоих uWSGI-контейнеров совпали при проверке через Docker inspect.

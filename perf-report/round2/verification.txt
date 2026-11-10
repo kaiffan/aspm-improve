@@ -1,0 +1,34 @@
+Red on Round 1
+FAIL: test_product_detail_loads_count_and_ordered_ids_in_one_query (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_detail_loads_count_and_ordered_ids_in_one_query)
+AssertionError: 2 != 1
+FAIL: test_product_finding_modes_keep_exact_count_and_skip_id_aggregation (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_finding_modes_keep_exact_count_and_skip_id_aggregation)
+FAIL: test_test_list_and_detail_keep_jira_group_queries_bounded (unittests.test_apiv2_prefetch_test_finding_groups.PrefetchTestFindingGroupsTest.test_test_list_and_detail_keep_jira_group_queries_bounded)
+AssertionError: False is not true : {'/api/v2/tests/?id=92': [13, 51, 211], '/api/v2/tests/92/': [12, 50, 210]}
+Ran 7 tests in 1.945s
+FAILED (failures=3)
+
+Green on Round 2
+test_create_configuration_not_authorized (unittests.test_rest_framework.ProductTest.test_create_configuration_not_authorized) ... skipped 'Authorization is not configuration based'
+test_delete_configuration_not_authorized (unittests.test_rest_framework.ProductTest.test_delete_configuration_not_authorized) ... skipped 'Authorization is not configuration based'
+test_detail_configuration_not_authorized (unittests.test_rest_framework.ProductTest.test_detail_configuration_not_authorized) ... skipped 'Authorization is not configuration based'
+test_list_configuration_not_authorized (unittests.test_rest_framework.ProductTest.test_list_configuration_not_authorized) ... skipped 'Authorization is not configuration based'
+test_update_configuration_not_authorized (unittests.test_rest_framework.ProductTest.test_update_configuration_not_authorized) ... skipped 'Authorization is not configuration based'
+Ran 53 tests in 9.412s
+OK (skipped=5)
+
+Migration check
+No changes detected
+
+API schema
+findings and prefetch present on both Product GET operations, spectacular --fail-on-warn exited 0
+
+Compatibility
+      17
+
+Final read-only PostgreSQL count
+1000000
+
+Final runtime checks
+Round 1 and Round 2 uWSGI and PostgreSQL running, zero restarts, no OOM.
+Round 2 uWSGI, A/B nginx and both isolated HTTP applications logged zero tracebacks and zero API 5xx.
+Fixture services stopped after both HTTP rounds. Fixture and regression databases retained.

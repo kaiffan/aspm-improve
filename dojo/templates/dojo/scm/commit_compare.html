@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel panel-default">
+        <div class="panel-heading"><h2>{% trans "Compare commits" %}</h2></div>
+        <div class="panel-body">
+            <dl>
+                <dt>{% trans "Base commit" %}</dt>
+                <dd><a href="{% url 'scm_commit_detail' base_commit.pk %}"><code>{{ base_commit.sha }}</code></a></dd>
+                <dt>{% trans "Target commit" %}</dt>
+                <dd><a href="{% url 'scm_commit_detail' commit.pk %}"><code>{{ commit.sha }}</code></a></dd>
+            </dl>
+            <p>{% trans "This comparison uses current findings that are not marked mitigated. It groups findings by scanner, service and stored fingerprint. Fixed means that a fingerprint from the base commit is absent from the target data. Check that both commits have comparable scan coverage." %}</p>
+            <nav aria-label="{% trans 'Finding comparison category' %}">
+                <ul class="nav nav-tabs">
+                {% for key, label, url in categories %}
+                    <li{% if key == category %} class="active"{% endif %}>
+                        <a href="{{ url }}"{% if key == category %} aria-current="page"{% endif %}>{{ label }}</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </nav>
+            {% if findings %}
+                <div class="table-responsive">
+                    <table class="table table-condensed">
+                        <thead><tr><th scope="col">{% trans "Finding" %}</th><th scope="col">{% trans "Severity" %}</th></tr></thead>
+                        <tbody>
+                        {% for finding in findings %}
+                            <tr>
+                                <td><a href="{% url 'view_finding' finding.pk %}">{{ finding.title }}</a></td>
+                                <td><span class="severity severity-{{ finding.severity }}">{{ finding.severity }}</span></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if next_url %}<a rel="next" href="{{ next_url }}">{% trans "Next" %}</a>{% endif %}
+            {% else %}
+                <p>{% trans "No comparable findings in this category." %}</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

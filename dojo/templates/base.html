@@ -619,6 +619,14 @@
                                                 <span class="hidden-xs">{% trans "Metrics" %}</span>
                                             </a>
                                         </li>
+                                        {% if 'ASPM_SCM_HIERARCHY'|setting_enabled %}
+                                            <li role="presentation"{% if product_tab.tab == 'repositories' %} class="active"{% endif %}>
+                                                <a href="{% url 'scm_repository_list' product_tab.product.id %}" data-testid="product-tab-repositories">
+                                                    <span class="fa-solid fa-code-branch" aria-hidden="true"></span>
+                                                    <span>{% trans "Repositories" %}</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
                                         <!-- Engagements Tab -->
                                         <li class="dropdown{% if product_tab.tab == 'engagements' %} active active-color{% endif %}">
                                             <a class="dropdown-toggle" data-toggle="dropdown" href="" aria-label="{% trans 'Engagements' %}" data-testid="product-tab-engagements">

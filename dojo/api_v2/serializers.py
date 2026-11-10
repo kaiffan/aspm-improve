@@ -58,6 +58,7 @@ from dojo.product_announcements import (
     LargeScanSizeProductAnnouncement,
     ScanTypeProductAnnouncement,
 )
+from dojo.scm.imports import materialize_scm_scan, resolve_scm_scan, validate_scan_related_objects
 from dojo.tools.factory import (
     get_choices_sorted,
     requires_file,
@@ -421,6 +422,9 @@ from dojo.test.api.serializer import (  # noqa: E402, F401 -- backward compat re
 
 
 class CommonImportScanSerializer(serializers.Serializer):
+    scm_scan_target = None
+    scm_reimport = False
+
     scan_date = serializers.DateField(
         required=False,
         help_text=_("Scan completion date will be used on all findings."),
@@ -465,6 +469,12 @@ class CommonImportScanSerializer(serializers.Serializer):
         max_length=600,
         required=False,
         help_text=_("Resource link to source code"),
+    )
+    repository_url = serializers.CharField(
+        max_length=600,
+        required=False,
+        write_only=True,
+        help_text=_("SCM repository URL. Requires SCM hierarchy, an existing product and a full Git commit_hash."),
     )
 
     test_title = serializers.CharField(required=False)
@@ -638,6 +648,18 @@ class CommonImportScanSerializer(serializers.Serializer):
             ):
                 msg = f"API scan configuration must be of tool type {tool_type}"
                 raise serializers.ValidationError(msg)
+        if "repository_url" in data:
+            request = self.context["request"]
+            self.scm_scan_target = resolve_scm_scan(
+                data, AutoCreateContextManager.for_request(request), request.user, reimport=self.scm_reimport,
+            )
+            validate_scan_related_objects(data, self.scm_scan_target.product)
+            if self.scm_reimport and self.scm_scan_target.test is None and not data.get("auto_create_context"):
+                raise serializers.ValidationError({"test": "No matching test exists for this commit. Enable auto_create_context to create one."})
+            if len(data.get("engagement_name", "")) > 300:
+                raise serializers.ValidationError({"engagement_name": "Use at most 300 characters."})
+            if len(data.get("branch_tag", "")) > 150:
+                raise serializers.ValidationError({"branch_tag": "Use at most 150 characters."})
         return data
 
     def validate_scan_date(self, value: str) -> None:
@@ -715,6 +737,18 @@ class CommonImportScanSerializer(serializers.Serializer):
             user, data.get("deduplication_execution_mode"),
         )
 
+        if self.scm_scan_target is not None:
+            engagement, test = materialize_scm_scan(self.scm_scan_target, context, user, reimport=self.scm_reimport)
+            context.update({
+                "engagement": engagement,
+                "product": self.scm_scan_target.product,
+                "source_code_management_uri": self.scm_scan_target.url,
+                "commit_hash": self.scm_scan_target.sha,
+            })
+            if self.scm_reimport:
+                context["test"] = test
+            context.pop("repository_url")
+
         return context
 
 
@@ -759,7 +793,8 @@ class ImportScanSerializer(CommonImportScanSerializer):
     ) -> dict:
         context = self.setup_common_context(data)
         # Process the auto create context inputs
-        self.process_auto_create_create_context(context)
+        if self.scm_scan_target is None:
+            self.process_auto_create_create_context(context)
 
         return context
 
@@ -796,6 +831,7 @@ class ImportScanSerializer(CommonImportScanSerializer):
 
 
 class ReImportScanSerializer(CommonImportScanSerializer):
+    scm_reimport = True
 
     help_do_not_reactivate = _(
         "Keep closed findings closed when they appear in the report again, instead of reactivating them. "
@@ -904,7 +940,8 @@ class ReImportScanSerializer(CommonImportScanSerializer):
             elif context.get("auto_create_context"):
                 # Attempt to create an engagement
                 logger.debug("reimport for non-existing test, using import to create new test")
-                context["engagement"] = auto_create_manager.get_or_create_engagement(**context)
+                if self.scm_scan_target is None:
+                    context["engagement"] = auto_create_manager.get_or_create_engagement(**context)
                 # Do not close old findings when creating a brand new test: there are no
                 # existing findings to compare against, and close_old_findings would
                 # incorrectly close findings from other tests in the same scope.
@@ -951,7 +988,8 @@ class ReImportScanSerializer(CommonImportScanSerializer):
         context["push_to_jira"] = push_to_jira
         # Process the auto create context inputs
         auto_create_manager = AutoCreateContextManager.for_request(self.context.get("request"))
-        self.process_auto_create_create_context(auto_create_manager, context)
+        if self.scm_scan_target is None:
+            self.process_auto_create_create_context(auto_create_manager, context)
         # Import the scan with all of the supplied data
         self.process_scan(auto_create_manager, data, context)
 

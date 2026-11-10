@@ -15,6 +15,8 @@ class EngagementSerializer(serializers.ModelSerializer):
             TagListSerializerField,
         )
         fields = super().get_fields()
+        if not settings.ASPM_SCM_HIERARCHY:
+            fields.pop("commit", None)
         fields["tags"] = TagListSerializerField(required=False)
         if preset := fields.get("preset"):
             preset.queryset = get_authorized_engagement_presets("view")

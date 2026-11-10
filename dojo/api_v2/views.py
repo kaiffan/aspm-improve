@@ -394,18 +394,17 @@ class ImportScanView(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated, permissions.UserHasImportPermission)
 
     def perform_create(self, serializer):
-        auto_create = AutoCreateContextManager.for_request(self.request)
-        # Process the context to make an conversions needed. Catch any exceptions
-        # in this case and wrap them in a DRF exception
-        try:
-            converted_dict = auto_create.convert_querydict_to_dict(serializer.validated_data)
-            auto_create.process_import_meta_data_from_dict(converted_dict)
-            # Get an existing product
-            product = auto_create.get_target_product_if_exists(**converted_dict)
-            engagement = auto_create.get_target_engagement_if_exists(product=product, **converted_dict)
-        except (ValueError, TypeError) as e:
-            # Raise an explicit drf exception here
-            raise ValidationError(str(e))
+        if scm_target := getattr(serializer, "scm_scan_target", None):
+            product, engagement = scm_target.product, scm_target.engagement
+        else:
+            auto_create = AutoCreateContextManager.for_request(self.request)
+            try:
+                converted_dict = auto_create.convert_querydict_to_dict(serializer.validated_data)
+                auto_create.process_import_meta_data_from_dict(converted_dict)
+                product = auto_create.get_target_product_if_exists(**converted_dict)
+                engagement = auto_create.get_target_engagement_if_exists(product=product, **converted_dict)
+            except (ValueError, TypeError) as e:
+                raise ValidationError(str(e)) from e
 
         # when using auto_create_context, the engagement or product may not
         # have been created yet
@@ -519,19 +518,18 @@ class ReImportScanView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         return get_authorized_tests("import")
 
     def perform_create(self, serializer):
-        auto_create = AutoCreateContextManager.for_request(self.request)
-        # Process the context to make an conversions needed. Catch any exceptions
-        # in this case and wrap them in a DRF exception
-        try:
-            converted_dict = auto_create.convert_querydict_to_dict(serializer.validated_data)
-            auto_create.process_import_meta_data_from_dict(converted_dict)
-            # Get an existing product
-            product = auto_create.get_target_product_if_exists(**converted_dict)
-            engagement = auto_create.get_target_engagement_if_exists(product=product, **converted_dict)
-            test = auto_create.get_target_test_if_exists(engagement=engagement, **converted_dict)
-        except (ValueError, TypeError) as e:
-            # Raise an explicit drf exception here
-            raise ValidationError(str(e))
+        if scm_target := getattr(serializer, "scm_scan_target", None):
+            product, engagement, test = scm_target.product, scm_target.engagement, scm_target.test
+        else:
+            auto_create = AutoCreateContextManager.for_request(self.request)
+            try:
+                converted_dict = auto_create.convert_querydict_to_dict(serializer.validated_data)
+                auto_create.process_import_meta_data_from_dict(converted_dict)
+                product = auto_create.get_target_product_if_exists(**converted_dict)
+                engagement = auto_create.get_target_engagement_if_exists(product=product, **converted_dict)
+                test = auto_create.get_target_test_if_exists(engagement=engagement, **converted_dict)
+            except (ValueError, TypeError) as e:
+                raise ValidationError(str(e)) from e
 
         # when using auto_create_context, the engagement or product may not
         # have been created yet

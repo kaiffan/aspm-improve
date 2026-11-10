@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel panel-default">
+        <div class="panel-heading"><h2>{% trans "Repositories" %}</h2></div>
+        <div class="panel-body">
+            {% if repositories %}
+                <div class="table-responsive">
+                    <table class="table table-condensed">
+                        <thead><tr>
+                            <th scope="col">{% trans "Repository" %}</th>
+                            <th scope="col">{% trans "Provider" %}</th>
+                            <th scope="col">{% trans "Default branch" %}</th>
+                        </tr></thead>
+                        <tbody>
+                        {% for repository in repositories %}
+                            <tr>
+                                <td><a href="{% url 'scm_repository_detail' repository.pk %}">{{ repository.url }}</a></td>
+                                <td>{{ repository.get_provider_display }}</td>
+                                <td>{{ repository.default_branch|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include "dojo/paging_snippet.html" with page=repositories %}
+            {% else %}
+                {% translate "No repositories" as empty_title %}
+                {% translate "Repositories appear here when linked to this project." as empty_message %}
+                {% include "dojo/snippets/empty_state.html" with title=empty_title message=empty_message icon="code-branch" %}
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

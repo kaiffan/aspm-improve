@@ -71,6 +71,8 @@ from dojo.regulations.api.urls import add_regulations_urls
 from dojo.regulations.ui.urls import urlpatterns as regulations
 from dojo.reports.ui.urls import urlpatterns as reports_urls
 from dojo.risk_acceptance.api.urls import add_risk_acceptance_urls
+from dojo.scm.api.urls import add_scm_urls
+from dojo.scm.ui.urls import urlpatterns as scm_urls
 from dojo.search.urls import urlpatterns as search_urls
 from dojo.sla_config.urls import urlpatterns as sla_urls
 from dojo.survey.ui.urls import urlpatterns as survey_urls
@@ -147,6 +149,8 @@ v2_api = add_tool_config_urls(v2_api)
 v2_api = add_tool_product_urls(v2_api)
 v2_api = add_tool_type_urls(v2_api)
 v2_api = add_user_urls(v2_api)
+if settings.ASPM_SCM_HIERARCHY:
+    add_scm_urls(v2_api)
 # Add the location routes.
 # Module-level route wiring: evaluated once at URLConf build time, so it stays on
 # settings.V3_FEATURE_LOCATIONS rather than the runtime dojo.location.feature
@@ -199,6 +203,8 @@ ur += banner_urls
 ur += component_urls
 ur += regulations
 ur += announcement_urls
+if settings.ASPM_SCM_HIERARCHY:
+    ur += scm_urls
 
 # Module-level Classic UI route wiring: fixed at URLConf build time on
 # settings.V3_FEATURE_LOCATIONS (a stored-flag toggle cannot re-mount these

@@ -36,6 +36,10 @@ def engagement_post_save(sender, instance, created, **kwargs):
 @receiver(pre_save, sender=Engagement)
 def engagement_pre_save(sender, instance, **kwargs):
     old = sender.objects.filter(pk=instance.pk).first()
+    if old and instance.product_id != old.product_id:
+        # A commit belongs to the old project's repository. Keep the legacy
+        # metadata but detach the normalized relation when moving projects.
+        instance.commit_id = None
     if old and instance.status != old.status:
         if instance.status in {"Cancelled", "Completed"}:
             create_notification(event="engagement_closed",

@@ -411,6 +411,7 @@ from dojo.product_attributes.models import (  # noqa: E402, F401 -- re-export; P
     Product_Origin,
     Product_Platform,
 )
+from dojo.scm.models import Commit, Repository  # noqa: E402, F401 -- model registry and re-export
 
 
 class Sonarqube_Issue(models.Model):

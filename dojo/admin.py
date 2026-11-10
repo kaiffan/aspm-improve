@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 from polymorphic.admin import PolymorphicChildModelAdmin, PolymorphicParentModelAdmin
@@ -13,6 +14,9 @@ from dojo.models import (
     TextAnswer,
     TextQuestion,
 )
+
+if settings.ASPM_SCM_HIERARCHY:
+    import dojo.scm.admin  # noqa: F401 -- opt-in admin registration
 
 
 # Django's default admin gate is `is_active and is_staff`. Under the legacy

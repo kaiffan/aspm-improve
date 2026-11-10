@@ -2,6 +2,7 @@ import logging
 from contextlib import suppress
 
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector
 from django.db import models
@@ -92,6 +93,10 @@ class Engagement(BaseModel):
                                    null=True, blank=True, help_text=_("Build ID of the product the engagement tested."), verbose_name=_("Build ID"))
     commit_hash = models.CharField(editable=True, max_length=150,
                                    null=True, blank=True, help_text=_("Commit hash from repo"), verbose_name=_("Commit Hash"))
+    commit = models.ForeignKey(
+        "dojo.Commit", on_delete=models.SET_NULL, related_name="engagements",
+        null=True, blank=True, editable=False, db_index=False,
+    )
     branch_tag = models.CharField(editable=True, max_length=150,
                                    null=True, blank=True, help_text=_("Tag or branch of the product the engagement tested."), verbose_name=_("Branch/Tag"))
     source_code_management_uri = models.URLField(max_length=600, null=True, blank=True, editable=True, verbose_name=_("Repo"), help_text=_("Resource link to source code"))
@@ -115,6 +120,7 @@ class Engagement(BaseModel):
         ordering = ["-target_start"]
         indexes = [
             models.Index(fields=["archive_batch"], condition=models.Q(archive_batch__isnull=False), name="dojo_engagement_archive_batch"),
+            models.Index(fields=["commit", "id"], condition=models.Q(commit__isnull=False), name="aspm_engagement_commit_idx"),
             models.Index(fields=["product", "active"]),
             # Global search (pro/search/): weighted tsvector FTS + trigram fuzzy match.
             GinIndex(
@@ -190,7 +196,10 @@ class Engagement(BaseModel):
         return self.target_end < max_end_date.date()
 
     def get_breadcrumbs(self):
-        bc = self.product.get_breadcrumbs()
+        if settings.ASPM_SCM_HIERARCHY and self.commit_id and self.commit.repository.product_id == self.product_id:
+            bc = self.commit.get_breadcrumbs()
+        else:
+            bc = self.product.get_breadcrumbs()
         bc += [{"title": str(self),
                 "url": reverse("view_engagement", args=(self.id,))}]
         return bc

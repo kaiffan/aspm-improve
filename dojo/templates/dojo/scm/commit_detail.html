@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel panel-default">
+        <div class="panel-heading"><h2>{% trans "Commit" %}</h2></div>
+        <div class="panel-body">
+            <dl>
+                <dt>{% trans "ID" %}</dt><dd>{{ commit.pk }}</dd>
+                <dt>{% trans "SHA" %}</dt><dd><code>{{ commit.sha }}</code></dd>
+                <dt>{% trans "Branch" %}</dt><dd>{{ commit.branch|default:"—" }}</dd>
+                <dt>{% trans "Author" %}</dt><dd>{{ commit.author|default:"—" }}</dd>
+                <dt>{% trans "Committed at" %}</dt><dd>{{ commit.committed_at|default:"—" }}</dd>
+                {% if commit.message %}<dt>{% trans "Message" %}</dt><dd>{{ commit.message|linebreaksbr }}</dd>{% endif %}
+                {% if commit.parent_shas %}
+                    <dt>{% trans "Parent commits" %}</dt>
+                    <dd><ul>{% for sha in commit.parent_shas %}<li><code>{{ sha }}</code></li>{% endfor %}</ul></dd>
+                {% endif %}
+            </dl>
+            {% if recent_commits %}
+                <form method="get" action="{% url 'scm_commit_compare' commit.pk %}">
+                    <label for="scm-base-commit">{% trans "Base commit ID" %}</label>
+                    <input type="number" id="scm-base-commit" name="base" list="scm-recent-commits" min="1" required aria-describedby="scm-base-hint">
+                    <datalist id="scm-recent-commits">
+                        {% for recent in recent_commits %}
+                            <option value="{{ recent.pk }}" label="{{ recent.sha }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    <button class="btn btn-primary" type="submit">{% trans "Compare findings" %}</button>
+                    <p id="scm-base-hint" class="help-block">{% trans "Find commit IDs on the repository page." %}</p>
+                </form>
+            {% endif %}
+            <h3>{% trans "Engagements" %}</h3>
+            {% if engagements %}
+                <ul>
+                {% for engagement in engagements %}
+                    <li><a href="{% url 'view_engagement' engagement.pk %}">{{ engagement }}</a></li>
+                {% endfor %}
+                </ul>
+                {% include "dojo/paging_snippet.html" with page=engagements %}
+            {% else %}
+                <p>{% trans "No engagements have been linked to this commit." %}</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

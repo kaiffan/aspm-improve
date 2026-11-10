@@ -38,6 +38,7 @@ from dojo.models import (
 # Imported from the leaf module (not dojo.models) to avoid a circular import during
 # dojo.models loading, matching how Location is imported above.
 from dojo.product_attributes.models import Product_Lifecycle, Product_Origin, Product_Platform
+from dojo.scm.imports import resolve_scm_scan
 
 
 def check_post_permission(
@@ -554,6 +555,9 @@ class UserHasImportPermission(permissions.BasePermission):
         # in this case and wrap them in a DRF exception
         try:
             converted_dict = auto_create.convert_querydict_to_dict(request.data)
+            if "repository_url" in request.data:
+                resolve_scm_scan(converted_dict, auto_create, request.user, reimport=False)
+                return True
             auto_create.process_import_meta_data_from_dict(converted_dict)
             # Get an existing product
             converted_dict["product_type"] = auto_create.get_target_product_type_if_exists(**converted_dict)
@@ -755,6 +759,9 @@ class UserHasReimportPermission(permissions.BasePermission):
         # in this case and wrap them in a DRF exception
         try:
             converted_dict = auto_create.convert_querydict_to_dict(request.data)
+            if "repository_url" in request.data:
+                resolve_scm_scan(converted_dict, auto_create, request.user, reimport=True)
+                return True
             auto_create.process_import_meta_data_from_dict(converted_dict)
             # engagement is not a declared field on ReImportScanSerializer and will be
             # stripped during validation — don't use it in the permission check either,

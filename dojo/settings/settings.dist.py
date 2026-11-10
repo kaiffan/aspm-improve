@@ -190,6 +190,9 @@ env = environ.FileAwareEnv(
     # The maximum number of request/response pairs to return from the API. Values <0 return all pairs.
     DD_MAX_REQRESP_FROM_API=(int, -1),
     DD_MAX_AUTOCOMPLETE_WORDS=(int, 20000),
+    DD_ASPM_FINDING_UI_FAST_LISTS=(bool, False),
+    DD_ASPM_FINDING_CURSOR=(bool, False),
+    DD_ASPM_SCM_HIERARCHY=(bool, False),
     DD_JIRA_SSL_VERIFY=(bool, True),
     DD_JIRA_DESCRIPTION_MAX_LENGTH=(int, 32767),
     # When interacting with jira tickets that attached finding groups, we should no be opening any findings
@@ -629,6 +632,8 @@ SEARCH_MAX_RESULTS = env("DD_SEARCH_MAX_RESULTS")
 SIMILAR_FINDINGS_MAX_RESULTS = env("DD_SIMILAR_FINDINGS_MAX_RESULTS")
 MAX_REQRESP_FROM_API = env("DD_MAX_REQRESP_FROM_API")
 MAX_AUTOCOMPLETE_WORDS = env("DD_MAX_AUTOCOMPLETE_WORDS")
+ASPM_FINDING_UI_FAST_LISTS = env("DD_ASPM_FINDING_UI_FAST_LISTS")
+ASPM_SCM_HIERARCHY = env("DD_ASPM_SCM_HIERARCHY")
 ENABLE_AUDITLOG = env("DD_ENABLE_AUDITLOG")
 
 LOGIN_EXEMPT_URLS = (

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel panel-default">
+        <div class="panel-heading"><h2>{% trans "Repository" %}</h2></div>
+        <div class="panel-body">
+            <dl>
+                <dt>{% trans "URL" %}</dt><dd><code>{{ repository.url }}</code></dd>
+                <dt>{% trans "Provider" %}</dt><dd>{{ repository.get_provider_display }}</dd>
+                <dt>{% trans "Default branch" %}</dt><dd>{{ repository.default_branch|default:"—" }}</dd>
+                {% if repository.external_id %}<dt>{% trans "External ID" %}</dt><dd>{{ repository.external_id }}</dd>{% endif %}
+            </dl>
+            <h3>{% trans "Commits" %}</h3>
+            {% if commits %}
+                <div class="table-responsive">
+                    <table class="table table-condensed">
+                        <thead><tr>
+                            <th scope="col">{% trans "ID" %}</th>
+                            <th scope="col">{% trans "SHA" %}</th>
+                            <th scope="col">{% trans "Branch" %}</th>
+                            <th scope="col">{% trans "Author" %}</th>
+                            <th scope="col">{% trans "Committed at" %}</th>
+                        </tr></thead>
+                        <tbody>
+                        {% for commit in commits %}
+                            <tr>
+                                <td>{{ commit.pk }}</td>
+                                <td><a href="{% url 'scm_commit_detail' commit.pk %}"><code>{{ commit.sha }}</code></a></td>
+                                <td>{{ commit.branch|default:"—" }}</td>
+                                <td>{{ commit.author|default:"—" }}</td>
+                                <td>{{ commit.committed_at|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include "dojo/paging_snippet.html" with page=commits %}
+            {% else %}
+                <p>{% trans "No commits have been linked to this repository." %}</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

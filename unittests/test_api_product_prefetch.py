@@ -25,9 +25,9 @@ class TestProductListNPlusOne(APITestCase):
 
     Before the fix, each product triggered separate queries for tags,
     product_meta, authorized_users, regulations, and the active-finding count
-    — a classic N+1.  The optimized get_queryset() uses select_related for
-    SlugRelatedField FKs, prefetch_related for M2M/reverse-FK relations, and a
-    correlated subquery annotation for the finding count.
+    — a classic N+1. SlugRelatedField FKs and M2M/reverse-FK relations are
+    loaded in bulk. API v2 also loads active finding IDs for the product page
+    together and uses their lengths for the serialized counts.
 
     Each test asserts that the query count with 1 product is identical to the
     query count with 5 products, proving zero per-product query growth.
@@ -49,7 +49,7 @@ class TestProductListNPlusOne(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.client.force_login(self.user)
 
-    def _create_product(self, suffix):
+    def _create_product(self, suffix, *, with_finding=True):
         """Create a product with every relation the serializer renders."""
         product = Product.objects.create(
             name=f"ProdPrefetch Product {suffix}",
@@ -74,14 +74,18 @@ class TestProductListNPlusOne(APITestCase):
             target_start=now(),
             target_end=now(),
         )
-        Finding.objects.create(
+        if with_finding:
+            self._create_finding(test, suffix)
+        return product
+
+    def _create_finding(self, test, suffix, *, active=True):
+        return Finding.objects.create(
             title=f"ProdPrefetch Finding {suffix}",
             test=test,
             reporter=self.user,
             severity="High",
-            active=True,
+            active=active,
         )
-        return product
 
     def _query_count(self, url):
         with CaptureQueriesContext(connection) as ctx:
@@ -89,7 +93,7 @@ class TestProductListNPlusOne(APITestCase):
         self.assertEqual(response.status_code, 200, response.content[:2000])
         return len(ctx.captured_queries)
 
-    def _assert_constant_query_count(self, url, expected_growth=4):
+    def _assert_constant_query_count(self, url):
         self._create_product("baseline")
         # Warm-up request: fills ContentType cache and other one-time lookups.
         self._query_count(url)
@@ -100,21 +104,59 @@ class TestProductListNPlusOne(APITestCase):
             self._create_product(f"extra-{i}")
         with_five = self._query_count(url)
 
-        per_product_growth = with_five - with_one
-        # Product.open_findings_list() fires one query per product — a known
-        # limitation (see the TODO comment on the method) that requires either
-        # a PostgreSQL-specific ArrayAgg or an API-breaking field removal to
-        # resolve.  All other relations are bulk-loaded, so the per-product
-        # cost is exactly 1 query.  Anything above that signals a new N+1.
-        self.assertEqual(
-            per_product_growth,
-            expected_growth,
-            f"{url}: expected +{expected_growth} queries for {extra_products} "
-            f"extra products, got +{per_product_growth}",
-        )
+        self.assertEqual(with_five, with_one, f"{url}: query count grew with page size")
 
     def test_product_list_query_count_constant(self):
         self._assert_constant_query_count("/api/v2/products/")
+
+    def test_product_page_uses_one_finding_query_for_ids_and_counts(self):
+        empty = self._create_product("empty", with_finding=False)
+        populated = self._create_product("populated", with_finding=False)
+        other = self._create_product("outside page")
+        test = Test.objects.get(engagement__product=populated)
+        first = self._create_finding(test, "first")
+        self._create_finding(test, "inactive", active=False)
+        second = self._create_finding(test, "second")
+
+        url = "/api/v2/products/"
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(url, {"limit": 2, "o": "id"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 3)
+        self.assertEqual(
+            [(p["id"], p["findings_count"], p["findings_list"]) for p in data["results"]],
+            [(empty.pk, 0, []), (populated.pk, 2, [first.pk, second.pk])],
+        )
+        self.assertIsNotNone(data["next"])
+        finding_queries = [query["sql"] for query in queries if 'FROM "dojo_finding"' in query["sql"]]
+        self.assertEqual(len(finding_queries), 1)
+        self.assertNotIn("COUNT(", finding_queries[0].upper())
+
+        next_page = self.client.get(url, {"limit": 2, "offset": 2, "o": "id"})
+        self.assertEqual(next_page.status_code, 200)
+        self.assertEqual([p["id"] for p in next_page.json()["results"]], [other.pk])
+        detail = self.client.get(f"{url}{populated.pk}/")
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(detail.json()["findings_count"], 2)
+        self.assertEqual(detail.json()["findings_list"], [first.pk, second.pk])
+
+    def test_product_list_finding_ids_respect_product_access(self):
+        visible = self._create_product("visible")
+        hidden = self._create_product("hidden")
+        reader = Dojo_User.objects.create_user(username="product_prefetch_reader")
+        visible.authorized_users.add(reader)
+        self.client.force_authenticate(user=reader)
+        self.client.force_login(reader)
+
+        response = self.client.get("/api/v2/products/", {"id": f"{visible.pk},{hidden.pk}"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        result, = data["results"]
+        self.assertEqual(result["id"], visible.pk)
+        self.assertEqual(result["findings_list"], visible.open_findings_list())
+        self.assertEqual(result["findings_count"], 1)
 
     @classmethod
     def _v3_enabled(cls):
@@ -124,4 +166,4 @@ class TestProductListNPlusOne(APITestCase):
     def test_asset_list_query_count_constant(self):
         if not self._v3_enabled():
             self.skipTest("V3_FEATURE_LOCATIONS is disabled")
-        self._assert_constant_query_count("/api/v3/assets", expected_growth=0)
+        self._assert_constant_query_count("/api/v3/assets")

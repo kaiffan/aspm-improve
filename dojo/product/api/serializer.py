@@ -72,4 +72,6 @@ class ProductSerializer(ActiveUserContactGuardMixin, AuthorizedUsersMemberGuardM
 
     # TODO: maybe extend_schema_field is needed here?
     def get_findings_list(self, obj) -> list[int]:
+        if hasattr(obj, "prefetched_active_finding_ids"):
+            return obj.prefetched_active_finding_ids
         return obj.open_findings_list()

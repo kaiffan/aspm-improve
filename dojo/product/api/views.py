@@ -1,5 +1,4 @@
-from functools import partial
-
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import OuterRef, Value
 from django.db.models.functions import Coalesce
 from django_filters.rest_framework import DjangoFilterBackend
@@ -82,14 +81,7 @@ class ProductViewSet(
     )
 
     def get_queryset(self):
-        base_findings = Finding.objects.filter(
-            test__engagement__product_id=OuterRef("pk"),
-        )
-        count_subquery = partial(
-            build_count_subquery,
-            group_field="test__engagement__product_id",
-        )
-        return (
+        products = (
             get_authorized_products("view")
             .select_related(
                 # SlugRelatedField reads .value on the related object — without
@@ -104,17 +96,42 @@ class ProductViewSet(
                 "authorized_users",
                 "regulations",
             )
-            .annotate(
-                # Product.findings_count (a @cached_property) checks for this
-                # attribute first, so the annotation satisfies it in bulk and the
-                # per-product fallback query is never reached.
-                active_finding_count=Coalesce(
-                    count_subquery(base_findings.filter(active=True)),
-                    Value(0),
-                ),
-            )
             .distinct()
         )
+        if self.action == "list":
+            return products
+
+        base_findings = Finding.objects.filter(
+            test__engagement__product_id=OuterRef("pk"),
+            active=True,
+        )
+        return products.annotate(
+            active_finding_count=Coalesce(
+                build_count_subquery(base_findings, group_field="test__engagement__product_id"),
+                Value(0),
+            ),
+        )
+
+    def paginate_queryset(self, queryset):
+        page = super().paginate_queryset(queryset)
+        if self.action != "list" or not page:
+            return page
+
+        # Reuse the exact ID lists for the counts. Only query findings for
+        # products that passed authorization, filtering and pagination.
+        findings_by_product = dict(
+            Finding.objects.filter(
+                test__engagement__product_id__in=[product.pk for product in page],
+                active=True,
+            )
+            .order_by()
+            .values_list("test__engagement__product_id")
+            .annotate(finding_ids=ArrayAgg("pk", order_by="pk")),
+        )
+        for product in page:
+            product.prefetched_active_finding_ids = findings_by_product.get(product.pk, [])
+            product.active_finding_count = len(product.prefetched_active_finding_ids)
+        return page
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

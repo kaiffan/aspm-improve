@@ -1,0 +1,27 @@
+{
+  "finding": 1000293,
+  "checks": [
+    {
+      "name": "Create finding through browser form",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'ASPM RC1 Browser Validation'\n- 'ASPM RC1 browser validation'\n            ^"
+    },
+    {
+      "name": "Edit finding through browser form",
+      "pass": false,
+      "error": "false == true"
+    },
+    {
+      "name": "Login rejects invalid password",
+      "pass": true
+    },
+    {
+      "name": "Login accepts isolated test account",
+      "pass": true
+    },
+    {
+      "name": "Access-free account cannot read foreign finding",
+      "pass": true
+    }
+  ]
+}

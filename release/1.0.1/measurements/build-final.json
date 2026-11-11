@@ -1,0 +1,61 @@
+{
+  "source_sha": "9b02c68ee2fcd789a99b1aa13e248b0266a6a055",
+  "source_date_epoch": 1794402194,
+  "upstream": "3.5.100",
+  "version": "1.0.1",
+  "channel": "rc1",
+  "base_images": {
+    "runtime": {
+      "image": "registry.defectdojo.com/defectdojo/defectdojo-django@sha256:8b25ecf7d8945e7214d388db3b1e6d30484f2767815d0496917815f25f388b34",
+      "id": "sha256:8b25ecf7d8945e7214d388db3b1e6d30484f2767815d0496917815f25f388b34"
+    },
+    "static": {
+      "image": "registry.defectdojo.com/defectdojo/defectdojo-nginx@sha256:596be1d239702b311a174dd09c436f0180bd495afa95cdd02cf19970382fb0ae",
+      "id": "sha256:596be1d239702b311a174dd09c436f0180bd495afa95cdd02cf19970382fb0ae"
+    },
+    "frontend": "Existing pinned upstream dependency bundle plus the checked-in dojo/static tree; no new runtime libraries",
+    "gettext": "msgfmt from GNU gettext-tools (recorded in build manifest)",
+    "upstream_base": "3.5.100"
+  },
+  "images": {
+    "app": {
+      "tag": "aspm-build:9b02c68ee2fc",
+      "id": "sha256:4329ba94fd2b04f111005fa895b38ac9450a8904c2625f6f7d0c441f5cb3cc9c"
+    },
+    "nginx": {
+      "tag": "aspm-nginx-build:9b02c68ee2fc",
+      "id": "sha256:beae40c32fd19fea51a849bf4c8b6c8e1ddf0911313231b8d15970b6728d6ade"
+    }
+  },
+  "gettext": "msgfmt (GNU gettext-tools) 1.0",
+  "compiled_translations": {
+    "dojo/locale/ar/LC_MESSAGES/django.mo": "a56dfe218a3db6a89307410929ed7cf0eb05288d4e4d320c74c18aa167b0b27b",
+    "dojo/locale/bn/LC_MESSAGES/django.mo": "206b26efc3979f84d096cdf8dd10e6fe548d02a0aec5822140b4c863aedd4aef",
+    "dojo/locale/de/LC_MESSAGES/django.mo": "11fbb8d8d87694794626885996300c9a639192c20aa2c43e9a67f8a2c66caf64",
+    "dojo/locale/en/LC_MESSAGES/django.mo": "375a5bd7b21f2ddd004a228ef1debcf81e32812a4392128e0acf184f3317428d",
+    "dojo/locale/es/LC_MESSAGES/django.mo": "4624d7e63bd213b6d45c65f6d13dbd5eca649390cd6b9109396379eddff2e932",
+    "dojo/locale/fa/LC_MESSAGES/django.mo": "0418502f9c1ba619067d6b904e3b58c7818a7bf673df3c325b5f2359858b36c0",
+    "dojo/locale/fr/LC_MESSAGES/django.mo": "cae42f5e118effac7517539f46fc9d4979e4cfcb07593101a4ae8233649aad37",
+    "dojo/locale/he/LC_MESSAGES/django.mo": "79cc8edc1b20382ba82415d1033411d66a17f8d0b6c9c5f8ecdae6e6b8a473c3",
+    "dojo/locale/hi/LC_MESSAGES/django.mo": "3ac1edb097f289683965b149d778532e8b168ca35a2dd0b730d861942162aba2",
+    "dojo/locale/id/LC_MESSAGES/django.mo": "23b3371cd074a77e788787b808edc7fbf26d004c468dc16efb5e9318795008d4",
+    "dojo/locale/it/LC_MESSAGES/django.mo": "a770d52c4accb055b14b86d35a76ab44d2b63c2aa288a7f5c917c21b5c0dfc1e",
+    "dojo/locale/ja/LC_MESSAGES/django.mo": "90a5e7a37601315ade46fcbd080594688cd921a61bf900d7a6cfa805ef84d4f9",
+    "dojo/locale/ko/LC_MESSAGES/django.mo": "f76e956094b453c0b5c100f9f3befcc3852d7ede75363ee3b08ac015bc519ce2",
+    "dojo/locale/mr/LC_MESSAGES/django.mo": "2485d361064a2fdaefa69112e24fda3985cf6ce5f7c1018b0fb5142c1ad22033",
+    "dojo/locale/nl/LC_MESSAGES/django.mo": "8b31558bfb4b2414b72defdba6c8f0b04606d90d46848e1d05c37f6dac3c849b",
+    "dojo/locale/pl/LC_MESSAGES/django.mo": "d6e35adea385dc592b2b8973b1ab3d7c6ac64194b7e11ad8b771372cb8b94ec9",
+    "dojo/locale/pt_BR/LC_MESSAGES/django.mo": "767294872f408cd94a6ae84675b638715120d36f51d3046de2e8eb9a9b2ef602",
+    "dojo/locale/ru/LC_MESSAGES/django.mo": "c0fa6d4a12c6f931a85807852b54fb977cfd522fc40b318fcf3cb1d296f9b5ba",
+    "dojo/locale/ta/LC_MESSAGES/django.mo": "074b1e11ff9672b48ef4370a1472a76d2ccb282c5cd6fc9d37fbe4b82b1e9565",
+    "dojo/locale/te/LC_MESSAGES/django.mo": "7a382576bfe2f6cc9b3845b6945a4c3ba08b9f1510e4a35a1ea8dff19736c23b",
+    "dojo/locale/th/LC_MESSAGES/django.mo": "22544eea21b2d72a392fbe6ba3a948aaa5f5ad28d5edb86ea2a37d95717d1f28",
+    "dojo/locale/tl/LC_MESSAGES/django.mo": "d150aa1c6a64e1c52ebfcaff1d06dec96b4c209c8adead6010baf037c196aa86",
+    "dojo/locale/tr/LC_MESSAGES/django.mo": "cce7b0d9a45a46267c92e146c3581b3572dedb43740dc7783e52bc6616282b5e",
+    "dojo/locale/uk/LC_MESSAGES/django.mo": "617ef88fd85aeda11646dfbd2fd77578ee3a41b3bf5e10ec5aec1cf31ba7efa7",
+    "dojo/locale/ur/LC_MESSAGES/django.mo": "29285f94b8a995facceafab2a391e1a1e3cdd0058bdd3a6f077c8ed43b1bcbe1",
+    "dojo/locale/vi/LC_MESSAGES/django.mo": "0364cbfd4264cac59ab0dcbf4cc22ab498cdd7a804a1dd4aac31eb93f5a78d31",
+    "dojo/locale/zh_Hans/LC_MESSAGES/django.mo": "379faf8f62a4f5eede1934c236905b4bdb88fcd7b9133190d98ff0590b91edfd",
+    "dojo/locale/zh_Hant/LC_MESSAGES/django.mo": "e21fc47c294ea298ae0dc92b714b284d28435f5b150cac217d5f8f13067723c1"
+  }
+}

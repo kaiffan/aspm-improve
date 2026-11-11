@@ -1,0 +1,535 @@
+Checking docker compose version
+Supported docker compose version
+Running docker compose unit tests with test case unittests.test_aspm_release_ui unittests.test_product_announcements unittests.test_os_message unittests.test_github_star_prompt unittests.test_round5_performance unittests.test_round4_performance unittests.test_dashboard unittests.test_api_product_prefetch unittests.test_api_finding_relation_filters unittests.test_api_finding_filter_no_multiply unittests.test_local_release_performance_checks unittests.test_apiv2_prefetch_test_finding_groups unittests.test_authorization_queries ...
+[11/Nov/2026 15:34:31] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[11/Nov/2026 15:34:31] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[11/Nov/2026 15:34:31] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+Using existing test database for alias 'default' ('test_dd_r4_check')...
+System check identified some issues:
+
+WARNINGS:
+?: (dojo.W003) DD_CREDENTIAL_AES_256_KEY is the value shipped with DefectDojo.
+	HINT: Set DD_CREDENTIAL_AES_256_KEY to a random 32-character value on a new instance. On an existing instance, stored tool configuration passwords are encrypted with the current key and must be re-entered after changing it.
+?: (dojo.W004) DD_ALLOWED_HOSTS contains '*'.
+	HINT: List the host names the instance is served under, for example DD_ALLOWED_HOSTS=defectdojo.example.com.
+
+System check identified 2 issues (4 silenced).
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:32] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_dismiss_preserves_other_state_keys (unittests.test_os_message.TestDismissOsMessageView.test_dismiss_preserves_other_state_keys)
+Dismissing must not clobber unrelated keys in the shared user_state_details blob. ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_get_not_allowed (unittests.test_os_message.TestDismissOsMessageView.test_get_not_allowed) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+[11/Nov/2026 15:34:33] WARNING [django.request:253] Method Not Allowed (GET): /dismiss_os_message
+ok
+test_invalid_token_is_ignored (unittests.test_os_message.TestDismissOsMessageView.test_invalid_token_is_ignored) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_post_persists_hash_on_usercontactinfo (unittests.test_os_message.TestDismissOsMessageView.test_post_persists_hash_on_usercontactinfo) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_requires_authentication (unittests.test_os_message.TestDismissOsMessageView.test_requires_authentication) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+[11/Nov/2026 15:34:33] INFO [dojo.utils:2128] logout user: admin via ip: None
+ok
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_get_not_allowed (unittests.test_github_star_prompt.TestGithubStarPromptView.test_get_not_allowed) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+[11/Nov/2026 15:34:33] WARNING [django.request:253] Method Not Allowed (GET): /github_star_prompt
+ok
+test_later_snoozes (unittests.test_github_star_prompt.TestGithubStarPromptView.test_later_snoozes) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_later_still_succeeds_when_saving_fails (unittests.test_github_star_prompt.TestGithubStarPromptView.test_later_still_succeeds_when_saving_fails) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_preserves_other_state_keys (unittests.test_github_star_prompt.TestGithubStarPromptView.test_preserves_other_state_keys) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_prompt_rendered_for_established_user (unittests.test_github_star_prompt.TestGithubStarPromptView.test_prompt_rendered_for_established_user) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_requires_authentication (unittests.test_github_star_prompt.TestGithubStarPromptView.test_requires_authentication) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+[11/Nov/2026 15:34:33] INFO [dojo.utils:2128] logout user: admin via ip: None
+ok
+test_star_records_and_redirects_to_github (unittests.test_github_star_prompt.TestGithubStarPromptView.test_star_records_and_redirects_to_github) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_star_still_redirects_when_saving_fails (unittests.test_github_star_prompt.TestGithubStarPromptView.test_star_still_redirects_when_saving_fails) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_unknown_choice_is_ignored (unittests.test_github_star_prompt.TestGithubStarPromptView.test_unknown_choice_is_ignored) ... [11/Nov/2026 15:34:33] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:33] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_dashboard_charts_share_one_aggregate_and_preserve_boundaries (unittests.test_round5_performance.TestRound5Performance.test_dashboard_charts_share_one_aggregate_and_preserve_boundaries) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: round4_reader via ip: None
+ok
+test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings (unittests.test_round5_performance.TestRound5Performance.test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: round4_reader via ip: None
+[11/Nov/2026 15:34:34] WARNING [django.request:253] Not Found: /api/v2/findings/241/
+ok
+test_full_product_response_keeps_order_count_and_visibility (unittests.test_round5_performance.TestRound5Performance.test_full_product_response_keeps_order_count_and_visibility) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: round4_reader via ip: None
+[11/Nov/2026 15:34:34] WARNING [django.request:253] Not Found: /api/v2/products/9/
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_single_product_counts_do_not_join_each_finding_to_test (unittests.test_round5_performance.TestRound5Performance.test_single_product_counts_do_not_join_each_finding_to_test) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+ok
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_dashboard_months_preserve_cutoff_unknown_severity_and_timezone (unittests.test_round4_performance.TestRound4Performance.test_dashboard_months_preserve_cutoff_unknown_severity_and_timezone) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+ok
+test_product_page_batches_exact_scoped_counts (unittests.test_round4_performance.TestRound4Performance.test_product_page_batches_exact_scoped_counts) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: round4_reader via ip: None
+ok
+test_product_page_preserves_count_order_and_page_boundaries (unittests.test_round4_performance.TestRound4Performance.test_product_page_preserves_count_order_and_page_boundaries) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_punchcard_reads_daily_aggregate_once (unittests.test_round4_performance.TestRound4Performance.test_punchcard_reads_daily_aggregate_once) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+ok
+test_simple_metrics_aggregates_without_loading_finding_text (unittests.test_round4_performance.TestRound4Performance.test_simple_metrics_aggregates_without_loading_finding_text) ... [11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 15:34:34] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_charts_as_staff (unittests.test_dashboard.TestDashboard.test_charts_as_staff) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_charts_as_user (unittests.test_dashboard.TestDashboard.test_charts_as_user) ... skipped 'Legacy auth re-baseline pending; same reason as test_counters_as_user.'
+test_counters_as_staff (unittests.test_dashboard.TestDashboard.test_counters_as_staff) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: admin via ip: None
+ok
+test_counters_as_user (unittests.test_dashboard.TestDashboard.test_counters_as_user) ... skipped "Legacy authorization: dashboard counters use a per-user authorized queryset that under legacy gates on authorized_users membership. user1 is fixture-defined without authorized_users entries, and the _request helper's is_staff promotion isn't enough to make every dashboard counter match the original RBAC-tuned numbers (some of those numbers reflect role-specific filtering that legacy collapses). Re-baseline this test against legacy semantics in a follow-up."
+[11/Nov/2026 15:34:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (prodprefetch_user)
+test_asset_list_query_count_constant (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_asset_list_query_count_constant) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_product_detail_loads_count_and_ordered_ids_in_one_query (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_detail_loads_count_and_ordered_ids_in_one_query) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_product_finding_modes_keep_exact_count_and_skip_id_aggregation (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_finding_modes_keep_exact_count_and_skip_id_aggregation) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_product_list_finding_ids_respect_product_access (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_list_finding_ids_respect_product_access) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (product_prefetch_reader)
+[11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: product_prefetch_reader via ip: None
+[11/Nov/2026 15:34:35] WARNING [django.request:253] Not Found: /api/v2/products/13/
+[11/Nov/2026 15:34:35] WARNING [django.request:253] Not Found: /api/v2/products/13/
+ok
+test_product_list_query_count_constant (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_list_query_count_constant) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_product_page_uses_one_finding_query_for_ids_and_counts (unittests.test_api_product_prefetch.TestProductListNPlusOne.test_product_page_uses_one_finding_query_for_ids_and_counts) ... [11/Nov/2026 15:34:35] INFO [dojo.utils:2117] login user: prodprefetch_user via ip: None
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name ProdPrefetch TT and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+[11/Nov/2026 15:34:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (rel_filter_user)
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:35] WARNING [dojo.specific-loggers.deduplication:197] test_type name Relation Filter Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_api_does_not_widen_for_a_member_of_one_product (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_api_does_not_widen_for_a_member_of_one_product) ... [11/Nov/2026 15:34:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (rel_filter_reader)
+ok
+test_api_list_is_scoped_and_counted (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_api_list_is_scoped_and_counted) ... ok
+test_combines_with_other_filters (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_combines_with_other_filters) ... ok
+test_engagement (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_engagement) ... ok
+test_non_numeric_value_is_invalid (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_non_numeric_value_is_invalid) ... ok
+test_prod_type (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_prod_type) ... ok
+test_product (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_product) ... ok
+test_short_names_are_declared_on_the_long_form_fields (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_short_names_are_declared_on_the_long_form_fields) ... ok
+test_short_names_match_the_long_forms (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_short_names_match_the_long_forms) ... ok
+test_single_product_filter_uses_test_ids_with_exact_authorized_count (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_single_product_filter_uses_test_ids_with_exact_authorized_count) ... [11/Nov/2026 15:34:36] INFO [dojo.notifications.signals:33] creating default set of notifications for: (rel_filter_count_reader)
+ok
+[11/Nov/2026 15:34:36] INFO [dojo.notifications.signals:33] creating default set of notifications for: (nm_user)
+[11/Nov/2026 15:34:36] INFO [dojo.notifications.signals:33] creating default set of notifications for: (nm_reviewer1)
+[11/Nov/2026 15:34:36] INFO [dojo.notifications.signals:33] creating default set of notifications for: (nm_reviewer2)
+test_finding_group_filter_does_not_multiply (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_finding_group_filter_does_not_multiply) ... [11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_found_by_filter_does_not_multiply (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_found_by_filter_does_not_multiply) ... [11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_ordering_by_reviewers_does_not_multiply (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_ordering_by_reviewers_does_not_multiply) ... [11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_reviewers_filter_does_not_multiply (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_reviewers_filter_does_not_multiply) ... [11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_risk_acceptance_expired_does_not_multiply (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_risk_acceptance_expired_does_not_multiply) ... [11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:36] WARNING [dojo.specific-loggers.deduplication:197] test_type name NM Test Type A and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_risk_acceptance_filter_is_wired_to_exists_subclass (unittests.test_api_finding_filter_no_multiply.TestApiFindingFilterNoMultiply.test_risk_acceptance_filter_is_wired_to_exists_subclass) ... ok
+[11/Nov/2026 15:34:36] INFO [dojo.notifications.signals:33] creating default set of notifications for: (perf_fixture_reader)
+test_fast_falls_back_for_custom_order_and_cannot_bypass_scope (unittests.test_local_release_performance_checks.ReleaseFindingPerformanceChecks.test_fast_falls_back_for_custom_order_and_cannot_bypass_scope) ... [11/Nov/2026 15:34:37] WARNING [django.request:253] Not Found: /api/v2/findings/5303/
+ok
+test_fast_standard_filter_order_and_prefetched_references (unittests.test_local_release_performance_checks.ReleaseFindingPerformanceChecks.test_fast_standard_filter_order_and_prefetched_references) ... ok
+test_legacy_endpoints_still_prefetch_ordered_references (unittests.test_local_release_performance_checks.ReleaseFindingPerformanceChecks.test_legacy_endpoints_still_prefetch_ordered_references) ... ok
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 15:34:37] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_prefetch_test_query_count_does_not_grow_per_finding_group (unittests.test_apiv2_prefetch_test_finding_groups.PrefetchTestFindingGroupsTest.test_prefetch_test_query_count_does_not_grow_per_finding_group) ... [11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_prefetch_test_query_count_does_not_grow_per_test_note (unittests.test_apiv2_prefetch_test_finding_groups.PrefetchTestFindingGroupsTest.test_prefetch_test_query_count_does_not_grow_per_test_note)
+TestSerializer also nests the test's notes, each with its author, editor, type and history. ... [11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_test_list_and_detail_keep_jira_group_queries_bounded (unittests.test_apiv2_prefetch_test_finding_groups.PrefetchTestFindingGroupsTest.test_test_list_and_detail_keep_jira_group_queries_bounded) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: admin via ip: None
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name PrefetchTestGroups Scan and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+ok
+test_superuser_gets_all_endpoint_statuses (unittests.test_authorization_queries.TestGetAuthorizedEndpointStatus.test_superuser_gets_all_endpoint_statuses)
+Superuser should get all endpoint statuses ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedEndpointStatus.test_user_no_permissions_gets_empty)
+User with no permissions should not get test endpoint statuses ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+test_user_product_member_gets_product_endpoint_statuses (unittests.test_authorization_queries.TestGetAuthorizedEndpointStatus.test_user_product_member_gets_product_endpoint_statuses)
+User with product membership should get only that product's endpoint statuses ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+test_superuser_gets_all_endpoints (unittests.test_authorization_queries.TestGetAuthorizedEndpoints.test_superuser_gets_all_endpoints)
+Superuser should get all endpoints ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedEndpoints.test_user_no_permissions_gets_empty)
+User with no permissions should not get test endpoints ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+test_user_product_member_gets_product_endpoints (unittests.test_authorization_queries.TestGetAuthorizedEndpoints.test_user_product_member_gets_product_endpoints)
+User with product membership should get only that product's endpoints ... skipped 'Skipping because V3_FEATURE_LOCATIONS is enabled.'
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_engagements (unittests.test_authorization_queries.TestGetAuthorizedEngagements.test_superuser_gets_all_engagements)
+Superuser should get all engagements ... ok
+test_user_global_reader_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedEngagements.test_user_global_reader_gets_nothing_legacy)
+Legacy: Global_Role(role=Reader) is inert. ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedEngagements.test_user_no_permissions_gets_empty)
+User with no permissions should not get test engagements ... ok
+test_user_product_member_gets_product_engagements (unittests.test_authorization_queries.TestGetAuthorizedEngagements.test_user_product_member_gets_product_engagements)
+User with product membership should get only that product's engagements ... ok
+test_user_product_type_member_gets_product_type_engagements (unittests.test_authorization_queries.TestGetAuthorizedEngagements.test_user_product_type_member_gets_product_type_engagements)
+User with product type membership should get engagements in that type ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_engagement_filter_excludes_unauthorized_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_engagement_filter_excludes_unauthorized_finding_groups) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_no_perms via ip: None
+ok
+test_engagement_filter_includes_authorized_finding_group_without_findings (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_engagement_filter_includes_authorized_finding_group_without_findings) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_filter_excludes_unauthorized_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_filter_excludes_unauthorized_finding_groups) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_no_perms via ip: None
+ok
+test_product_filter_includes_authorized_finding_group_without_findings (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_filter_includes_authorized_finding_group_without_findings) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_member_does_not_see_cross_product_closed_finding_group (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_member_does_not_see_cross_product_closed_finding_group) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_member_does_not_see_cross_product_open_finding_group (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_member_does_not_see_cross_product_open_finding_group) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_member_sees_authorized_closed_finding_group (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_member_sees_authorized_closed_finding_group) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_member_sees_authorized_finding_groups_in_list (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_member_sees_authorized_finding_groups_in_list) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_product_member_sees_authorized_open_finding_group (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_product_member_sees_authorized_open_finding_group) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_product_member via ip: None
+ok
+test_superuser_gets_all_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_superuser_gets_all_finding_groups)
+Superuser should get all finding groups ... ok
+test_superuser_sees_all_finding_groups_in_list (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_superuser_sees_all_finding_groups_in_list) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_superuser via ip: None
+ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_user_no_permissions_gets_empty)
+User with no permissions should not get test finding groups ... ok
+test_user_product_member_gets_product_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_user_product_member_gets_product_finding_groups)
+User with product membership should get only that product's finding groups ... ok
+test_user_without_permissions_sees_no_closed_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_user_without_permissions_sees_no_closed_finding_groups) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_no_perms via ip: None
+ok
+test_user_without_permissions_sees_no_finding_groups_in_list (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_user_without_permissions_sees_no_finding_groups_in_list) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_no_perms via ip: None
+ok
+test_user_without_permissions_sees_no_open_finding_groups (unittests.test_authorization_queries.TestGetAuthorizedFindingGroups.test_user_without_permissions_sees_no_open_finding_groups) ... [11/Nov/2026 15:34:38] INFO [dojo.utils:2117] login user: auth_test_no_perms via ip: None
+ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_none_user_returns_empty (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_none_user_returns_empty)
+None user should return empty queryset ... ok
+test_queryset_parameter_filters_correctly (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_queryset_parameter_filters_correctly)
+Passing a queryset should filter within that queryset ... ok
+test_superuser_gets_all_findings (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_superuser_gets_all_findings)
+Superuser should get all findings ... ok
+test_user_global_reader_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_global_reader_gets_nothing_legacy)
+Legacy: Global_Role(role=Reader) is inert. The user has no ... ok
+test_user_group_product_member_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_group_product_member_gets_nothing_legacy)
+Legacy: Product_Group grants don't translate to legacy. ... ok
+test_user_group_product_type_member_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_group_product_type_member_gets_nothing_legacy)
+Legacy: Product_Type_Group grants are inert. ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_no_permissions_gets_empty)
+User with no permissions should not get test findings ... ok
+test_user_product_member_gets_product_findings (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_product_member_gets_product_findings)
+User with product membership should get only that product's findings ... ok
+test_user_product_type_member_gets_product_type_findings (unittests.test_authorization_queries.TestGetAuthorizedFindings.test_user_product_type_member_gets_product_type_findings)
+User with product type membership should get all findings in that product type ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_location_finding_references (unittests.test_authorization_queries.TestGetAuthorizedLocationFindingReferences.test_superuser_gets_all_location_finding_references)
+Superuser should get all location finding references ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedLocationFindingReferences.test_user_no_permissions_gets_empty)
+User with no permissions should get no location finding references ... ok
+test_user_product_member_gets_product_location_finding_references (unittests.test_authorization_queries.TestGetAuthorizedLocationFindingReferences.test_user_product_member_gets_product_location_finding_references)
+User with product membership should get only that product's finding references ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_location_finding_references (unittests.test_authorization_queries.TestGetAuthorizedLocationProductReferences.test_superuser_gets_all_location_finding_references)
+Superuser should get all location product references ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedLocationProductReferences.test_user_no_permissions_gets_empty)
+User with no permissions should get no location finding references ... ok
+test_user_product_member_gets_product_location_product_references (unittests.test_authorization_queries.TestGetAuthorizedLocationProductReferences.test_user_product_member_gets_product_location_product_references)
+User with product membership should get only that product's location product references ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_locations (unittests.test_authorization_queries.TestGetAuthorizedLocations.test_superuser_gets_all_locations)
+Superuser should get all locations ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedLocations.test_user_no_permissions_gets_empty)
+User with no permissions should not get test locations ... ok
+test_user_product_member_gets_product_locations (unittests.test_authorization_queries.TestGetAuthorizedLocations.test_user_product_member_gets_product_locations)
+User with product membership should get only that product's endpoints ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_product_types (unittests.test_authorization_queries.TestGetAuthorizedProductTypes.test_superuser_gets_all_product_types)
+Superuser should get all product types ... ok
+test_user_global_reader_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedProductTypes.test_user_global_reader_gets_nothing_legacy)
+Legacy: Global_Role(role=Reader) is inert. ... ok
+test_user_group_product_type_member_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedProductTypes.test_user_group_product_type_member_gets_nothing_legacy)
+Legacy: Product_Type_Group grants are inert. ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedProductTypes.test_user_no_permissions_gets_empty)
+User with no permissions should not get test product types ... ok
+test_user_product_type_member_gets_own_types (unittests.test_authorization_queries.TestGetAuthorizedProductTypes.test_user_product_type_member_gets_own_types)
+User with product type membership should get only that type ... ok
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:38] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:38] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_products (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_superuser_gets_all_products)
+Superuser should get all products ... ok
+test_user_global_reader_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_global_reader_gets_nothing_legacy)
+Legacy: Global_Role(role=Reader) is inert. ... ok
+test_user_group_product_member_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_group_product_member_gets_nothing_legacy)
+Legacy: Product_Group grants are inert. ... ok
+test_user_group_product_type_member_gets_nothing_legacy (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_group_product_type_member_gets_nothing_legacy)
+Legacy: Product_Type_Group grants are inert. ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_no_permissions_gets_empty)
+User with no permissions should not get test products ... ok
+test_user_product_member_gets_own_products (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_product_member_gets_own_products)
+User with product membership should get only that product ... ok
+test_user_product_type_member_gets_type_products (unittests.test_authorization_queries.TestGetAuthorizedProducts.test_user_product_type_member_gets_type_products)
+User with product type membership should get products in that type ... ok
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:39] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:39] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_tests (unittests.test_authorization_queries.TestGetAuthorizedTests.test_superuser_gets_all_tests)
+Superuser should get all tests ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedTests.test_user_no_permissions_gets_empty)
+User with no permissions should not get test tests ... ok
+test_user_product_member_gets_product_tests (unittests.test_authorization_queries.TestGetAuthorizedTests.test_user_product_member_gets_product_tests)
+User with product membership should get only that product's tests ... ok
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_superuser)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_no_perms)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_global_reader)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_product_type_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_member)
+[11/Nov/2026 15:34:39] INFO [dojo.notifications.signals:33] creating default set of notifications for: (auth_test_group_product_type_member)
+[11/Nov/2026 15:34:39] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+[11/Nov/2026 15:34:39] WARNING [dojo.specific-loggers.deduplication:197] test_type name Auth Test Type and scan_type None not found in HASHCODE_FIELDS_PER_SCANNER
+test_superuser_gets_all_vulnerability_ids (unittests.test_authorization_queries.TestGetAuthorizedVulnerabilityIds.test_superuser_gets_all_vulnerability_ids)
+Superuser should get all vulnerability id references ... ok
+test_user_no_permissions_gets_empty (unittests.test_authorization_queries.TestGetAuthorizedVulnerabilityIds.test_user_no_permissions_gets_empty)
+User with no permissions should not get test vulnerability id references ... ok
+test_user_product_member_gets_product_vulnerability_ids (unittests.test_authorization_queries.TestGetAuthorizedVulnerabilityIds.test_user_product_member_gets_product_vulnerability_ids)
+User with product membership should get only that product's vulnerability id references ... ok
+test_brand_assets_remain_local (unittests.test_aspm_release_ui.TestASPMBranding.test_brand_assets_remain_local) ... ok
+test_brand_can_be_replaced_and_template_escapes_name (unittests.test_aspm_release_ui.TestASPMBranding.test_brand_can_be_replaced_and_template_escapes_name) ... ok
+test_error_promos_are_not_stored_but_api_error_contract_is_preserved (unittests.test_aspm_release_ui.TestASPMBranding.test_error_promos_are_not_stored_but_api_error_contract_is_preserved) ... ok
+test_old_promos_are_consumed_without_removing_operator_banners (unittests.test_aspm_release_ui.TestASPMBranding.test_old_promos_are_consumed_without_removing_operator_banners) ... ok
+test_promos_are_not_fetched_and_read_only_warning_is_preserved (unittests.test_aspm_release_ui.TestASPMBranding.test_promos_are_not_fetched_and_read_only_warning_is_preserved) ... ok
+test_release_metadata_is_local_and_does_not_need_database (unittests.test_aspm_release_ui.TestASPMBranding.test_release_metadata_is_local_and_does_not_need_database) ... ok
+test_standalone_report_has_version_without_request_context (unittests.test_aspm_release_ui.TestASPMBranding.test_standalone_report_has_version_without_request_context) ... ok
+test_error_page_banner_has_all_keys (unittests.test_product_announcements.TestBannerDictSchema.test_error_page_banner_has_all_keys) ... ok
+test_large_scan_banner_has_all_keys (unittests.test_product_announcements.TestBannerDictSchema.test_large_scan_banner_has_all_keys) ... ok
+test_long_running_banner_has_all_keys (unittests.test_product_announcements.TestBannerDictSchema.test_long_running_banner_has_all_keys) ... ok
+test_scan_type_banner_has_all_keys (unittests.test_product_announcements.TestBannerDictSchema.test_scan_type_banner_has_all_keys) ... ok
+test_api_path (unittests.test_product_announcements.TestErrorPageProductAnnouncement.test_api_path) ... ok
+test_message_content (unittests.test_product_announcements.TestErrorPageProductAnnouncement.test_message_content) ... ok
+test_does_not_fire_at_exact_threshold (unittests.test_product_announcements.TestLargeScanSizeProductAnnouncement.test_does_not_fire_at_exact_threshold) ... ok
+test_does_not_fire_when_duration_below_threshold (unittests.test_product_announcements.TestLargeScanSizeProductAnnouncement.test_does_not_fire_when_duration_below_threshold) ... ok
+test_fires_at_boundary (unittests.test_product_announcements.TestLargeScanSizeProductAnnouncement.test_fires_at_boundary) ... ok
+test_fires_when_duration_exceeds_threshold (unittests.test_product_announcements.TestLargeScanSizeProductAnnouncement.test_fires_when_duration_exceeds_threshold) ... ok
+test_does_not_fire_at_exact_threshold (unittests.test_product_announcements.TestLongRunningRequestProductAnnouncement.test_does_not_fire_at_exact_threshold) ... ok
+test_does_not_fire_when_duration_below_threshold (unittests.test_product_announcements.TestLongRunningRequestProductAnnouncement.test_does_not_fire_when_duration_below_threshold) ... ok
+test_fires_when_duration_exceeds_threshold (unittests.test_product_announcements.TestLongRunningRequestProductAnnouncement.test_fires_when_duration_exceeds_threshold) ... ok
+test_api_response_appends_to_existing_pro_list (unittests.test_product_announcements.TestProductAnnouncementApiPath.test_api_response_appends_to_existing_pro_list) ... ok
+test_api_response_data_dict_gets_pro_key (unittests.test_product_announcements.TestProductAnnouncementApiPath.test_api_response_data_dict_gets_pro_key) ... ok
+test_api_response_gets_pro_key (unittests.test_product_announcements.TestProductAnnouncementApiPath.test_api_response_gets_pro_key) ... ok
+test_requires_at_least_one_target (unittests.test_product_announcements.TestProductAnnouncementApiPath.test_requires_at_least_one_target) ... ok
+test_banner_message_contains_outreach_link (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_banner_message_contains_outreach_link) ... ok
+test_multiple_announcements_accumulate_in_session (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_multiple_announcements_accumulate_in_session) ... ok
+test_no_settings_guard (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_no_settings_guard)
+Product announcements fire without any settings check. ... ok
+test_request_without_session_is_skipped_silently (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_request_without_session_is_skipped_silently)
+A request rejected before SessionMiddleware (e.g. DisallowedHost) has no session. ... ok
+test_session_error_is_swallowed (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_session_error_is_swallowed) ... ok
+test_stores_banner_in_session (unittests.test_product_announcements.TestProductAnnouncementSessionBanner.test_stores_banner_in_session) ... ok
+test_all_supported_scan_types_fire (unittests.test_product_announcements.TestScanTypeProductAnnouncement.test_all_supported_scan_types_fire) ... ok
+test_api_path_for_supported_scan_type (unittests.test_product_announcements.TestScanTypeProductAnnouncement.test_api_path_for_supported_scan_type) ... ok
+test_does_not_fire_for_none_scan_type (unittests.test_product_announcements.TestScanTypeProductAnnouncement.test_does_not_fire_for_none_scan_type) ... ok
+test_does_not_fire_for_unsupported_scan_type (unittests.test_product_announcements.TestScanTypeProductAnnouncement.test_does_not_fire_for_unsupported_scan_type) ... ok
+test_fires_for_supported_scan_type (unittests.test_product_announcements.TestScanTypeProductAnnouncement.test_fires_for_supported_scan_type) ... ok
+test_200_with_body_caches_body (unittests.test_os_message.TestFetchOsMessage.test_200_with_body_caches_body) ... ok
+test_404_caches_none (unittests.test_os_message.TestFetchOsMessage.test_404_caches_none) ... ok
+test_body_decoded_as_utf8_without_charset_header (unittests.test_os_message.TestFetchOsMessage.test_body_decoded_as_utf8_without_charset_header) ... ok
+test_connection_error_caches_none (unittests.test_os_message.TestFetchOsMessage.test_connection_error_caches_none) ... ok
+test_empty_body_caches_none (unittests.test_os_message.TestFetchOsMessage.test_empty_body_caches_none) ... ok
+test_second_call_after_failure_also_hits_cache (unittests.test_os_message.TestFetchOsMessage.test_second_call_after_failure_also_hits_cache) ... ok
+test_second_call_hits_cache (unittests.test_os_message.TestFetchOsMessage.test_second_call_hits_cache) ... ok
+test_timeout_caches_none (unittests.test_os_message.TestFetchOsMessage.test_timeout_caches_none) ... ok
+test_disabled_returns_none_without_fetching (unittests.test_os_message.TestGetOsBanner.test_disabled_returns_none_without_fetching) ... ok
+test_enabled_includes_dismiss_token (unittests.test_os_message.TestGetOsBanner.test_enabled_includes_dismiss_token) ... ok
+test_enabled_returns_parsed_banner (unittests.test_os_message.TestGetOsBanner.test_enabled_returns_parsed_banner) ... ok
+test_returns_none_when_fetch_returns_none (unittests.test_os_message.TestGetOsBanner.test_returns_none_when_fetch_returns_none) ... ok
+test_swallows_parse_exception (unittests.test_os_message.TestGetOsBanner.test_swallows_parse_exception) ... ok
+test_additional_banners_absent_when_no_banner (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_additional_banners_absent_when_no_banner) ... ok
+test_additional_banners_populated_when_banner_present (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_additional_banners_populated_when_banner_present) ... ok
+test_create_cloud_banner_not_in_context (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_create_cloud_banner_not_in_context) ... ok
+test_os_and_session_banners_combined (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_os_and_session_banners_combined) ... ok
+test_os_banner_dismissible_for_authenticated_user (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_os_banner_dismissible_for_authenticated_user) ... ok
+test_os_banner_hidden_when_dismissed_hash_matches (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_os_banner_hidden_when_dismissed_hash_matches) ... ok
+test_os_banner_not_dismissible_for_anonymous (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_os_banner_not_dismissible_for_anonymous) ... ok
+test_os_banner_shown_when_dismissed_hash_differs (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_os_banner_shown_when_dismissed_hash_differs) ... ok
+test_purchase_link_is_disabled_in_aspm (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_purchase_link_is_disabled_in_aspm) ... ok
+test_session_product_banners_merged_into_additional_banners (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_session_product_banners_merged_into_additional_banners) ... ok
+test_template_renders_bleached_message (unittests.test_os_message.TestGlobalizeVarsOsBanner.test_template_renders_bleached_message) ... ok
+test_expanded_strips_script_tag (unittests.test_os_message.TestParseOsMessage.test_expanded_strips_script_tag) ... ok
+test_expanded_with_fenced_code (unittests.test_os_message.TestParseOsMessage.test_expanded_with_fenced_code) ... ok
+test_headline_inline_markdown (unittests.test_os_message.TestParseOsMessage.test_headline_inline_markdown) ... ok
+test_headline_outer_p_is_stripped (unittests.test_os_message.TestParseOsMessage.test_headline_outer_p_is_stripped) ... ok
+test_headline_strips_disallowed_html (unittests.test_os_message.TestParseOsMessage.test_headline_strips_disallowed_html) ... ok
+test_headline_truncated_to_100_chars (unittests.test_os_message.TestParseOsMessage.test_headline_truncated_to_100_chars) ... ok
+test_missing_expanded_section (unittests.test_os_message.TestParseOsMessage.test_missing_expanded_section) ... ok
+test_missing_headline_returns_none (unittests.test_os_message.TestParseOsMessage.test_missing_headline_returns_none) ... ok
+test_valid_doc_with_expanded (unittests.test_os_message.TestParseOsMessage.test_valid_doc_with_expanded) ... ok
+test_context_processor_survives_failure (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_context_processor_survives_failure) ... ok
+test_corrupt_snooze_value_is_ignored (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_corrupt_snooze_value_is_ignored) ... ok
+test_corrupt_state_blob_hides_prompt (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_corrupt_state_blob_hides_prompt) ... ok
+test_database_error_hides_prompt (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_database_error_hides_prompt) ... ok
+test_hidden_after_starring (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_hidden_after_starring) ... ok
+test_hidden_for_anonymous (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_hidden_for_anonymous) ... ok
+test_hidden_for_new_user (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_hidden_for_new_user) ... ok
+test_hidden_when_disabled (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_hidden_when_disabled) ... ok
+test_hidden_while_snoozed (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_hidden_while_snoozed) ... ok
+test_shown_again_after_snooze_expires (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_shown_again_after_snooze_expires) ... ok
+test_shown_to_established_user (unittests.test_github_star_prompt.TestShouldShowGithubStarPrompt.test_shown_to_established_user) ... ok
+
+----------------------------------------------------------------------
+Ran 197 tests in 6.242s
+
+OK (skipped=8)
+Preserving test database for alias 'default' ('test_dd_r4_check')...
+Found 197 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: dbbackup, django_filters, django_htmx, drf_spectacular, drf_spectacular_sidecar, fontawesomefree, humanize, imagekit, messages, multiselectfield, pgtrigger, polymorphic, postgres, rest_framework, staticfiles, tagulous
+  Apply all migrations: admin, auditlog, auth, authtoken, contenttypes, django_celery_results, dojo, pghistory, sessions, single_session, sites, watson
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  No migrations to apply.

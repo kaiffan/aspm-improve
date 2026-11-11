@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: System is the default and applies before DOM ready
+ok 1 - System is the default and applies before DOM ready
+  ---
+  duration_ms: 1.314459
+  ...
+# Subtest: Explicit light preference overrides dark system and persists
+ok 2 - Explicit light preference overrides dark system and persists
+  ---
+  duration_ms: 0.232291
+  ...
+# Subtest: System preference reacts to OS changes
+ok 3 - System preference reacts to OS changes
+  ---
+  duration_ms: 0.185333
+  ...
+# Subtest: Explicit preference ignores OS changes
+ok 4 - Explicit preference ignores OS changes
+  ---
+  duration_ms: 0.175125
+  ...
+# Subtest: Disabled storage keeps theme controls functional
+ok 5 - Disabled storage keeps theme controls functional
+  ---
+  duration_ms: 1.045667
+  ...
+# Subtest: Invalid stored or cross-tab values fall back to System
+ok 6 - Invalid stored or cross-tab values fall back to System
+  ---
+  duration_ms: 0.187667
+  ...
+# Subtest: Chart theming preserves scale/data behavior and disabled plugins
+ok 7 - Chart theming preserves scale/data behavior and disabled plugins
+  ---
+  duration_ms: 0.224041
+  ...
+# Subtest: Chart theming does not assign resolved proxies back into their parents
+ok 8 - Chart theming does not assign resolved proxies back into their parents
+  ---
+  duration_ms: 0.356209
+  ...
+# Subtest: Tagulous replacement retains the visible form label
+ok 9 - Tagulous replacement retains the visible form label
+  ---
+  duration_ms: 0.320084
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 34.018125

@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "name": "Create finding through browser form",
+      "pass": false,
+      "error": "page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://127.0.0.1:48086/test/102\" until \"load\"\n============================================================"
+    },
+    {
+      "name": "Login rejects invalid password",
+      "pass": true
+    },
+    {
+      "name": "Login accepts isolated test account",
+      "pass": true
+    },
+    {
+      "name": "Access-free account cannot read foreign finding",
+      "pass": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok([403,404].includes(r.status()))\n"
+    }
+  ]
+}

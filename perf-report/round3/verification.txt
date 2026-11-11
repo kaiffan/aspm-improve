@@ -1,0 +1,28 @@
+Red on Round 2
+
+
+red
+
+FAIL: test_single_product_filter_uses_test_ids_with_exact_authorized_count (unittests.test_api_finding_relation_filters.TestApiFindingRelationFilters.test_single_product_filter_uses_test_ids_with_exact_authorized_count)
+Ran 1 test in 0.182s
+FAILED (failures=1)
+
+green
+
+Ran 91 tests in 8.449s
+OK (skipped=6)
+
+OpenAPI --fail-on-warn succeeded
+20 final A/B series completed, 6000 measured requests, all HTTP 200
+No Sleep event inside a final measured series
+/django-defectdojo-uwsgi-perf-1 running, OOM false, restarts 0, image sha256:c2462750c94317d5b5489ae8bfdab8cb2ce371e7ae73c6ff3f286c21e5ca3430
+/dd35100-round2-uwsgi-round2-1 running, OOM false, restarts 0, image sha256:d23015765c12fdbf949c4f1a7d703453c202f48883a205f0be4a7f3bf0a20204
+/dd35100-round3-uwsgi-round3-1 running, OOM false, restarts 0, image sha256:1ab854cd96b910298d5bb38f370e8e6ea5523d5404cde837bcc2cd5160adc23d
+/django-defectdojo-postgres-1 running, OOM false, restarts 0, image sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+dd35100-round2-uwsgi-round2-1 tracebacks=0 api_5xx=0
+dd35100-round3-uwsgi-round3-1 tracebacks=0 api_5xx=0
+dd35100-round3-nginx-1 tracebacks=0 api_5xx=0
+django-defectdojo-celeryworker-1 tracebacks=0 api_5xx=0
+Original findings 1000000, fixture findings 168
+Deduplication setting restored to False
+No indexes or migrations added

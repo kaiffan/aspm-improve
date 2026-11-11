@@ -1,0 +1,102 @@
+diff --git a/dojo/finding/api/filters.py b/dojo/finding/api/filters.py
+index 446d51fe10..dbbb727f9b 100644
+--- a/dojo/finding/api/filters.py
++++ b/dojo/finding/api/filters.py
+@@ -1,6 +1,7 @@
+ from datetime import timedelta
+ 
+-from django.db.models import Exists, OuterRef, Q
++from django.contrib.postgres.expressions import ArraySubquery
++from django.db.models import Exists, F, Lookup, OuterRef, Q
+ from django_filters import (
+     BooleanFilter,
+     CharFilter,
+@@ -27,7 +28,16 @@ from dojo.filters import (
+     custom_vulnerability_id_filter,
+     labels,
+ )
+-from dojo.models import Finding, Finding_Template
++from dojo.models import Finding, Finding_Template, Test
++
++
++class _TestIdInArray(Lookup):
++    lookup_name = "test_id_in_array"
++
++    def as_sql(self, compiler, connection):
++        lhs, lhs_params = self.process_lhs(compiler, connection)
++        rhs, rhs_params = self.process_rhs(compiler, connection)
++        return f"{lhs} = ANY({rhs})", (*lhs_params, *rhs_params)
+ 
+ 
+ class ApiFindingFilter(DojoFilter):
+@@ -115,12 +125,12 @@ class ApiFindingFilter(DojoFilter):
+     sonarqube_issue = NumberInFilter(field_name="sonarqube_issue", lookup_expr="in")
+     test__test_type = NumberInFilter(field_name="test__test_type", lookup_expr="in", label="Test Type")
+     test__engagement = NumberInFilter(field_name="test__engagement", lookup_expr="in")
+-    test__engagement__product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in")
++    test__engagement__product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", method="filter_product")
+     test__engagement__product__prod_type = NumberInFilter(field_name="test__engagement__product__prod_type", lookup_expr="in")
+     # Short names for the three filters above. A Finding has no engagement / product / prod_type field, so
+     # without these django-filter dropped ?engagement=<id> silently and listed every finding the caller can see.
+     engagement = NumberInFilter(field_name="test__engagement", lookup_expr="in", label="Engagement")
+-    product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", label=labels.ASSET_LABEL)
++    product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", label=labels.ASSET_LABEL, method="filter_product")
+     prod_type = NumberInFilter(field_name="test__engagement__product__prod_type", lookup_expr="in", label=labels.ORG_LABEL)
+     finding_group = NumberInFilter(method="filter_finding_group")
+ 
+@@ -211,6 +221,15 @@ class ApiFindingFilter(DojoFilter):
+         exclude = ["url", "thread_id", "notes", "files",
+                    "line", "cve"]
+ 
++    def filter_product(self, queryset, name, value):
++        if len(value) != 1:
++            return queryset.filter(test__engagement__product_id__in=value)
++
++        # Resolve the selected product's tests once in this SQL statement.
++        # PostgreSQL can combine test IDs and severity before scanning the finding heap.
++        tests = Test.unfiltered.filter(engagement__product_id=value[0]).order_by().values("pk")
++        return queryset.filter(_TestIdInArray(F("test_id"), ArraySubquery(tests)))
++
+     def filter_mitigated_after(self, queryset, name, value):
+         if value.hour == 0 and value.minute == 0 and value.second == 0:
+             value = value.replace(hour=23, minute=59, second=59)
+diff --git a/unittests/test_api_finding_relation_filters.py b/unittests/test_api_finding_relation_filters.py
+index 6155b15f7b..c7c95384be 100644
+--- a/unittests/test_api_finding_relation_filters.py
++++ b/unittests/test_api_finding_relation_filters.py
+@@ -1,3 +1,5 @@
++from django.db import connection
++from django.test.utils import CaptureQueriesContext
+ from django.urls import reverse
+ from django.utils.timezone import now
+ from rest_framework.test import APIClient
+@@ -148,3 +150,29 @@ class TestApiFindingRelationFilters(DojoTestCase):
+         own = client.get(url, {"engagement": self.eng_a2.id, "limit": 100}, secure=True)
+         self.assertEqual(own.data["count"], len(self.findings["a2"]))
+         self.assertEqual({f["id"] for f in own.data["results"]}, self.findings["a2"])
++
++    def test_single_product_filter_uses_test_ids_with_exact_authorized_count(self):
++        reader = Dojo_User.objects.create(username="rel_filter_count_reader")
++        self.type_a.authorized_users.add(reader)
++        client = APIClient()
++        client.force_authenticate(user=reader)
++        url = reverse("finding-list")
++        expected = list(
++            self.scope.filter(test__engagement__product=self.product_a, severity="High", active=True)
++            .order_by("-pk").values_list("pk", flat=True),
++        )
++        for alias in ("product", "test__engagement__product"):
++            with self.subTest(alias=alias), CaptureQueriesContext(connection) as queries:
++                response = client.get(url, {alias: self.product_a.pk, "severity": "High", "active": "true", "limit": 2, "o": "-id"})
++            self.assertEqual(response.status_code, 200)
++            self.assertEqual(response.data["count"], len(expected))
++            self.assertEqual([row["id"] for row in response.data["results"]], expected[:2])
++            finding_counts = [q["sql"] for q in queries if 'FROM "dojo_finding"' in q["sql"] and "COUNT(" in q["sql"]]
++            self.assertEqual(len(finding_counts), 1)
++            self.assertIn("= ANY(", finding_counts[0])
++
++        denied = client.get(url, {"product": self.product_b.pk, "limit": 2})
++        self.assertEqual((denied.status_code, denied.data["count"], denied.data["results"]), (200, 0, []))
++        combined = client.get(url, {"product": f"{self.product_a.pk},{self.product_b.pk}"})
++        self.assertEqual(combined.status_code, 200)
++        self.assertEqual({row["id"] for row in combined.data["results"]}, self.findings["a1"] | self.findings["a2"])

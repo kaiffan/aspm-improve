@@ -1,3 +1,5 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.timezone import now
 from rest_framework.test import APIClient
@@ -148,3 +150,29 @@ class TestApiFindingRelationFilters(DojoTestCase):
         own = client.get(url, {"engagement": self.eng_a2.id, "limit": 100}, secure=True)
         self.assertEqual(own.data["count"], len(self.findings["a2"]))
         self.assertEqual({f["id"] for f in own.data["results"]}, self.findings["a2"])
+
+    def test_single_product_filter_uses_test_ids_with_exact_authorized_count(self):
+        reader = Dojo_User.objects.create(username="rel_filter_count_reader")
+        self.type_a.authorized_users.add(reader)
+        client = APIClient()
+        client.force_authenticate(user=reader)
+        url = reverse("finding-list")
+        expected = list(
+            self.scope.filter(test__engagement__product=self.product_a, severity="High", active=True)
+            .order_by("-pk").values_list("pk", flat=True),
+        )
+        for alias in ("product", "test__engagement__product"):
+            with self.subTest(alias=alias), CaptureQueriesContext(connection) as queries:
+                response = client.get(url, {alias: self.product_a.pk, "severity": "High", "active": "true", "limit": 2, "o": "-id"})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["count"], len(expected))
+            self.assertEqual([row["id"] for row in response.data["results"]], expected[:2])
+            finding_counts = [q["sql"] for q in queries if 'FROM "dojo_finding"' in q["sql"] and "COUNT(" in q["sql"]]
+            self.assertEqual(len(finding_counts), 1)
+            self.assertIn("= ANY(", finding_counts[0])
+
+        denied = client.get(url, {"product": self.product_b.pk, "limit": 2})
+        self.assertEqual((denied.status_code, denied.data["count"], denied.data["results"]), (200, 0, []))
+        combined = client.get(url, {"product": f"{self.product_a.pk},{self.product_b.pk}"})
+        self.assertEqual(combined.status_code, 200)
+        self.assertEqual({row["id"] for row in combined.data["results"]}, self.findings["a1"] | self.findings["a2"])

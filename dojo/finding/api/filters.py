@@ -1,6 +1,7 @@
 from datetime import timedelta
 
-from django.db.models import Exists, OuterRef, Q
+from django.contrib.postgres.expressions import ArraySubquery
+from django.db.models import Exists, F, Lookup, OuterRef, Q
 from django_filters import (
     BooleanFilter,
     CharFilter,
@@ -27,7 +28,16 @@ from dojo.filters import (
     custom_vulnerability_id_filter,
     labels,
 )
-from dojo.models import Finding, Finding_Template
+from dojo.models import Finding, Finding_Template, Test
+
+
+class _TestIdInArray(Lookup):
+    lookup_name = "test_id_in_array"
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} = ANY({rhs})", (*lhs_params, *rhs_params)
 
 
 class ApiFindingFilter(DojoFilter):
@@ -115,12 +125,12 @@ class ApiFindingFilter(DojoFilter):
     sonarqube_issue = NumberInFilter(field_name="sonarqube_issue", lookup_expr="in")
     test__test_type = NumberInFilter(field_name="test__test_type", lookup_expr="in", label="Test Type")
     test__engagement = NumberInFilter(field_name="test__engagement", lookup_expr="in")
-    test__engagement__product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in")
+    test__engagement__product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", method="filter_product")
     test__engagement__product__prod_type = NumberInFilter(field_name="test__engagement__product__prod_type", lookup_expr="in")
     # Short names for the three filters above. A Finding has no engagement / product / prod_type field, so
     # without these django-filter dropped ?engagement=<id> silently and listed every finding the caller can see.
     engagement = NumberInFilter(field_name="test__engagement", lookup_expr="in", label="Engagement")
-    product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", label=labels.ASSET_LABEL)
+    product = NumberInFilter(field_name="test__engagement__product", lookup_expr="in", label=labels.ASSET_LABEL, method="filter_product")
     prod_type = NumberInFilter(field_name="test__engagement__product__prod_type", lookup_expr="in", label=labels.ORG_LABEL)
     finding_group = NumberInFilter(method="filter_finding_group")
 
@@ -210,6 +220,15 @@ class ApiFindingFilter(DojoFilter):
         model = Finding
         exclude = ["url", "thread_id", "notes", "files",
                    "line", "cve"]
+
+    def filter_product(self, queryset, name, value):
+        if len(value) != 1:
+            return queryset.filter(test__engagement__product_id__in=value)
+
+        # Resolve the selected product's tests once in this SQL statement.
+        # PostgreSQL can combine test IDs and severity before scanning the finding heap.
+        tests = Test.unfiltered.filter(engagement__product_id=value[0]).order_by().values("pk")
+        return queryset.filter(_TestIdInArray(F("test_id"), ArraySubquery(tests)))
 
     def filter_mitigated_after(self, queryset, name, value):
         if value.hour == 0 and value.minute == 0 and value.second == 0:

@@ -223,7 +223,7 @@ class AddFindingForm(CweFormMixin, forms.ModelForm):
                            widget=forms.TextInput(attrs={"class": "datepicker", "autocomplete": "off"}))
     cwes = cwes_field
     vulnerability_ids = vulnerability_ids_field
-    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(label=_("CVSS3 Score"), required=False, max_value=10.0, min_value=0.0)
     cvssv4 = forms.CharField(label=_("CVSS4 Vector"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(label=_("CVSS4 Score"), required=False, max_value=10.0, min_value=0.0)
@@ -330,7 +330,7 @@ class AdHocFindingForm(CweFormMixin, forms.ModelForm):
         required=False,
         disabled=True)
 
-    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(label=_("CVSS3 Score"), required=False, max_value=10.0, min_value=0.0)
     cvssv4 = forms.CharField(label=_("CVSS4 Vector"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(label=_("CVSS4 Score"), required=False, max_value=10.0, min_value=0.0)
@@ -437,7 +437,7 @@ class PromoteFindingForm(CweFormMixin, forms.ModelForm):
         required=False,
         disabled=True)
 
-    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(label=_("CVSS3 Score"), required=False, max_value=10.0, min_value=0.0)
     cvssv4 = forms.CharField(label=_("CVSS4 Vector"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(label=_("CVSS4 Score"), required=False, max_value=10.0, min_value=0.0)
@@ -521,7 +521,7 @@ class FindingForm(CweFormMixin, forms.ModelForm):
         required=False,
         disabled=True)
 
-    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "cvsscalculator", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(label=_("CVSS3 Score"), required=False, max_value=10.0, min_value=0.0)
     cvssv4 = forms.CharField(label=_("CVSS4 Vector"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(label=_("CVSS4 Score"), required=False, max_value=10.0, min_value=0.0)
@@ -683,7 +683,7 @@ class ApplyFindingTemplateForm(forms.Form):
 
     cwe = forms.IntegerField(label=_("CWE"), required=False)
     vulnerability_ids = vulnerability_ids_field
-    cvssv3 = forms.CharField(label=_("CVSSv3"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "btn btn-secondary dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSSv3"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "btn btn-secondary dropdown-toggle", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(required=False, label=_("CVSSv3 Score"))
     cvssv4 = forms.CharField(label=_("CVSSv4"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(required=False, label=_("CVSSv4 Score"))
@@ -791,7 +791,7 @@ class FindingTemplateForm(forms.ModelForm):
 
     cwe = forms.IntegerField(label=_("CWE"), required=False)
     vulnerability_ids = vulnerability_ids_field
-    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "btn btn-secondary dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}))
+    cvssv3 = forms.CharField(label=_("CVSS3 Vector"), max_length=117, required=False, widget=forms.TextInput(attrs={"class": "btn btn-secondary dropdown-toggle", "data-toggle": "dropdown", "role": "combobox", "aria-haspopup": "dialog", "aria-controls": "cvsscalculator", "aria-expanded": "false"}))
     cvssv3_score = forms.FloatField(required=False, label=_("CVSSv3 Score"))
     cvssv4 = forms.CharField(label=_("CVSS4 Vector"), max_length=255, required=False)
     cvssv4_score = forms.FloatField(required=False, label=_("CVSSv4 Score"))

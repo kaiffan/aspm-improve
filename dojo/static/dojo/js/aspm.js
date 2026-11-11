@@ -117,8 +117,23 @@
         desktop.addEventListener('change', function (event) { if (event.matches) close(false); });
         var path = location.pathname.replace(/\/$/, '');
         sidebar.querySelectorAll('a[href]').forEach(function (link) {
+            var href = link.getAttribute('href');
+            if (!href || href.charAt(0) === '#') return;
             var target = new URL(link.href, location.href);
             if (target.origin === location.origin && target.pathname.replace(/\/$/, '') === path && !target.hash) link.setAttribute('aria-current', 'page');
         });
     });
 })();
+
+/* Select2 replaces the native control; retain its existing form label. */
+window.addEventListener('load', function () {
+    document.querySelectorAll('.select2-selection[role="combobox"]').forEach(function (selection) {
+        var container = selection.closest('.select2-container');
+        var nativeControl = container && container.previousElementSibling;
+        var label = nativeControl && nativeControl.labels && nativeControl.labels[0];
+        if (label) {
+            if (!label.id) label.id = nativeControl.id + '-aspm-label';
+            selection.setAttribute('aria-labelledby', label.id);
+        }
+    });
+});

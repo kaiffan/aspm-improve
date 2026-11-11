@@ -176,7 +176,7 @@
                 <td>
                     <ul>
                     <li class="dropdown" style="list-style:none">
-                        <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown" aria-expanded="true" label="Actions" name="dropdownManageTechnologies"><b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
+                        <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown" aria-expanded="true" aria-label="{% trans 'Actions' %}" name="dropdownManageTechnologies"><b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
                         <ul class="dropdown-menu">
                             {% if prod|has_object_permission:"edit" %}
                             <li>
@@ -280,7 +280,7 @@
                 &nbsp;
                 {% if prod|has_object_permission:"staff_only" %}
                 <div class="dropdown pull-right">
-                    <button class="btn btn-primary dropdown-toggle" label="Actions" type="button" id="dropdownMenuAddAuthorizedUsers"
+                    <button class="btn btn-primary dropdown-toggle" aria-label="{% trans 'Actions' %}" type="button" id="dropdownMenuAddAuthorizedUsers"
                             data-toggle="dropdown" aria-expanded="true" aria-label="{% trans 'Add Authorized Users' %}">
                         <span class="fa-solid fa-bars"></span>
                         <span class="caret"></span>
@@ -302,7 +302,7 @@
                     <thead>
                     <tr>
                         {% if prod|has_object_permission:"staff_only" %}
-                        <th label="Actions"></th>
+                        <th aria-label="{% trans 'Actions' %}"></th>
                         {% endif %}
                         <th style="width: 50%;">{% trans "User" %}</th>
                         <th style="width: 50%;">{% trans "Email" %}</th>
@@ -318,7 +318,7 @@
                                 </form>
                                 <ul>
                                     <li class="dropdown" style="list-style:none">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" label="Actions" name="dropdownAuthorizedUserActions">&nbsp;<b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" aria-label="{% trans 'Actions' %}" name="dropdownAuthorizedUserActions">&nbsp;<b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
                                         <ul class="dropdown-menu">
                                             <li>
                                                 {# escapejs, not HTML escaping: this string is compiled as JavaScript, where an HTML entity decodes back into a quote. #}
@@ -575,7 +575,7 @@
             </td>
             {% for pk,c in field.field.widget.choices %}
             {% if c != "msteams" and c != "webhooks" and c in enabled_notifications %}
-            <td class="centered"><input id="{{ field.name }}_{{ c }}" type="checkbox" name="{{ field.name }}" {% if c in field.value %}checked{% endif %} value="{{ c }}"/></td>
+            <td class="centered"><input id="{{ field.name }}_{{ c }}" aria-label="{{ field.label }}: {{ c }}" type="checkbox" name="{{ field.name }}" {% if c in field.value %}checked{% endif %} value="{{ c }}"/></td>
             {% endif %}
             {% endfor %}
          </tr>

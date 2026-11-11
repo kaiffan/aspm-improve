@@ -770,7 +770,7 @@
                     <span class="pull-right">
                         <button id="show-filters" aria-label="{% trans 'Filters' %}" data-toggle="collapse" data-target="#the-filters-wrapper" class="btn btn-primary toggle-filters"> <i class="fa-solid fa-filter"></i> <i class="caret"></i> </button>
                         &nbsp;
-                        <a data-toggle="collapse" href="#the-filters-wrapper"><i class="fa-solid fa-chevron-down"></i></a>
+                        <a data-toggle="collapse" href="#the-filters-wrapper" aria-label="{% trans 'Toggle filters' %}"><i class="fa-solid fa-chevron-down"></i></a>
                     </span>
                 </h4>
             </div>
@@ -971,7 +971,7 @@
     <div class="view-finding">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-align-left dd-card-icon" aria-hidden="true"></i>Description <span class="pull-right"><a data-toggle="collapse" href="#vuln_desc"><i
+                <h4><i class="fa-solid fa-align-left dd-card-icon" aria-hidden="true"></i>Description <span class="pull-right"><a data-toggle="collapse" href="#vuln_desc" aria-label="{% trans 'Toggle description' %}"><i
                         class="fa-solid fa-chevron-up"></i></a></span></h4>
             </div>
             <div id="vuln_desc" class="panel-body finding-description collapse in">
@@ -1019,7 +1019,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-shield-halved dd-card-icon" aria-hidden="true"></i>Mitigation <span class="pull-right"><a data-toggle="collapse" href="#vuln_mitigation"><i
+                <h4><i class="fa-solid fa-shield-halved dd-card-icon" aria-hidden="true"></i>Mitigation <span class="pull-right"><a data-toggle="collapse" href="#vuln_mitigation" aria-label="{% trans 'Toggle mitigation' %}"><i
                         class="fa-solid fa-chevron-{% if finding.mitigation %}up{%else%}down{%endif%}"></i></a></span></h4>
             </div>
             <div id="vuln_mitigation" class="panel-body collapse {% if finding.mitigation %}in{%endif%}">
@@ -1061,7 +1061,7 @@
         {% endif %}
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-burst dd-card-icon" aria-hidden="true"></i>Impact <span class="pull-right"><a data-toggle="collapse" href="#vuln_impact"><i
+                <h4><i class="fa-solid fa-burst dd-card-icon" aria-hidden="true"></i>Impact <span class="pull-right"><a data-toggle="collapse" href="#vuln_impact" aria-label="{% trans 'Toggle impact' %}"><i
                         class="fa-solid fa-chevron-{% if finding.impact %}up{%else%}down{%endif%}"></i></a></span></h4>
             </div>
             <div id="vuln_impact" class="panel-body collapse {% if finding.impact %}in{%endif%}">
@@ -1071,7 +1071,7 @@
 
         <div class="panel panel-default" id="steps">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-list-ol dd-card-icon" aria-hidden="true"></i>Steps To Reproduce <span class="pull-right"><a data-toggle="collapse" href="#vuln_reproduce"><i
+                <h4><i class="fa-solid fa-list-ol dd-card-icon" aria-hidden="true"></i>Steps To Reproduce <span class="pull-right"><a data-toggle="collapse" href="#vuln_reproduce" aria-label="{% trans 'Toggle reproduction steps' %}"><i
                         class="fa-solid fa-chevron-{% if finding.steps_to_reproduce %}up{%else%}down{%endif%}"></i></a></span></h4>
             </div>
             <div id="vuln_reproduce" class="panel-body collapse {% if finding.steps_to_reproduce %}in{%endif%}">
@@ -1091,7 +1091,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-link dd-card-icon" aria-hidden="true"></i>References <span class="pull-right"><a data-toggle="collapse" href="#vuln_refs"><i
+                <h4><i class="fa-solid fa-link dd-card-icon" aria-hidden="true"></i>References <span class="pull-right"><a data-toggle="collapse" href="#vuln_refs" aria-label="{% trans 'Toggle references' %}"><i
                         class="fa-solid fa-chevron-{% if finding.references %}up{%else%}down{%endif%}"></i></a></span></h4>
             </div>
             <div id="vuln_refs" class="panel-body collapse {% if finding.references %}in{%endif%}">

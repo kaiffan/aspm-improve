@@ -1,3 +1,5 @@
+from django.db.models import Count, Q
+
 try:
     from dojo.authorization.query_filters import get_auth_filter
 except ImportError:
@@ -66,3 +68,13 @@ def get_authorized_product_api_scan_configurations(permission):
     if impl:
         return impl(permission)
     return Product_API_Scan_Configuration.objects.all().order_by("id")
+
+
+def get_active_finding_counts_by_product(product_ids):
+    """Count only findings for the already authorized products on the page."""
+    from dojo.models import Finding  # noqa: PLC0415 -- avoids circular dependency
+
+    rows = Finding.objects.filter(active=True, test__engagement__product_id__in=product_ids).values(
+        "test__engagement__product_id",
+    ).annotate(active=Count("pk"), verified=Count("pk", filter=Q(verified=True))).order_by()
+    return {row["test__engagement__product_id"]: (row["active"], row["verified"]) for row in rows}

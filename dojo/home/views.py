@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count, Q
+from django.db.models.functions import TruncMonth
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -81,7 +82,8 @@ def get_severities_all(findings) -> dict[str, int]:
 def get_severities_by_month(findings, today):
     severities_by_month = findings\
         .filter(created__date__gte=(today - relativedelta(months=6)))\
-        .values("created__year", "created__month", "severity")\
+        .annotate(month=TruncMonth("created"))\
+        .values("month", "severity")\
         .annotate(count=Count("severity"))\
         .order_by()
 
@@ -96,7 +98,7 @@ def get_severities_by_month(findings, today):
 
     results = {}
     for ms in severities_by_month:
-        key = f"{ms['created__year']}-{ms['created__month']:02}"
+        key = f"{ms['month'].year}-{ms['month'].month:02}"
         month_stats = results.setdefault(key, {"y": key, "a": 0, "b": 0, "c": 0, "d": 0, "e": 0, None: 0})
         month_stats[SEVERITY_MAP.get(ms["severity"])] += ms["count"]
 

@@ -369,7 +369,8 @@ def get_punchcard_data(objs, start_date, weeks, view="Finding"):
                                         .annotate(count=Count("id")) \
                                         .order_by("date")
         # return empty stuff if no findings to be statted
-        if severities_by_day.count() <= 0:
+        severities_by_day = list(severities_by_day)
+        if not severities_by_day:
             return None, None
 
         # day of the week numbers:

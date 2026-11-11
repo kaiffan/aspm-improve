@@ -88,6 +88,7 @@ from dojo.models import (
     Test_Type,
 )
 from dojo.product.queries import (
+    get_active_finding_counts_by_product,
     get_authorized_products,
 )
 from dojo.product.ui.filters import (
@@ -169,7 +170,9 @@ def product(request):
     # see https://code.djangoproject.com/ticket/23771 and https://code.djangoproject.com/ticket/25375
 
     name_words = prods.values_list("name", flat=True)
-    prods = annotate_product_findings_count(prods)
+    ordering = request.GET.get("o", "").split(",")
+    if any(field.lstrip("-") == "findings_count" for field in ordering):
+        prods = annotate_product_findings_count(prods)
     if locations_enabled():
         prods = annotate_product_location_counts(prods)
 
@@ -179,7 +182,13 @@ def product(request):
     prod_list = get_page_items(request, prod_filter.qs, 25)
 
     # perform annotation/prefetching by replacing the queryset in the page with an annotated/prefetched queryset.
-    prod_list.object_list = prefetch_for_product(prod_list.object_list)
+    products = list(prefetch_for_product(prod_list.object_list))
+    counts = get_active_finding_counts_by_product([product.pk for product in products])
+    for product in products:
+        active, verified = counts.get(product.pk, (0, 0))
+        product.findings_count = product.active_finding_count = active
+        product.active_verified_finding_count = verified
+    prod_list.object_list = products
 
     # Get benchmark types for the template
     benchmark_types = Benchmark_Type.objects.filter(enabled=True).order_by("name")
@@ -216,15 +225,7 @@ def prefetch_for_product(prods):
         ),
     )
 
-    base_findings = Finding.objects.filter(test__engagement__product_id=OuterRef("pk"))
     count_subquery = partial(build_count_subquery, group_field="test__engagement__product_id")
-    prefetched_prods = prefetched_prods.annotate(
-        active_finding_count=Coalesce(count_subquery(base_findings.filter(active=True)), Value(0)),
-        active_verified_finding_count=Coalesce(
-            count_subquery(base_findings.filter(active=True, verified=True)),
-            Value(0),
-        ),
-    )
     prefetched_prods = prefetched_prods.annotate(
         total_reimport_count=Coalesce(
             count_subquery(

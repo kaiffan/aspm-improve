@@ -182,12 +182,6 @@ def simple_metrics(request):
     product_types = get_authorized_product_types("view")
     product_types = product_types.prefetch_related("prod_type")
     for pt in product_types:
-        total_critical = []
-        total_high = []
-        total_medium = []
-        total_low = []
-        total_info = []
-        total_opened = []
         findings_broken_out = {}
 
         total = Finding.objects.filter(test__engagement__product__prod_type=pt,
@@ -216,30 +210,18 @@ def simple_metrics(request):
         total = total.distinct()
         closed = closed.distinct()
 
-        for f in total:
-            if f.severity == "Critical":
-                total_critical.append(f)
-            elif f.severity == "High":
-                total_high.append(f)
-            elif f.severity == "Medium":
-                total_medium.append(f)
-            elif f.severity == "Low":
-                total_low.append(f)
-            else:
-                total_info.append(f)
-
-            if f.date.year == now.year and f.date.month == now.month:
-                total_opened.append(f)
-
-        findings_broken_out["Total"] = len(total)
-        findings_broken_out["S0"] = len(total_critical)
-        findings_broken_out["S1"] = len(total_high)
-        findings_broken_out["S2"] = len(total_medium)
-        findings_broken_out["S3"] = len(total_low)
-        findings_broken_out["S4"] = len(total_info)
-
-        findings_broken_out["Opened"] = len(total_opened)
-        findings_broken_out["Closed"] = len(closed)
+        severity_counts = {
+            row["severity"]: row["count"]
+            for row in total.order_by().values("severity").annotate(count=Count("pk", distinct=True))
+        }
+        total_count = sum(severity_counts.values())
+        findings_broken_out["Total"] = total_count
+        for key, severity in (("S0", "Critical"), ("S1", "High"), ("S2", "Medium"), ("S3", "Low")):
+            findings_broken_out[key] = severity_counts.get(severity, 0)
+        findings_broken_out["S4"] = total_count - sum(findings_broken_out[key] for key in ("S0", "S1", "S2", "S3"))
+        # The total queryset is already restricted to the selected opening month.
+        findings_broken_out["Opened"] = total_count
+        findings_broken_out["Closed"] = closed.order_by().values("pk").distinct().count()
 
         findings_by_product_type[pt] = findings_broken_out
 

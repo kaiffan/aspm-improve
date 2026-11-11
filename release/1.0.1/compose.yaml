@@ -1,0 +1,61 @@
+name: aspm
+x-runtime: &runtime
+  image: ${ASPM_APP_IMAGE:-aspm:1.0.1-rc1}
+  pull_policy: never
+  env_file: ${ASPM_RUNTIME_ENV:?Set ASPM_RUNTIME_ENV to a private runtime file}
+  volumes:
+    - media:/app/media
+services:
+  aspm:
+    <<: *runtime
+    entrypoint: [/entrypoint-uwsgi.sh]
+    environment:
+      DD_DEBUG: 'False'
+      DD_UWSGI_MODE: socket
+      DD_UWSGI_ENDPOINT: '0.0.0.0:3031'
+      DD_UWSGI_NUM_OF_PROCESSES: '4'
+      DD_UWSGI_NUM_OF_THREADS: '4'
+    healthcheck:
+      test: [CMD, python, -c, "import os, urllib.request; host=os.environ.get('DD_ALLOWED_HOSTS','localhost').split(',')[0].strip().lstrip('.'); host='localhost' if host in ('','*') else host; request=urllib.request.Request('http://127.0.0.1:8081/login?force_login_form',headers={'Host':host}); urllib.request.urlopen(request,timeout=5).read(1)"]
+      interval: 15s
+      timeout: 8s
+      start_period: 30s
+      retries: 4
+    restart: unless-stopped
+  nginx:
+    entrypoint: [nginx, -c, /etc/nginx/nginx.conf, -g, "daemon off;"]
+    image: ${ASPM_NGINX_IMAGE:-aspm-nginx:1.0.1-rc1}
+    pull_policy: never
+    ports:
+      - '127.0.0.1:${ASPM_PORT:-48086}:8080'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      aspm:
+        condition: service_healthy
+    restart: unless-stopped
+  worker:
+    <<: *runtime
+    profiles: [background]
+    entrypoint: [/entrypoint-celery-worker.sh]
+    environment:
+      DD_DEBUG: 'False'
+      DD_CELERY_WORKER_POOL_TYPE: prefork
+      DD_CELERY_WORKER_PREFETCH_MULTIPLIER: '1'
+      DD_CELERY_LOG_LEVEL: INFO
+      DD_CELERY_WORKER_CONCURRENCY: '1'
+      DD_CELERY_WORKER_AUTOSCALE_MIN: '1'
+      DD_CELERY_WORKER_AUTOSCALE_MAX: '1'
+    restart: unless-stopped
+  beat:
+    <<: *runtime
+    profiles: [scheduler]
+    entrypoint: [/entrypoint-celery-beat.sh]
+    environment:
+      DD_DEBUG: 'False'
+      DD_CELERY_LOG_LEVEL: INFO
+    restart: unless-stopped
+volumes:
+  media:
+    external: true
+    name: ${ASPM_MEDIA_VOLUME:?Select an existing application media volume}

@@ -1,0 +1,12 @@
+# Optional access to an already running local PostgreSQL/Valkey Docker stack.
+services:
+  aspm:
+    networks: [default, existing]
+  worker:
+    networks: [default, existing]
+  beat:
+    networks: [default, existing]
+networks:
+  existing:
+    external: true
+    name: ${ASPM_DOCKER_NETWORK:-django-defectdojo_default}

@@ -1,0 +1,13 @@
+{
+  "runtime": {
+    "image": "registry.defectdojo.com/defectdojo/defectdojo-django@sha256:8b25ecf7d8945e7214d388db3b1e6d30484f2767815d0496917815f25f388b34",
+    "id": "sha256:8b25ecf7d8945e7214d388db3b1e6d30484f2767815d0496917815f25f388b34"
+  },
+  "static": {
+    "image": "registry.defectdojo.com/defectdojo/defectdojo-nginx@sha256:596be1d239702b311a174dd09c436f0180bd495afa95cdd02cf19970382fb0ae",
+    "id": "sha256:596be1d239702b311a174dd09c436f0180bd495afa95cdd02cf19970382fb0ae"
+  },
+  "frontend": "Existing pinned upstream dependency bundle plus the checked-in dojo/static tree; no new runtime libraries",
+  "gettext": "msgfmt from GNU gettext-tools (recorded in build manifest)",
+  "upstream_base": "3.5.100"
+}

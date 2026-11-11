@@ -125,16 +125,25 @@
     });
 })();
 
-/* Select2 replaces the native control; retain its existing form label. */
+/* Select2 replaces the native control; retain its existing form label.
+   Tagulous may rebuild its select asynchronously, so observe only that field. */
 window.addEventListener('load', function () {
-    document.querySelectorAll('.select2-selection[role="combobox"]').forEach(function (selection) {
-        var container = selection.closest('.select2-container');
-        var nativeControl = container && container.previousElementSibling;
-        var group = selection.closest('.form-group');
-        var label = (nativeControl && nativeControl.labels && nativeControl.labels[0]) || (group && group.querySelector('label[for]'));
-        if (label) {
-            if (!label.id) label.id = (label.htmlFor || nativeControl.id) + '-aspm-label';
-            selection.setAttribute('aria-labelledby', label.id);
-        }
-    });
+    function labelSelections(scope) {
+        scope.querySelectorAll('.select2-selection[role="combobox"]').forEach(function (selection) {
+            var container = selection.closest('.select2-container');
+            var nativeControl = container && container.previousElementSibling;
+            var group = selection.closest('.form-group');
+            var label = (nativeControl && nativeControl.labels && nativeControl.labels[0]) || (group && group.querySelector('label[for]'));
+            if (label) {
+                if (!label.id) label.id = (label.htmlFor || nativeControl.id) + '-aspm-label';
+                selection.setAttribute('aria-labelledby', label.id);
+            }
+        });
+    }
+    labelSelections(document);
+    var tags = document.getElementById('id_tags');
+    var group = tags && tags.closest('.form-group');
+    if (group) {
+        new MutationObserver(function () { labelSelections(group); }).observe(group, {childList: true, subtree: true});
+    }
 });

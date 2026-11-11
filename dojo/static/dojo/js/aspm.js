@@ -130,9 +130,10 @@ window.addEventListener('load', function () {
     document.querySelectorAll('.select2-selection[role="combobox"]').forEach(function (selection) {
         var container = selection.closest('.select2-container');
         var nativeControl = container && container.previousElementSibling;
-        var label = nativeControl && nativeControl.labels && nativeControl.labels[0];
+        var group = selection.closest('.form-group');
+        var label = (nativeControl && nativeControl.labels && nativeControl.labels[0]) || (group && group.querySelector('label[for]'));
         if (label) {
-            if (!label.id) label.id = nativeControl.id + '-aspm-label';
+            if (!label.id) label.id = (label.htmlFor || nativeControl.id) + '-aspm-label';
             selection.setAttribute('aria-labelledby', label.id);
         }
     });

@@ -1081,7 +1081,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4><i class="fa-solid fa-gauge-high dd-card-icon" aria-hidden="true"></i>Severity Justification <span class="pull-right"><a data-toggle="collapse" href="#sev_just"><i
+                <h4><i class="fa-solid fa-gauge-high dd-card-icon" aria-hidden="true"></i>Severity Justification <span class="pull-right"><a data-toggle="collapse" href="#sev_just" aria-label="{% trans 'Toggle severity justification' %}"><i
                         class="fa-solid fa-chevron-{% if finding.severity_justification %}up{%else%}down{%endif%}"></i></a></span></h4>
             </div>
             <div id="sev_just" class="panel-body collapse {% if finding.severity_justification %}in{%endif%}">

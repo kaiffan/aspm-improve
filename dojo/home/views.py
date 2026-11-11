@@ -15,6 +15,8 @@ from dojo.finding.queries import get_authorized_findings
 from dojo.models import Answered_Survey
 from dojo.utils import add_breadcrumb, get_punchcard_data
 
+SEVERITY_MAP = {"Critical": "a", "High": "b", "Medium": "c", "Low": "d", "Info": "e"}
+
 
 def home(request: HttpRequest) -> HttpResponse:
     return HttpResponseRedirect(reverse("dashboard"))
@@ -22,7 +24,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
 def dashboard(request: HttpRequest) -> HttpResponse:
     engagements = get_authorized_engagements("view").distinct()
-    findings = get_authorized_findings("view").distinct()
+    findings = get_authorized_findings("view")
 
     findings = findings.filter(duplicate=False)
 
@@ -44,9 +46,8 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         .values("pk").distinct()\
         .count()
 
-    severity_count_all = get_severities_all(findings)
-    severity_count_by_month = get_severities_by_month(findings, today)
-    punchcard, ticks = get_punchcard_data(findings, today - relativedelta(weeks=26), 26)
+    severity_count_all, severity_count_by_month, daily_counts = get_dashboard_chart_data(findings, today)
+    punchcard, ticks = get_punchcard_data(findings, today - relativedelta(weeks=26), 26, daily_counts=daily_counts)
 
     if user_has_configuration_permission(request.user, "dojo.view_engagement_survey"):
         unassigned_surveys = Answered_Survey.objects.filter(assignee_id__isnull=True, completed__gt=0) \
@@ -77,6 +78,28 @@ def support(request: HttpRequest) -> HttpResponse:
     return render(request, "dojo/support.html", {})
 
 
+def get_dashboard_chart_data(findings, today):
+    """Build the three charts from one day/severity aggregate, without Finding objects."""
+    rows = findings.values("created__date", "severity").annotate(count=Count("severity"), total=Count("pk")).order_by()
+    severities = defaultdict(int)
+    months = {}
+    days = defaultdict(int)
+    cutoff = today - relativedelta(months=6)
+    for row in rows:
+        day, severity = row["created__date"], row["severity"]
+        severities[severity] += row["count"]
+        days[day] += row["total"]
+        if day >= cutoff:
+            key = f"{day.year}-{day.month:02}"
+            stats = months.setdefault(key, {"y": key, "a": 0, "b": 0, "c": 0, "d": 0, "e": 0, None: 0})
+            stats[SEVERITY_MAP.get(severity)] += row["count"]
+    return (
+        severities,
+        [months[key] for key in sorted(months)],
+        [{"created__date": day, "count": days[day]} for day in sorted(days)],
+    )
+
+
 def get_severities_all(findings) -> dict[str, int]:
     severities_all = findings.values("severity").annotate(count=Count("severity")).order_by()
     return defaultdict(lambda: 0, {s["severity"]: s["count"] for s in severities_all})
@@ -89,15 +112,6 @@ def get_severities_by_month(findings, today):
         .values("month", "severity")\
         .annotate(count=Count("severity"))\
         .order_by()
-
-    # The chart expects a, b, c, d, e instead of Critical, High, ...
-    SEVERITY_MAP = {
-        "Critical": "a",
-        "High":     "b",
-        "Medium":   "c",
-        "Low":      "d",
-        "Info":     "e",
-    }
 
     results = {}
     for ms in severities_by_month:

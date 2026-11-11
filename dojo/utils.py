@@ -349,7 +349,7 @@ def is_title_in_breadcrumbs(title):
     return any(breadcrumb.get("title") == title for breadcrumb in breadcrumbs)
 
 
-def get_punchcard_data(objs, start_date, weeks, view="Finding"):
+def get_punchcard_data(objs, start_date, weeks, view="Finding", *, daily_counts=None):
     # use try catch to make sure any teething bugs in the bunchcard don't break the dashboard
     try:
         # gather findings over past half year, make sure to start on a sunday
@@ -358,7 +358,9 @@ def get_punchcard_data(objs, start_date, weeks, view="Finding"):
 
         # reminder: The first week of a year is the one that contains the year's first Thursday
         # so we could have for 29/12/2019: week=1 and year=2019 :-D. So using week number from db is not practical
-        if view == "Finding":
+        if view == "Finding" and daily_counts is not None:
+            severities_by_day = [day for day in daily_counts if first_sunday <= day["created__date"] < last_sunday]
+        elif view == "Finding":
             severities_by_day = objs.filter(created__date__gte=first_sunday).filter(created__date__lt=last_sunday) \
                                         .values("created__date") \
                                         .annotate(count=Count("id")) \

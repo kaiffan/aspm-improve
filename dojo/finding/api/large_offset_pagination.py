@@ -1,7 +1,9 @@
+from django.db.models import QuerySet
 from rest_framework.pagination import LimitOffsetPagination
 
 
 class FindingLargeOffsetPagination(LimitOffsetPagination):
+
     """
     Experimental two-stage pagination for Finding API.
 
@@ -10,11 +12,14 @@ class FindingLargeOffsetPagination(LimitOffsetPagination):
     """
 
     def paginate_queryset(self, queryset, request, view=None):
+        # Related-object previews paginate plain lists, not Finding querysets.
+        if not isinstance(queryset, QuerySet):
+            return super().paginate_queryset(queryset, request, view=view)
         offset = self.get_offset(request)
 
         explicit_order = tuple(queryset.query.order_by)
         default_order = tuple(
-            queryset.model._meta.ordering or ()
+            queryset.model._meta.ordering or (),
         )
         ordering = explicit_order or default_order
 
@@ -23,12 +28,12 @@ class FindingLargeOffsetPagination(LimitOffsetPagination):
         if (
             request.query_params.get("fast_offset") != "1"
             or offset < 5000
-            or ordering not in (("id",), ("pk",))
+            or ordering not in {("id",), ("pk",)}
             or not queryset.query.standard_ordering
             or queryset.query.extra_order_by
         ):
             return super().paginate_queryset(
-                queryset, request, view=view
+                queryset, request, view=view,
             )
 
         self.request = request
@@ -50,7 +55,7 @@ class FindingLargeOffsetPagination(LimitOffsetPagination):
         ids = list(
             queryset.values_list("pk", flat=True)[
                 offset:offset + self.limit
-            ]
+            ],
         )
 
         if not ids:
@@ -59,5 +64,5 @@ class FindingLargeOffsetPagination(LimitOffsetPagination):
         # Phase 2: fetch complete authorized findings.
         # Original filters and prefetch configuration remain.
         return list(
-            queryset.filter(pk__in=ids).order_by("pk")
+            queryset.filter(pk__in=ids).order_by("pk"),
         )

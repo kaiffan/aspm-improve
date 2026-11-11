@@ -149,10 +149,16 @@
 $(form).on("input change", updateClearFiltersState);
 
         $(document).on('click', '#clear, #clear_js', function (event) {
-            event.preventDefault();
             if ($(this).attr("aria-disabled") === "true") {
+                event.preventDefault();
                 return;
             }
+            // Ordinary Clear follows its server-provided reset URL. Only the
+            // explicit clear_js variant clears controls without submitting.
+            if (this.id === 'clear') {
+                return;
+            }
+            event.preventDefault();
             const form = $(this).closest(".filter-set").find("form");
             if (form.length) {
                 clear_form(form);

@@ -1,0 +1,10 @@
+{% load i18n %}
+<label class="aspm-theme-switcher">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+    <span class="sr-only">{% trans "Color theme" %}</span>
+    <select data-theme-control aria-label="{% trans 'Color theme' %}">
+        <option value="system">{% trans "System" %}</option>
+        <option value="light">{% trans "Light" %}</option>
+        <option value="dark">{% trans "Dark" %}</option>
+    </select>
+</label>

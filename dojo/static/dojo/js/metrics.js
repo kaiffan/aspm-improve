@@ -71,6 +71,7 @@ function _createChart(containerId, config) {
     const key = containerId.replace(/^#/, '');
     _destroyChart(key);
 
+    if (window.ASPMTheme) config.options = window.ASPMTheme.styleChartOptions(config.options);
     const chart = new Chart(canvas.getContext('2d'), config);
     _chartInstances[key] = chart;
     return chart;
@@ -862,7 +863,7 @@ function JustGage(opts) {
             ctx.textBaseline = 'middle';
             // Value
             ctx.font = 'bold 1.5rem Inter, system-ui, sans-serif';
-            ctx.fillStyle = '#003038';
+            ctx.fillStyle = getComputedStyle(canvas).getPropertyValue('--color-text').trim() || '#003038';
             ctx.fillText(value, w / 2, h / 2 - 8);
             // Label
             if (label) {

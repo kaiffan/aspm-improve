@@ -23,7 +23,7 @@
             {% endif %}
             DefectDojo
         </title>
-        <script defer src="{% static 'dojo/js/aspm.js' %}?v={% static_v 'dojo/js/aspm.js' %}"></script>
+        <script src="{% static 'dojo/js/aspm.js' %}?v={% static_v 'dojo/js/aspm.js' %}"></script>
         {% block add_css_before %}
         {% endblock %}
 
@@ -463,6 +463,7 @@
                 </form>
 
                 <div class="flex items-center gap-2">
+                    {% include "dojo/aspm/theme_switcher.html" %}
                     <!-- Alerts dropdown -->
                     {% if not 'DISABLE_ALERT_COUNTER'|setting_enabled %}
                     <div x-data="{ alertsOpen: false }" class="relative">
@@ -551,6 +552,7 @@
             </header>
             {% endif %}
 
+            {% if not request.user.is_authenticated %}<div class="aspm-guest-controls">{% include "dojo/aspm/theme_switcher.html" %}</div>{% endif %}
             <!-- ===== Page Content ===== -->
             <div id="page-wrapper" class="flex-1">
                 {% if request.user.is_authenticated and announcement %}

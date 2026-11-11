@@ -39,3 +39,11 @@ class TestASPMBranding(SimpleTestCase):
         self.assertFalse(context["SHOW_PLG_LINK"])
         self.assertFalse(context["SHOW_GITHUB_STAR_PROMPT"])
         self.assertEqual(context["additional_banners"][0]["source"], "read_only_mode")
+
+    @override_settings(ASPM_GIT_SHA="a" * 40)
+    def test_standalone_report_has_version_without_request_context(self):
+        html = render_to_string("report_base.html", {"report_name": "Release validation"})
+        self.assertIn("ASPM 1.0.1 rc1", html)
+        self.assertIn("DefectDojo OSS 3.5.100", html)
+        self.assertIn("a" * 40, html)
+        self.assertNotIn("fonts.googleapis.com", html)

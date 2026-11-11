@@ -1,8 +1,10 @@
-{% load static %}
+{% load static aspm_tags %}
+{% aspm_branding as report_brand %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="generator" content="{{ report_brand.name }} {{ report_brand.version }} {{ report_brand.channel }}; DefectDojo OSS {{ report_brand.upstream_version }}; {{ report_brand.git_sha }}">
     <title>{{ report_name }}</title>
     <!-- Same compiled stylesheet the app shell uses, so reports pick up the
          component styles (panels, grid, tables) from one place rather than a
@@ -268,6 +270,10 @@
 {% block content %}
     {{ block.super }}
 {% endblock %}
+<footer class="container" style="border-top:1px solid #BAB8BA; margin-top:24px; padding-top:12px; color:#394553;">
+    {{ report_brand.name }} {{ report_brand.version }} {{ report_brand.channel }} · {{ report_brand.git_short_sha }}
+    · Based on DefectDojo OSS {{ report_brand.upstream_version }}. Original project copyright and BSD-3-Clause license apply.
+</footer>
 {% block js %}
 {% endblock %}
 </body>

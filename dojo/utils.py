@@ -919,7 +919,24 @@ def get_page_items_and_count(request, items, page_size, prefix="", *, do_count=T
     page_size_param = prefix + "page_size"
 
     page = request.GET.get(page_param, 1)
-    size = request.GET.get(page_size_param, page_size)
+    try:
+        size = int(request.GET.get(page_size_param, page_size))
+    except (TypeError, ValueError):
+        size = page_size
+    if size < 1:
+        size = page_size
+    # Match the largest UI selector option, while respecting larger caller defaults.
+    size = min(size, max(250, page_size))
+
+    if isinstance(items, QuerySet) and items._result_cache is None:
+        query = items.query
+        # A model row includes its PK, so this does not widen DISTINCT/GROUP BY.
+        # Leave projections, DISTINCT ON, custom SQL and evaluated objects alone.
+        if not (items._fields is not None or query.distinct_fields or query.extra_order_by or query.combinator or query.is_sliced):
+            ordering = query.order_by or (items.model._meta.ordering if query.default_ordering else ()) or ()
+            pk_names = {"pk", items.model._meta.pk.name, items.model._meta.pk.attname}
+            if "?" not in ordering and not any(isinstance(field, str) and field.lstrip("-") in pk_names for field in ordering):
+                items = items.order_by(*ordering, "pk")
     paginator = Paginator(items, size)
 
     # new get_page method will handle invalid page value, out of bounds pages, etc

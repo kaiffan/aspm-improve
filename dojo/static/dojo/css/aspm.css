@@ -170,9 +170,9 @@ code { color: var(--color-dd-interactive-700); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto; transition-duration: 0ms; animation-duration: 0ms; } }
 @media (max-width: 1023px) {
   #wrapper { padding-inline-start: 0; }
-  #dd-sidebar { transform: translateX(-100%); transition: transform 150ms ease; }
+  #dd-sidebar { transform: translateX(-100%); visibility: hidden; transition: transform 150ms ease; }
   [dir="rtl"] #dd-sidebar { transform: translateX(100%); }
-  html[data-nav-open] #dd-sidebar { transform: translateX(0); }
+  html[data-nav-open] #dd-sidebar { transform: translateX(0); visibility: visible; }
   html[data-nav-open] body { overflow: hidden; }
   .aspm-nav-toggle, #dd-sidebar .aspm-nav-close { display: inline-flex; align-items: center; justify-content: center; }
   .aspm-nav-backdrop:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 45; background: rgb(10 15 24 / 55%); border: 0; }
@@ -313,3 +313,26 @@ code { color: var(--color-dd-interactive-700); }
 .aspm-build-info { display: grid; grid-template-columns: auto 1fr; gap: .5rem 1rem; margin-bottom: 1.4rem; font-size: .82rem; }
 .aspm-build-info dt { color: var(--color-text-muted); font-weight: 500; }
 .aspm-build-info dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Open navigation groups are disclosures; the current page owns the lime mark. */
+#dd-sidebar button.bg-dd-primary-700 { background: var(--aspm-sidebar-hover); color: var(--aspm-sidebar-fg); }
+.stat-card.stat-card--blue .stat-card-icon { background: #f0e6f8; color: #75459c; }
+.stat-card.stat-card--green .stat-card-icon { background: #e9f7ee; color: #247346; }
+.stat-card.stat-card--yellow .stat-card-icon { background: #fff4d8; color: #8c5b16; }
+.stat-card.stat-card--red .stat-card-icon { background: #fce9ef; color: #b22e48; }
+[data-theme="dark"] .stat-card.stat-card--blue .stat-card-icon { background: #362744; color: #d0aef0; }
+[data-theme="dark"] .stat-card.stat-card--green .stat-card-icon { background: #1d382e; color: #a8ecc7; }
+[data-theme="dark"] .stat-card.stat-card--yellow .stat-card-icon { background: #3a321f; color: #ffe39d; }
+[data-theme="dark"] .stat-card.stat-card--red .stat-card-icon { background: #3d2530; color: #ffb2bf; }
+[data-theme="dark"] .bg-red-700 { background-color: #a52c46; }
+[data-theme="dark"] .bg-green-700 { background-color: #247346; }
+.breadcrumb .active, .breadcrumb > .active { color: var(--color-text-muted); }
+#base-content p a:not(.btn), #footer-wrapper p a { text-decoration: underline; }
+[data-theme="dark"] :is(.dt-button, button.dt-button, div.dt-button, a.dt-button) { background: var(--color-surface-2); color: var(--color-text); border-color: var(--color-border-strong); box-shadow: none; }
+[data-theme="dark"] :is(.dt-button:hover, button.dt-button:hover) { background: var(--color-surface-3); color: var(--color-text); }
+[data-theme="dark"] :is(.dt-button-collection, .dt-button-info) { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+[data-theme="dark"] .nav-tabs .badge { background: #62407e; color: #fff; }
+[data-theme="dark"] .nav-tabs .active-color .badge { background: var(--color-surface-3); color: var(--color-text); }
+.aspm-select-controls { display: inline-flex; align-items: center; gap: .4rem; }
+.aspm-select-controls .inline-form { margin: 0; padding: 0; }
+.aspm-select-controls .inline-form input { margin: 0; }

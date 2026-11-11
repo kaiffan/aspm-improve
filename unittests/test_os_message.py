@@ -232,10 +232,10 @@ class TestGlobalizeVarsOsBanner(SimpleTestCase):
             result = context_processors.globalize_vars(self.request)
         self.assertNotIn("additional_banners", result)
 
-    def test_show_plg_link_is_true_by_default(self):
+    def test_purchase_link_is_disabled_in_aspm(self):
         with patch.object(context_processors, "get_os_banner", return_value=None):
             result = context_processors.globalize_vars(self.request)
-        self.assertTrue(result["SHOW_PLG_LINK"])
+        self.assertFalse(result["SHOW_PLG_LINK"])
 
     def test_create_cloud_banner_not_in_context(self):
         with patch.object(context_processors, "get_os_banner", return_value=None):

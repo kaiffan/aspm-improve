@@ -80,6 +80,7 @@ class TestShouldShowGithubStarPrompt(SimpleTestCase):
 
 @versioned_fixtures
 @override_settings(GITHUB_STAR_PROMPT_ENABLED=True)
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestGithubStarPromptView(DojoTestCase):
     fixtures = ["dojo_testdata.json"]
 

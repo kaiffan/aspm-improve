@@ -43,10 +43,10 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right"
-                        role="menu"
+                       
                         aria-labelledby="dropdownMenu1">
                         {% if test|has_object_permission:"edit" %}
-                            <li role="presentation">
+                            <li>
                                 <a href="{% url 'edit_test' test.id %}">
                                     <i class="fa-solid fa-pen-to-square"></i> {% trans "Edit Test" %}
                                 </a>
@@ -59,7 +59,7 @@
                         {% endif %}
                         {% if show_re_upload %}
                             {% if test|has_object_permission:"import" %}
-                                <li role="presentation">
+                                <li>
                                     <a href="{% url 're_import_scan_results' test.id %}">
                                         <i class="fa-solid fa-upload"></i> {% trans "Re-Upload Scan" %}
                                     </a>
@@ -67,30 +67,30 @@
                             {% endif %}
                         {% endif %}
                         {% if test|has_object_permission:"add" %}
-                            <li role="presentation">
+                            <li>
                                 <a id="add_notes_link" href="#add_notes">
                                     <i class="fa-solid fa-comments"></i> {% trans "Add Notes" %}
                                 </a>
                             </li>
                         {% endif %}
-                        <li role="presentation">
+                        <li>
                             <a href="{% url 'test_report' test.id %}?title=&active=1&verified=1&false_p=2&duplicate=2" data-testid="report-link">
                                 <i class="fa-solid fa-file-lines"></i> {% trans "Report" %}
                             </a>
                         </li>
-                        <li role="presentation">
+                        <li>
                             <a href="{% url 'test_ics' test.id %}">
                                 <i class="fa-solid fa-calendar-plus"></i> {% trans "Add To Calendar" %}
                             </a>
                         </li>
-                        <li role="presentation">
+                        <li>
                             <a href="{% url 'action_history' test|content_type test.id %}">
                                 <i class="fa-solid fa-clock-rotate-left"></i> {% trans "View History" %}
                             </a>
                         </li>
                         {% if test|has_object_permission:"delete" %}
-                            <li role="separator" class="divider"></li>
-                            <li role="presentation">
+                            <li aria-hidden="true" class="divider"></li>
+                            <li>
                                 <a class="text-danger" href="{% url 'delete_test' test.id %}">
                                     <i class="fa-solid fa-trash"></i> {% trans "Delete Test" %}
                                 </a>
@@ -307,7 +307,7 @@
                         <i class="fa-solid fa-layer-group dd-card-icon" aria-hidden="true"></i>{% trans "Groups" %} ({{ finding_groups|length }})
                         <div class="dropdown pull-right">
                             <span class="pull-right">
-                                <a data-toggle="collapse" href="#finding_groups_panel">
+                                <a data-toggle="collapse" href="#finding_groups_panel" aria-label="{% trans 'Toggle finding groups' %}">
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </a>
                             </span>
@@ -379,8 +379,8 @@
                                 <td class="nowrap">
                                     <div class="align-top">
                                         <div class="dropdown">
-                                            <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown">&nbsp;<i class="fa-solid fa-ellipsis-vertical"></i>&nbsp;</a>
-                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                                            <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown" aria-label="{% trans 'Finding actions' %}">&nbsp;<i class="fa-solid fa-ellipsis-vertical"></i>&nbsp;</a>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                                                 {% if group|has_object_permission:"edit" %}
                                                     <li>
                                                         <a class="" href="{% url 'view_finding_group' group.id %}">
@@ -551,14 +551,14 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right"
-                                role="menu"
+                               
                                 aria-labelledby="dropdownMenu_test_add">
-                                <li role="presentation">
+                                <li>
                                     <a title="{% trans 'Add Finding' %}" href="{% url 'add_findings' test.id %}">
                                         <span class="fa-solid fa-bug"></span> {% trans "New Finding" %}
                                     </a>
                                 </li>
-                                <li role="presentation">
+                                <li>
                                     <a title="{% trans 'Add Finding from Template' %}" href="{% url 'search' test.id %}">
                                         <span class="icon-add-template"></span> {% trans "Finding From Template" %}
                                     </a>
@@ -578,19 +578,19 @@
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right"
-                            role="menu"
+                           
                             aria-labelledby="dropdownMenu1">
-                            <li role="presentation">
+                            <li>
                                 <a href="{% url 'quick_report' %}?url={{ request.get_full_path }}">
                                     <i class="fa-solid fa-file-lines"></i> {% trans "Report" %}
                                 </a>
                             </li>
-                            <li role="presentation">
+                            <li>
                                 <a href="{% url 'csv_export' %}?url={{ request.get_full_path }}">
                                     <i class="fa-solid fa-table"></i> {% trans "CSV Export" %}
                                 </a>
                             </li>
-                            <li role="presentation">
+                            <li>
                                 <a href="{% url 'excel_export' %}?url={{ request.get_full_path }}">
                                     <i class="fa-solid fa-file-excel"></i> {% trans "Excel Export" %}
                                 </a>
@@ -897,48 +897,48 @@
                             {% block header %}
                                 {% if test|has_object_permission:"edit" or test|has_object_permission:"delete" %}
                                     <th class="centered" title="{% trans 'Select all visible findings.' %}">
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary dropdown-toggle"
-                                                    type="button"
-                                                    id="dropdownMenu1"
-                                                    data-toggle="dropdown"
-                                                    aria-haspopup="true"
-                                                    aria-expanded="true"
-                                                    aria-label="{% trans 'Severity Filter' %}">
-                                                <form class="inline-form" action="#">
+                                        <div class="dropdown aspm-select-controls">
+                                            <form class="inline-form" action="#">
                                                     <input type="checkbox"
                                                         name="select_all"
                                                         label="select_all"
                                                         aria-label="{% trans 'select_all' %}"
                                                         id="select_all"/>
                                                 </form>
+                                                <button class="btn btn-primary dropdown-toggle"
+                                                    type="button"
+                                                    id="dropdownMenu1"
+                                                    data-toggle="dropdown"
+                                                    aria-haspopup="true"
+                                                    aria-expanded="true"
+                                                    aria-label="{% trans 'Severity Filter' %}">
                                                 <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu"
                                                 aria-labelledby="dropdownMenu1"
                                                 id="select_by_severity">
                                                 <li>
-                                                    <a id="Info">{% trans "Info" %}</a>
+                                                    <a id="Info" role="button" tabindex="0">{% trans "Info" %}</a>
                                                 </li>
                                                 <li>
-                                                    <a id="Low">{% trans "Low" %}</a>
+                                                    <a id="Low" role="button" tabindex="0">{% trans "Low" %}</a>
                                                 </li>
                                                 <li>
-                                                    <a id="Medium">{% trans "Medium" %}</a>
+                                                    <a id="Medium" role="button" tabindex="0">{% trans "Medium" %}</a>
                                                 </li>
                                                 <li>
-                                                    <a id="High">{% trans "High" %}</a>
+                                                    <a id="High" role="button" tabindex="0">{% trans "High" %}</a>
                                                 </li>
                                                 <li>
-                                                    <a id="Critical">{% trans "Critical" %}</a>
+                                                    <a id="Critical" role="button" tabindex="0">{% trans "Critical" %}</a>
                                                 </li>
-                                                <li role="separator" class="divider">
-                                                </li>
-                                                <li>
-                                                    <a id="All">{% trans "All" %}</a>
+                                                <li aria-hidden="true" class="divider">
                                                 </li>
                                                 <li>
-                                                    <a id="None">{% trans "None" %}</a>
+                                                    <a id="All" role="button" tabindex="0">{% trans "All" %}</a>
+                                                </li>
+                                                <li>
+                                                    <a id="None" role="button" tabindex="0">{% trans "None" %}</a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -1023,8 +1023,8 @@
                                     <td class="nowrap">
                                         <div class="align-top">
                                             <div class="dropdown">
-                                                <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown">&nbsp;<i class="fa-solid fa-ellipsis-vertical"></i>&nbsp;</a>
-                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                                                <a href="#" class="dropdown-toggle pull-left" data-toggle="dropdown" aria-label="{% trans 'Finding actions' %}">&nbsp;<i class="fa-solid fa-ellipsis-vertical"></i>&nbsp;</a>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                                                     <li>
                                                         <a class="" href="{% url 'view_finding' finding.id %}">
                                                             <i class="fa-solid fa-circle-right"></i> {% trans "View" %}
@@ -1047,13 +1047,13 @@
                                                     {% if finding|has_object_permission:"view" %}
                                                         {% user_can_clear_peer_review finding request.user as clear_peer_review %}
                                                         {% if finding|has_object_permission:"edit" and clear_peer_review %}
-                                                            <li role="presentation">
+                                                            <li>
                                                                 <a href="{% url 'clear_finding_review' finding.id %}">
                                                                     <i class="icon-user-check"></i> {% trans "Clear Review" %}
                                                                 </a>
                                                             </li>
                                                         {% elif not finding.under_review %}
-                                                            <li role="presentation">
+                                                            <li>
                                                                 <a href="{% url 'request_finding_review' finding.id %}">
                                                                     <i class="icon-user-check"></i> {% trans "Request Peer Review" %}
                                                                 </a>
@@ -1061,7 +1061,7 @@
                                                         {% endif %}
                                                     {% endif %}
                                                     {% if finding|has_object_permission:"edit" %}
-                                                        <li role="presentation">
+                                                        <li>
                                                             <a href="#" onclick="this.nextElementSibling.submit(); return false;">
                                                                 <i class="fa-solid fa-clock"></i> {% trans "Touch Finding" %}
                                                             </a>
@@ -1069,7 +1069,7 @@
                                                         </li>
                                                     {% endif %}
                                                     {% if finding|has_object_permission:"add" %}
-                                                        <li role="presentation">
+                                                        <li>
                                                             <a href="#" onclick="this.nextElementSibling.submit(); return false;">
                                                                 <i class="fa-solid fa-copy"></i> {% trans "Make Finding a Template" %}
                                                             </a>
@@ -1077,19 +1077,19 @@
                                                         </li>
                                                     {% endif %}
                                                     {% if finding|has_object_permission:"edit" %}
-                                                        <li role="presentation">
+                                                        <li>
                                                             <a href="{% url 'find_template_to_apply' finding.id %}">
                                                                 <i class="fa-solid fa-copy"></i> {% trans "Apply Template to Finding" %}
                                                             </a>
                                                         </li>
                                                         {% if finding.active %}
-                                                            <li role="presentation">
+                                                            <li>
                                                                 <a href="{% url 'close_finding' finding.id %}">
                                                                     <i class="fa-solid fa-fire-extinguisher"></i> {% trans "Close Finding" %}
                                                                 </a>
                                                             </li>
                                                         {% else %}
-                                                            <li role="presentation">
+                                                            <li>
                                                                 <a href="#" onclick="this.nextElementSibling.submit(); return false;">
                                                                     <i class="fa-solid fa-bug"></i> {% trans "Open Finding" %}
                                                                 </a>
@@ -1099,7 +1099,7 @@
                                                     {% endif %}
                                                     {% if finding|has_object_permission:"edit" %}
                                                         {% if finding.risk_accepted %}
-                                                            <li role="presentation">
+                                                            <li>
                                                                 <a href="#" onclick="this.nextElementSibling.submit(); return false;">
                                                                     <i class="fa-solid fa-circle-exclamation"></i> {% trans "Unaccept Risk" %}
                                                                 </a>
@@ -1108,7 +1108,7 @@
                                                         {% else %}
                                                             {% if not finding.duplicate %}
                                                                 {% if finding.test.engagement.product.enable_simple_risk_acceptance %}
-                                                                    <li role="presentation">
+                                                                    <li>
                                                                         <a href="#" onclick="this.nextElementSibling.submit(); return false;">
                                                                             <i class="fa-solid fa-circle-exclamation"></i> {% trans "Accept Risk" %}
                                                                         </a>
@@ -1116,7 +1116,7 @@
                                                                     </li>
                                                                 {% endif %}
                                                                 {% if finding.test.engagement.product.enable_full_risk_acceptance %}
-                                                                    <li role="presentation">
+                                                                    <li>
                                                                         <a href="{% url 'add_risk_acceptance' finding.test.engagement.id finding.id %}?return_url={{ request.get_full_path|urlencode }}">
                                                                             <i class="fa-solid fa-circle-exclamation"></i> {% trans "Add Risk Acceptance..." %}
                                                                         </a>
@@ -1126,7 +1126,7 @@
                                                         {% endif %}
                                                     {% endif %}
                                                     <li class="divider"></li>
-                                                    <li role="presentation">
+                                                    <li>
                                                         <a href="{% url 'action_history' finding|content_type finding.id %}">
                                                             <i class="fa-solid fa-clock-rotate-left"></i> {% trans "View History" %}
                                                         </a>

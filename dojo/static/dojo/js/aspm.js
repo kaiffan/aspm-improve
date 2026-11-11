@@ -77,6 +77,9 @@
 (function () {
     'use strict';
     document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('keydown', function (event) {
+            if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('#select_by_severity a[role=button]')) { event.preventDefault(); event.target.click(); }
+        });
         var root = document.documentElement;
         var sidebar = document.getElementById('dd-sidebar');
         var toggle = document.getElementById('aspm-nav-toggle');

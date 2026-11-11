@@ -80,6 +80,10 @@ from dojo.utils import (
     get_system_setting,
     process_tag_notifications,
 )
+from dojo.vulnerability.queries import vulnerability_id_prefetch
+from dojo.finding.api.large_offset_pagination import (
+    FindingLargeOffsetPagination,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +172,7 @@ class FindingViewSet(
         IsAuthenticated,
         permissions.UserHasFindingPermission,
     )
+    pagination_class = FindingLargeOffsetPagination
 
     # Overriding mixins.UpdateModeMixin perform_update() method to grab push_to_jira
     # data and add that as a parameter to .save()
@@ -231,6 +236,7 @@ class FindingViewSet(
                 "test__engagement__product__prod_type",
                 # cwes is serialized on every row; unprefetched it costs a query per finding
                 "finding_cwe_set",
+                vulnerability_id_prefetch(),
             )
         else:
             # TODO: Delete this after the move to Locations
@@ -257,6 +263,7 @@ class FindingViewSet(
                 "test__engagement__product__prod_type",
                 # cwes is serialized on every row; unprefetched it costs a query per finding
                 "finding_cwe_set",
+                vulnerability_id_prefetch(),
             )
 
         # No blanket .distinct(): get_authorized_findings filters by a scalar product-id IN (no row

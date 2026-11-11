@@ -22,7 +22,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
 def dashboard(request: HttpRequest) -> HttpResponse:
     engagements = get_authorized_engagements("view").distinct()
-    findings = get_authorized_findings("view")
+    findings = get_authorized_findings("view").distinct()
 
     findings = findings.filter(duplicate=False)
 

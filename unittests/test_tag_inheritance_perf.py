@@ -18,12 +18,14 @@ import logging
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import override_settings
 from django.utils import timezone
 
 from dojo.location.models import Location, LocationFindingReference, LocationProductReference
 from dojo.models import Dojo_User, Endpoint, Engagement, Finding, Product, Product_Type, Test, Test_Type
 from dojo.tags.inheritance import propagate_tags_on_product_sync
+from dojo.utils import grade_debounce_cache_key
 from unittests.dojo_test_case import (
     DojoAPITestCase,
     DojoTestCase,
@@ -481,6 +483,11 @@ class TagInheritanceImportPerfBaselines(DojoAPITestCase):
         # then reimport uses the full report so 9 findings get created during
         # reimport while 10 match existing ones.
         self.scan_path_subset = get_unit_tests_scans_path("zap") / "dvwa_baseline_dojo_subset.xml"
+        # Database rollback reuses product IDs; cache markers outlive that rollback.
+        # Measure a fresh product burst, not another test's pending grade task.
+        grade_key = grade_debounce_cache_key(self.product.pk)
+        cache.delete(grade_key)
+        self.addCleanup(cache.delete, grade_key)
 
     @override_settings(V3_FEATURE_LOCATIONS=False)
     def test_baseline_zap_scan_import_v2(self):

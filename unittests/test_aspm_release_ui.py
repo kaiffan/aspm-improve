@@ -12,7 +12,7 @@ from dojo.product_announcements import ErrorPageProductAnnouncement
 class TestASPMBranding(SimpleTestCase):
     def test_release_metadata_is_local_and_does_not_need_database(self):
         brand = get_branding()
-        self.assertEqual((brand["version"], brand["channel"], brand["upstream_version"]), ("1.0.1", "rc1", "3.5.100"))
+        self.assertEqual((brand["version"], brand["channel"], brand["upstream_version"]), ("1.0.1", "rc2", "3.5.100"))
         self.assertEqual(brand["name"], "ASPM")
         self.assertEqual(brand["mark"], "dojo/img/aspm-mark.svg")
 
@@ -44,7 +44,7 @@ class TestASPMBranding(SimpleTestCase):
     @override_settings(ASPM_GIT_SHA="a" * 40)
     def test_standalone_report_has_version_without_request_context(self):
         html = render_to_string("dojo/custom_html_report.html", {"report_name": "Release validation", "widgets": []})
-        self.assertIn("ASPM 1.0.1 rc1", html)
+        self.assertIn("ASPM 1.0.1 rc2", html)
         self.assertIn("DefectDojo OSS 3.5.100", html)
         self.assertIn("a" * 40, html)
         self.assertNotIn("fonts.googleapis.com", html)

@@ -21,6 +21,7 @@ def get_branding():
     revision = getattr(settings, "ASPM_GIT_SHA", "")
     return {
         **_RELEASE,
+        "build_timestamp": getattr(settings, "ASPM_BUILD_TIMESTAMP", ""),
         "name": getattr(settings, "ASPM_BRAND_NAME", "ASPM").strip() or "ASPM",
         "mark": _asset(getattr(settings, "ASPM_BRAND_MARK", "dojo/img/aspm-mark.svg")),
         "favicon": _asset(getattr(settings, "ASPM_FAVICON", "dojo/img/aspm-mark.svg")),

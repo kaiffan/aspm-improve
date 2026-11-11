@@ -1,5 +1,6 @@
 """Build both RC images from Git source and verified, digest-pinned dependency images."""
 import argparse
+import datetime
 import hashlib
 import io
 import json
@@ -27,6 +28,9 @@ if any(a.context.iterdir()):
     raise RuntimeError("Use an empty build context; existing files are preserved")
 with tarfile.open(fileobj=io.BytesIO(subprocess.check_output(["git", "archive", sha, "dojo", "LICENSE.md", "NOTICE"], cwd=ROOT))) as archive:
     archive.extractall(a.context, filter="tar")
+release = json.loads((a.context / "dojo/aspm/release.json").read_text())
+release_version = release["version"] + "-" + release["channel"]
+build_timestamp = datetime.datetime.fromtimestamp(int(epoch), datetime.UTC).isoformat().replace("+00:00", "Z")
 msgfmt = shutil.which("msgfmt")
 if not msgfmt:
     raise RuntimeError("GNU gettext msgfmt is required to preserve existing translations")
@@ -39,19 +43,23 @@ for po in sorted((a.context / "dojo/locale").rglob("django.po")):
 (a.context / "Dockerfile").write_text("ARG RUNTIME_BASE=" + lock["runtime"]["image"] + "\nARG STATIC_BASE=" + lock["static"]["image"] + "\n" + '''FROM ${RUNTIME_BASE} AS app
 ARG SOURCE_DATE_EPOCH
 ARG REVISION
+ARG RELEASE_VERSION
+ARG CREATED
 USER root
 RUN rm -rf /app/dojo
 COPY --chown=1001:1001 dojo /app/dojo
 COPY LICENSE.md NOTICE /app/
-ENV DD_ASPM_GIT_SHA=${REVISION}
-LABEL org.opencontainers.image.title="ASPM" org.opencontainers.image.version="1.0.1-rc1" org.opencontainers.image.source="https://github.com/kaiffan/aspm-improve" org.opencontainers.image.revision="${REVISION}" org.opencontainers.image.licenses="BSD-3-Clause" org.aspm.upstream.version="3.5.100"
+ENV DD_ASPM_GIT_SHA=${REVISION} DD_ASPM_BUILD_TIMESTAMP=${CREATED}
+LABEL org.opencontainers.image.title="ASPM" org.opencontainers.image.version="${RELEASE_VERSION}" org.opencontainers.image.created="${CREATED}" org.opencontainers.image.source="https://github.com/kaiffan/aspm-improve" org.opencontainers.image.revision="${REVISION}" org.opencontainers.image.licenses="BSD-3-Clause" org.aspm.upstream.version="3.5.100"
 USER 1001
 FROM ${STATIC_BASE} AS nginx
 ARG SOURCE_DATE_EPOCH
 ARG REVISION
+ARG RELEASE_VERSION
+ARG CREATED
 COPY dojo/static/ /usr/share/nginx/html/static/
 COPY LICENSE.md NOTICE /usr/share/licenses/aspm/
-LABEL org.opencontainers.image.title="ASPM static gateway" org.opencontainers.image.version="1.0.1-rc1" org.opencontainers.image.source="https://github.com/kaiffan/aspm-improve" org.opencontainers.image.revision="${REVISION}" org.aspm.upstream.version="3.5.100"
+LABEL org.opencontainers.image.title="ASPM static gateway" org.opencontainers.image.version="${RELEASE_VERSION}" org.opencontainers.image.created="${CREATED}" org.opencontainers.image.source="https://github.com/kaiffan/aspm-improve" org.opencontainers.image.revision="${REVISION}" org.aspm.upstream.version="3.5.100"
 ''')
 for path in a.context.rglob("*"):
     if not path.is_symlink():
@@ -59,7 +67,7 @@ for path in a.context.rglob("*"):
 images = {}
 for target, prefix in (("app", "aspm-build"), ("nginx", "aspm-nginx-build")):
     image = prefix + ":" + sha[:12]
-    subprocess.run(["docker", "build", "--provenance=false", "--build-arg", "RUNTIME_BASE=" + lock["runtime"]["image"], "--build-arg", "STATIC_BASE=" + lock["static"]["image"], "--build-arg", "REVISION=" + sha, "--build-arg", "SOURCE_DATE_EPOCH=" + epoch, "--target", target, "-t", image, str(a.context)], check=True)
+    subprocess.run(["docker", "build", "--provenance=false", "--build-arg", "RUNTIME_BASE=" + lock["runtime"]["image"], "--build-arg", "STATIC_BASE=" + lock["static"]["image"], "--build-arg", "REVISION=" + sha, "--build-arg", "RELEASE_VERSION=" + release_version, "--build-arg", "CREATED=" + build_timestamp, "--build-arg", "SOURCE_DATE_EPOCH=" + epoch, "--target", target, "-t", image, str(a.context)], check=True)
     images[target] = {"tag": image, "id": subprocess.check_output(["docker", "image", "inspect", "--format", "{{.Id}}", image], text=True).strip()}
-a.manifest.write_text(json.dumps({"source_sha": sha, "source_date_epoch": int(epoch), "upstream": "3.5.100", "version": "1.0.1", "channel": "rc1", "base_images": lock, "images": images, "gettext": gettext_version, "compiled_translations": translations}, indent=2) + "\n")
+a.manifest.write_text(json.dumps({"source_sha": sha, "source_date_epoch": int(epoch), "upstream": "3.5.100", "version": "1.0.1", "channel": release["channel"], "build_timestamp": build_timestamp, "base_images": lock, "images": images, "gettext": gettext_version, "compiled_translations": translations}, indent=2) + "\n")
 print("Built immutable source images", sha)

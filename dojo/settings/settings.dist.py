@@ -607,6 +607,7 @@ ASPM_BRAND_NAME = env("DD_ASPM_BRAND_NAME", default="ASPM")
 ASPM_BRAND_MARK = env("DD_ASPM_BRAND_MARK", default="dojo/img/aspm-mark.svg")
 ASPM_FAVICON = env("DD_ASPM_FAVICON", default="dojo/img/aspm-mark.svg")
 ASPM_GIT_SHA = env("DD_ASPM_GIT_SHA", default="")
+ASPM_BUILD_TIMESTAMP = env("DD_ASPM_BUILD_TIMESTAMP", default="")
 ASPM_SHOW_UPSTREAM_PROMOTIONS = env.bool("DD_ASPM_SHOW_UPSTREAM_PROMOTIONS", default=False)
 
 DOCUMENTATION_URL = env("DD_DOCUMENTATION_URL")

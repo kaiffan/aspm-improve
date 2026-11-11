@@ -11,6 +11,10 @@
 
 {% block content %}
     {{ block.super }}
+    <header class="aspm-page-heading">
+        <div><span class="aspm-eyebrow">{% trans "Security overview" %}</span><h1>{% trans "Dashboard" %}</h1><p>{% trans "Findings and testing activity across your accessible products." %}</p></div>
+        <a class="btn btn-secondary" href="{% url 'open_findings' %}">{% trans "View findings" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+    </header>
     {% block finding_stats_tiles %}
         <div class="row">
             {% block active_engagements %}

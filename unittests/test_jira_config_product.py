@@ -73,7 +73,7 @@ class JIRAConfigProductTest(DojoTestCase):
     # no mock so we can assert the exception raised
     def test_add_jira_instance_unknown_host(self):
         data = self.data_jira_instance
-        data["url"] = "https://jira.hj23412341hj234123421341234ljl.nl"
+        data["url"] = "https://jira.aspm-release.invalid"
 
         # test UI validation error
 
@@ -85,7 +85,7 @@ class JIRAConfigProductTest(DojoTestCase):
         self.assertEqual(200, response.status_code)
         content = response.content.decode("utf-8")
         # debian throws 'Name or service not known' error and alpine 'Name does not resolve'
-        self.assertTrue(("Name or service not known" in content) or ("Name does not resolve" in content), content)
+        self.assertTrue(any(error in content for error in ("Name or service not known", "Name does not resolve", "NameResolutionError")), content)
 
         # test raw connection error
         with self.assertRaises(requests.exceptions.RequestException):

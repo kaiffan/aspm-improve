@@ -10,23 +10,23 @@
     function styleOptions(options) {
         options = options || {};
         var text = token('--color-text-muted', '#536171'), border = token('--color-border', '#e0e4ea');
-        options.plugins = options.plugins || {};
+        if (!options.plugins) options.plugins = {};
         if (options.plugins.legend !== false) {
-            options.plugins.legend = options.plugins.legend || {};
-            options.plugins.legend.labels = options.plugins.legend.labels || {};
+            if (!options.plugins.legend) options.plugins.legend = {};
+            if (!options.plugins.legend.labels) options.plugins.legend.labels = {};
             options.plugins.legend.labels.color = text;
         }
         if (options.plugins.title) options.plugins.title.color = token('--color-text', '#202630');
         if (options.plugins.tooltip !== false) {
-            options.plugins.tooltip = options.plugins.tooltip || {};
+            if (!options.plugins.tooltip) options.plugins.tooltip = {};
             Object.assign(options.plugins.tooltip, {backgroundColor: token('--color-surface-2', '#f7f8fa'), titleColor: text, bodyColor: text, footerColor: text, borderColor: border, borderWidth: 1});
         }
         Object.keys(options.scales || {}).forEach(function (key) {
             var axis = options.scales[key];
             if (!axis || typeof axis !== 'object') return;
-            axis.ticks = axis.ticks || {}; axis.ticks.color = text;
-            if (axis.grid !== false) { axis.grid = axis.grid || {}; axis.grid.color = border; }
-            if (axis.border !== false) { axis.border = axis.border || {}; axis.border.color = border; }
+            if (!axis.ticks) axis.ticks = {}; axis.ticks.color = text;
+            if (axis.grid !== false) { if (!axis.grid) axis.grid = {}; axis.grid.color = border; }
+            if (axis.border !== false) { if (!axis.border) axis.border = {}; axis.border.color = border; }
             if (axis.title) axis.title.color = text;
             if (axis.pointLabels) axis.pointLabels.color = text;
             if (axis.angleLines) axis.angleLines.color = border;

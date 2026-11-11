@@ -42,7 +42,7 @@ class TestASPMBranding(SimpleTestCase):
 
     @override_settings(ASPM_GIT_SHA="a" * 40)
     def test_standalone_report_has_version_without_request_context(self):
-        html = render_to_string("report_base.html", {"report_name": "Release validation"})
+        html = render_to_string("dojo/custom_html_report.html", {"report_name": "Release validation", "widgets": []})
         self.assertIn("ASPM 1.0.1 rc1", html)
         self.assertIn("DefectDojo OSS 3.5.100", html)
         self.assertIn("a" * 40, html)

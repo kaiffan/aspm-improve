@@ -343,3 +343,6 @@ code { color: var(--color-dd-interactive-700); }
 .panel-available-widget .panel-heading { background: var(--color-surface-2); }
 .run_report.disabled { opacity: 1; color: var(--color-text-muted); background: var(--color-surface-3); border-color: var(--color-border-strong); }
 .editor-statusbar span, .cm-s-easymde .cm-link { color: var(--color-text-muted); }
+/* Keep the page-size menu below its trigger and within the workspace edge. */
+.pagination .btn-group { position: relative; }
+.pagination .btn-group > .dropdown-menu { top: calc(100% + .3rem); bottom: auto; right: 0; left: auto; }

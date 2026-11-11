@@ -27,6 +27,7 @@ from dojo.product.api.serializer import (
     ProductSummarySerializer,
 )
 from dojo.product.queries import (
+    get_active_findings_by_product,
     get_authorized_product_api_scan_configurations,
     get_authorized_products,
 )
@@ -160,14 +161,7 @@ class ProductViewSet(
             return
 
         # Read findings only for products that passed authorization and filtering.
-        active_findings = (
-            Finding.objects.filter(
-                test__engagement__product_id__in=[product.pk for product in products],
-                active=True,
-            )
-            .order_by()
-            .values_list("test__engagement__product_id")
-        )
+        active_findings = get_active_findings_by_product([product.pk for product in products]).values_list("_product_id")
         if mode == "count":
             counts_by_product = dict(active_findings.annotate(count=Count("*")))
             for product in products:
@@ -177,7 +171,7 @@ class ProductViewSet(
         # Use the ordered ID lists for both fields in the full response.
         ids_by_product = dict(active_findings.annotate(finding_ids=ArrayAgg("pk", order_by="pk")))
         for product in products:
-            product.prefetched_active_finding_ids = ids_by_product.get(product.pk, [])
+            product.prefetched_active_finding_ids = ids_by_product.get(product.pk) or []
             product.active_finding_count = len(product.prefetched_active_finding_ids)
 
     def destroy(self, request, *args, **kwargs):

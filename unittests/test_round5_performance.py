@@ -1,0 +1,81 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
+from django.utils import timezone
+
+from dojo.models import Finding, Risk_Acceptance
+from dojo.product.queries import get_active_finding_counts_by_product
+from unittests import test_round4_performance as round4
+from unittests.dojo_test_case import DojoTestCase, versioned_fixtures
+
+
+@versioned_fixtures
+class TestRound5Performance(DojoTestCase):
+    fixtures = ["dojo_testdata.json"]
+    setUp = round4.TestRound4Performance.setUp
+
+    def test_single_product_counts_do_not_join_each_finding_to_test(self):
+        with CaptureQueriesContext(connection) as queries:
+            result = get_active_finding_counts_by_product([self.product.pk])
+        self.assertEqual(result, {self.product.pk: (2, 1)})
+        self.assertEqual(len(queries), 1)
+        self.assertNotIn('"dojo_finding"."test_id" = "dojo_test"."id"', queries[0]["sql"])
+        self.assertEqual(get_active_finding_counts_by_product([self.other.pk]), {})
+        self.assertEqual(get_active_finding_counts_by_product([]), {})
+        self.assertEqual(get_active_finding_counts_by_product([self.product.pk, self.other.pk]), result)
+
+    def test_full_product_response_keeps_order_count_and_visibility(self):
+        self.client.force_login(self.reader)
+        self.scope.filter(pk=self.findings[1].pk).update(duplicate=True)
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse("product-list"), {"limit": 100})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertEqual([row["id"] for row in data["results"]], [self.product.pk])
+        product = data["results"][0]
+        self.assertEqual(product["findings_list"], sorted(f.pk for f in self.findings[:2]))
+        self.assertEqual(product["findings_count"], 2)
+        aggregates = [q["sql"] for q in queries if "ARRAY_AGG" in q["sql"]]
+        self.assertEqual(len(aggregates), 1)
+        self.assertNotIn('"dojo_finding"."test_id" = "dojo_test"."id"', aggregates[0])
+        detail = self.client.get(reverse("product-detail", args=[self.product.pk]))
+        self.assertEqual(detail.status_code, 200)
+        detail_data = detail.json()
+        self.assertEqual(detail_data.pop("prefetch"), {})
+        self.assertEqual(detail_data, product)
+        self.assertIn(self.client.get(reverse("product-detail", args=[self.other.pk])).status_code, (403, 404))
+        filtered = self.client.get(reverse("product-list"), {"id": self.other.pk})
+        self.assertEqual(filtered.json()["results"], [])
+        for mode in ("count", "none"):
+            lightweight = self.client.get(reverse("product-list"), {"findings": mode}).json()["results"][0]
+            self.assertNotIn("findings_list", lightweight)
+            if mode == "count":
+                self.assertEqual(lightweight["findings_count"], 2)
+            else:
+                self.assertNotIn("findings_count", lightweight)
+        self.client.force_login(self.admin)
+        empty = self.client.get(reverse("product-detail", args=[self.other.pk])).json()
+        self.assertEqual(empty["findings_list"], [])
+        self.assertEqual(empty["findings_count"], 0)
+
+    def test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings(self):
+        self.scope.update(date=timezone.localdate(), mitigated=timezone.now(), duplicate=False)
+        for name in ("first", "second"):
+            acceptance = Risk_Acceptance.objects.create(name=name, owner=self.admin)
+            acceptance.accepted_findings.add(*self.findings)
+        self.scope.filter(pk=self.findings[2].pk).update(duplicate=True)
+        Finding.objects.create(test=self.findings[0].test, title="extra", severity="Medium", duplicate=False)
+        self.client.force_login(self.reader)
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["finding_count"], 3)
+        self.assertEqual(response.context["mitigated_count"], 2)
+        self.assertEqual(response.context["accepted_count"], 2)
+        self.assertEqual(response.context["high"], 1)
+        self.assertEqual(response.context["low"], 1)
+        self.assertEqual(response.context["info"], 0)
+        counts = [q["sql"] for q in queries if 'FROM "dojo_finding"' in q["sql"] and "COUNT(*)" in q["sql"]]
+        self.assertEqual(len(counts), 3)
+        self.assertTrue(all('"description"' not in q for q in counts))

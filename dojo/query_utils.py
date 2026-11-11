@@ -1,5 +1,14 @@
-from django.db.models import Count, IntegerField, Subquery
+from django.db.models import Count, IntegerField, Lookup, Subquery
 from django.db.models.query import QuerySet
+
+
+class TestIdInArray(Lookup):
+    lookup_name = "test_id_in_array"
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} = ANY({rhs})", (*lhs_params, *rhs_params)
 
 
 def build_count_subquery(model_qs: QuerySet, group_field: str) -> Subquery:

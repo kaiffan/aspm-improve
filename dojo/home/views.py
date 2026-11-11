@@ -22,7 +22,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
 def dashboard(request: HttpRequest) -> HttpResponse:
     engagements = get_authorized_engagements("view").distinct()
-    findings = get_authorized_findings("view").distinct()
+    findings = get_authorized_findings("view")
 
     findings = findings.filter(duplicate=False)
 
@@ -33,12 +33,15 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     date_range = [today - timedelta(days=7), today]  # 7 days plus today, identical to last 7 days filter in other places
     finding_count = findings\
         .filter(date__range=date_range)\
+        .values("pk").distinct()\
         .count()
     mitigated_count = findings\
         .filter(mitigated__date__range=date_range)\
+        .values("pk").distinct()\
         .count()
     accepted_count = findings\
         .filter(risk_acceptance__created__date__range=date_range)\
+        .values("pk").distinct()\
         .count()
 
     severity_count_all = get_severities_all(findings)

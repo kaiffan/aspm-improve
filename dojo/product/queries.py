@@ -1,4 +1,5 @@
-from django.db.models import Count, Q
+from django.contrib.postgres.expressions import ArraySubquery
+from django.db.models import Count, F, Q, Value
 
 try:
     from dojo.authorization.query_filters import get_auth_filter
@@ -13,6 +14,7 @@ from dojo.models import (
     Product,
     Product_API_Scan_Configuration,
 )
+from dojo.query_utils import TestIdInArray
 from dojo.request_cache import cache_for_request_or_task
 
 
@@ -70,11 +72,30 @@ def get_authorized_product_api_scan_configurations(permission):
     return Product_API_Scan_Configuration.objects.all().order_by("id")
 
 
+def get_active_findings_by_product(product_ids):
+    """
+    Group active findings for an already authorized Product page.
+
+    For one Product, a constant grouping key avoids joining every Finding back
+    to Test. The explicit Test-ID array also avoids a nested loop that visits
+    the same heap pages once for each Test on a large Product.
+    """
+    from dojo.models import Finding, Test  # noqa: PLC0415 -- avoids circular dependency
+
+    findings = Finding.objects.filter(active=True).order_by()
+    if len(product_ids) == 1:
+        tests = Test.unfiltered.filter(engagement__product_id=product_ids[0]).order_by().values("pk")
+        return findings.filter(TestIdInArray(F("test_id"), ArraySubquery(tests))).annotate(
+            _product_id=Value(product_ids[0]),
+        ).values("_product_id")
+    return findings.filter(test__engagement__product_id__in=product_ids).annotate(
+        _product_id=F("test__engagement__product_id"),
+    ).values("_product_id")
+
+
 def get_active_finding_counts_by_product(product_ids):
     """Count only findings for the already authorized products on the page."""
-    from dojo.models import Finding  # noqa: PLC0415 -- avoids circular dependency
-
-    rows = Finding.objects.filter(active=True, test__engagement__product_id__in=product_ids).values(
-        "test__engagement__product_id",
-    ).annotate(active=Count("pk"), verified=Count("pk", filter=Q(verified=True))).order_by()
-    return {row["test__engagement__product_id"]: (row["active"], row["verified"]) for row in rows}
+    rows = get_active_findings_by_product(product_ids).annotate(
+        active=Count("pk"), verified=Count("pk", filter=Q(verified=True)),
+    )
+    return {row["_product_id"]: (row["active"], row["verified"]) for row in rows if row["active"]}

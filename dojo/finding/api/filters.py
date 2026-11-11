@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.postgres.expressions import ArraySubquery
-from django.db.models import Exists, F, Lookup, OuterRef, Q
+from django.db.models import Exists, F, OuterRef, Q
 from django_filters import (
     BooleanFilter,
     CharFilter,
@@ -29,15 +29,7 @@ from dojo.filters import (
     labels,
 )
 from dojo.models import Finding, Finding_Template, Test
-
-
-class _TestIdInArray(Lookup):
-    lookup_name = "test_id_in_array"
-
-    def as_sql(self, compiler, connection):
-        lhs, lhs_params = self.process_lhs(compiler, connection)
-        rhs, rhs_params = self.process_rhs(compiler, connection)
-        return f"{lhs} = ANY({rhs})", (*lhs_params, *rhs_params)
+from dojo.query_utils import TestIdInArray as _TestIdInArray
 
 
 class ApiFindingFilter(DojoFilter):

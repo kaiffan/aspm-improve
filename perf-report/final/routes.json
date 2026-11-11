@@ -1,0 +1,323 @@
+{
+  "api": [
+    {
+      "prefix": "announcements",
+      "basename": "announcement",
+      "view": "dojo.announcement.api.views.AnnouncementViewSet"
+    },
+    {
+      "prefix": "configuration_permissions",
+      "basename": "permission",
+      "view": "dojo.api_v2.views.ConfigurationPermissionViewSet"
+    },
+    {
+      "prefix": "development_environments",
+      "basename": "development_environment",
+      "view": "dojo.development_environment.api.views.DevelopmentEnvironmentViewSet"
+    },
+    {
+      "prefix": "product_platforms",
+      "basename": "product_platform",
+      "view": "dojo.product_attributes.api.views.ProductPlatformViewSet"
+    },
+    {
+      "prefix": "product_lifecycles",
+      "basename": "product_lifecycle",
+      "view": "dojo.product_attributes.api.views.ProductLifecycleViewSet"
+    },
+    {
+      "prefix": "product_origins",
+      "basename": "product_origin",
+      "view": "dojo.product_attributes.api.views.ProductOriginViewSet"
+    },
+    {
+      "prefix": "endpoint_meta_import",
+      "basename": "endpointmetaimport",
+      "view": "dojo.endpoint.api.views.EndpointMetaImporterView"
+    },
+    {
+      "prefix": "import-languages",
+      "basename": "importlanguages",
+      "view": "dojo.api_v2.views.ImportLanguagesView"
+    },
+    {
+      "prefix": "import-scan",
+      "basename": "importscan",
+      "view": "dojo.api_v2.views.ImportScanView"
+    },
+    {
+      "prefix": "jira_instances",
+      "basename": "jira_instance",
+      "view": "dojo.jira.api.views.JiraInstanceViewSet"
+    },
+    {
+      "prefix": "jira_configurations",
+      "basename": "jira_configurations",
+      "view": "dojo.jira.api.views.JiraInstanceViewSet"
+    },
+    {
+      "prefix": "jira_finding_mappings",
+      "basename": "jira_issue",
+      "view": "dojo.jira.api.views.JiraIssuesViewSet"
+    },
+    {
+      "prefix": "jira_product_configurations",
+      "basename": "jira_product_configurations",
+      "view": "dojo.jira.api.views.JiraProjectViewSet"
+    },
+    {
+      "prefix": "jira_projects",
+      "basename": "jira_project",
+      "view": "dojo.jira.api.views.JiraProjectViewSet"
+    },
+    {
+      "prefix": "languages",
+      "basename": "languages",
+      "view": "dojo.api_v2.views.LanguageViewSet"
+    },
+    {
+      "prefix": "language_types",
+      "basename": "language_type",
+      "view": "dojo.api_v2.views.LanguageTypeViewSet"
+    },
+    {
+      "prefix": "metadata",
+      "basename": "metadata",
+      "view": "dojo.api_v2.views.DojoMetaViewSet"
+    },
+    {
+      "prefix": "network_locations",
+      "basename": "network_locations",
+      "view": "dojo.api_v2.views.NetworkLocationsViewset"
+    },
+    {
+      "prefix": "notes",
+      "basename": "notes",
+      "view": "dojo.notes.api.views.NotesViewSet"
+    },
+    {
+      "prefix": "note_type",
+      "basename": "note_type",
+      "view": "dojo.note_type.api.views.NoteTypeViewSet"
+    },
+    {
+      "prefix": "notifications",
+      "basename": "notifications",
+      "view": "dojo.notifications.api.views.NotificationsViewSet"
+    },
+    {
+      "prefix": "notification_webhooks",
+      "basename": "notification_webhooks",
+      "view": "dojo.notifications.api.views.NotificationWebhooksViewSet"
+    },
+    {
+      "prefix": "products",
+      "basename": "product",
+      "view": "dojo.product.api.views.ProductViewSet"
+    },
+    {
+      "prefix": "product_api_scan_configurations",
+      "basename": "product_api_scan_configuration",
+      "view": "dojo.product.api.views.ProductAPIScanConfigurationViewSet"
+    },
+    {
+      "prefix": "product_types",
+      "basename": "product_type",
+      "view": "dojo.product_type.api.views.ProductTypeViewSet"
+    },
+    {
+      "prefix": "engagements",
+      "basename": "engagement",
+      "view": "dojo.engagement.api.views.EngagementViewSet"
+    },
+    {
+      "prefix": "engagement_presets",
+      "basename": "engagement_presets",
+      "view": "dojo.engagement.api.views.EngagementPresetsViewset"
+    },
+    {
+      "prefix": "finding_templates",
+      "basename": "finding_template",
+      "view": "dojo.finding.api.views.FindingTemplatesViewSet"
+    },
+    {
+      "prefix": "findings",
+      "basename": "finding",
+      "view": "dojo.finding.api.views.FindingViewSet"
+    },
+    {
+      "prefix": "request_response_pairs",
+      "basename": "request_response_pairs",
+      "view": "dojo.finding.api.views.BurpRawRequestResponseViewSet"
+    },
+    {
+      "prefix": "regulations",
+      "basename": "regulations",
+      "view": "dojo.regulations.api.views.RegulationsViewSet"
+    },
+    {
+      "prefix": "reimport-scan",
+      "basename": "reimportscan",
+      "view": "dojo.api_v2.views.ReImportScanView"
+    },
+    {
+      "prefix": "risk_acceptance",
+      "basename": "risk_acceptance",
+      "view": "dojo.risk_acceptance.api.views.RiskAcceptanceViewSet"
+    },
+    {
+      "prefix": "sla_configurations",
+      "basename": "sla_configurations",
+      "view": "dojo.api_v2.views.SLAConfigurationViewset"
+    },
+    {
+      "prefix": "sonarqube_issues",
+      "basename": "sonarqube_issue",
+      "view": "dojo.api_v2.views.SonarqubeIssueViewSet"
+    },
+    {
+      "prefix": "sonarqube_transitions",
+      "basename": "sonarqube_issue_transition",
+      "view": "dojo.api_v2.views.SonarqubeIssueTransitionViewSet"
+    },
+    {
+      "prefix": "system_settings",
+      "basename": "system_settings",
+      "view": "dojo.system_settings.api.views.SystemSettingsViewSet"
+    },
+    {
+      "prefix": "technologies",
+      "basename": "app_analysis",
+      "view": "dojo.api_v2.views.AppAnalysisViewSet"
+    },
+    {
+      "prefix": "tests",
+      "basename": "test",
+      "view": "dojo.test.api.views.TestsViewSet"
+    },
+    {
+      "prefix": "test_types",
+      "basename": "test_type",
+      "view": "dojo.test.api.views.TestTypesViewSet"
+    },
+    {
+      "prefix": "test_imports",
+      "basename": "test_imports",
+      "view": "dojo.test.api.views.TestImportViewSet"
+    },
+    {
+      "prefix": "tool_configurations",
+      "basename": "tool_configuration",
+      "view": "dojo.tool_config.api.views.ToolConfigurationsViewSet"
+    },
+    {
+      "prefix": "tool_product_settings",
+      "basename": "tool_product_settings",
+      "view": "dojo.tool_product.api.views.ToolProductSettingsViewSet"
+    },
+    {
+      "prefix": "tool_types",
+      "basename": "tool_type",
+      "view": "dojo.tool_type.api.views.ToolTypesViewSet"
+    },
+    {
+      "prefix": "users",
+      "basename": "user",
+      "view": "dojo.user.api.views.UsersViewSet"
+    },
+    {
+      "prefix": "user_contact_infos",
+      "basename": "usercontactinfo",
+      "view": "dojo.user.api.views.UserContactInfoViewSet"
+    },
+    {
+      "prefix": "location",
+      "basename": "location",
+      "view": "dojo.location.api.views.LocationViewSet"
+    },
+    {
+      "prefix": "location_findings",
+      "basename": "location_findings",
+      "view": "dojo.location.api.views.LocationFindingReferenceViewSet"
+    },
+    {
+      "prefix": "location_products",
+      "basename": "location_products",
+      "view": "dojo.location.api.views.LocationProductReferenceViewSet"
+    },
+    {
+      "prefix": "url",
+      "basename": "url",
+      "view": "dojo.url.api.views.URLViewSet"
+    },
+    {
+      "prefix": "endpoints",
+      "basename": "endpoint",
+      "view": "dojo.location.api.endpoint_compat.V3EndpointCompatibleViewSet"
+    },
+    {
+      "prefix": "endpoint_status",
+      "basename": "endpoint_status",
+      "view": "dojo.location.api.endpoint_compat.V3EndpointStatusCompatibleViewSet"
+    },
+    {
+      "prefix": "celery",
+      "basename": "celery",
+      "view": "dojo.api_v2.views.CeleryViewSet"
+    },
+    {
+      "prefix": "assets",
+      "basename": "asset",
+      "view": "dojo.asset.api.views.AssetViewSet"
+    },
+    {
+      "prefix": "asset_api_scan_configurations",
+      "basename": "asset_api_scan_configuration",
+      "view": "dojo.asset.api.views.AssetAPIScanConfigurationViewSet"
+    },
+    {
+      "prefix": "cicd_infrastructure",
+      "basename": "cicd_infrastructure",
+      "view": "dojo.cicd_infrastructure.api.views.CICDInfrastructureViewSet"
+    },
+    {
+      "prefix": "organizations",
+      "basename": "organization",
+      "view": "dojo.organization.api.views.OrganizationViewSet"
+    }
+  ],
+  "web": [
+    {
+      "name": "dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "open_findings",
+      "url": "/finding/open"
+    },
+    {
+      "name": "product",
+      "url": "/asset"
+    },
+    {
+      "name": "engagement",
+      "url": "/engagement"
+    },
+    {
+      "name": "view_test",
+      "url": "/test/1"
+    },
+    {
+      "name": "simple_metrics",
+      "url": "/metrics/simple"
+    },
+    {
+      "name": "product_type_counts",
+      "url": "/metrics/organization/counts"
+    },
+    {
+      "name": "product_tag_counts",
+      "url": "/metrics/asset/tag/counts"
+    }
+  ]
+}

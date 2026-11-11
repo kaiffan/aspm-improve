@@ -1,0 +1,8 @@
+ARG APP_IMAGE=dd-final-final:3.5.100
+ARG DEVDEPS_IMAGE=dd-api-perf-devdeps:local
+FROM ${DEVDEPS_IMAGE} AS devdeps
+FROM ${APP_IMAGE}
+COPY --from=devdeps /usr/local/lib/python3.14/site-packages/vcr /usr/local/lib/python3.14/site-packages/vcr
+COPY --from=devdeps /usr/local/lib/python3.14/site-packages/vcr_unittest /usr/local/lib/python3.14/site-packages/vcr_unittest
+COPY --from=devdeps /usr/local/lib/python3.14/site-packages/wrapt /usr/local/lib/python3.14/site-packages/wrapt
+COPY --from=devdeps /usr/local/lib/python3.14/site-packages/parameterized /usr/local/lib/python3.14/site-packages/parameterized

@@ -1,0 +1,20 @@
+{
+  "services": {
+    "postgres": {
+      "image": "dd-api-perf-postgres:18.6", "pull_policy": "never",
+      "environment": {"POSTGRES_DB": "dd_r4_check", "POSTGRES_USER": "dd_r4_check", "POSTGRES_PASSWORD": "${DD_R4_TEST_DB_PASSWORD:?Set a private isolated test DB password}"},
+      "volumes": ["check_postgres:/var/lib/postgresql"]
+    },
+    "valkey": {"image": "dd-api-perf-valkey:local", "pull_policy": "never"},
+    "uwsgi": {
+      "image": "${DD_FINAL_TEST_IMAGE:-dd-final-final-check:3.5.100}", "pull_policy": "never", "entrypoint": ["sleep", "infinity"],
+      "env_file": "${DD_R4_TEST_ENV:?Set the path to the private test env file}",
+      "environment": {
+        "DD_DATABASE_URL": "postgresql://dd_r4_check:${DD_R4_TEST_DB_PASSWORD}@postgres:5432/dd_r4_check",
+        "DD_CELERY_BROKER_URL": "redis://valkey:6379/0", "DD_CACHE_URL": "redis://valkey:6379/1", "DD_ALLOWED_HOSTS": "*", "DD_TESTING": "True"
+      },
+      "volumes": ["${DD_R4_SOURCE:?Set the absolute source checkout}/unittests:/app/unittests:ro", "${DD_R4_SOURCE}/tests:/app/tests:ro"]
+    }
+  },
+  "volumes": {"check_postgres": {}}
+}

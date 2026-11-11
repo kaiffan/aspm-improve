@@ -1,0 +1,85 @@
+{
+  "health_and_permissions": [
+    {
+      "actor": "admin",
+      "url": "/api/v2/findings/?limit=1",
+      "status": 200,
+      "count": 1000168,
+      "benchmark_middleware_present": false
+    },
+    {
+      "actor": "admin",
+      "url": "/api/v2/products/?findings=none&limit=1",
+      "status": 200,
+      "count": 15,
+      "benchmark_middleware_present": false
+    },
+    {
+      "actor": "restricted",
+      "url": "/api/v2/findings/35/",
+      "status": 404,
+      "count": null,
+      "benchmark_middleware_present": false
+    },
+    {
+      "actor": "restricted",
+      "url": "/api/v2/findings/?test__engagement__product=8&limit=1",
+      "status": 200,
+      "count": 0,
+      "benchmark_middleware_present": false
+    }
+  ],
+  "containers": {
+    "dd-final-web-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:0af08fcf676005ac013cafd26166d6e2525e1f3856dab6b48c13160a3601b6ce"
+    },
+    "dd-final-nginx-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:596be1d239702b311a174dd09c436f0180bd495afa95cdd02cf19970382fb0ae"
+    },
+    "django-defectdojo-uwsgi-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:8b25ecf7d8945e7214d388db3b1e6d30484f2767815d0496917815f25f388b34"
+    },
+    "django-defectdojo-postgres-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873"
+    },
+    "django-defectdojo-uwsgi-perf-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:c2462750c94317d5b5489ae8bfdab8cb2ce371e7ae73c6ff3f286c21e5ca3430"
+    },
+    "dd35100-round2-uwsgi-round2-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:d23015765c12fdbf949c4f1a7d703453c202f48883a205f0be4a7f3bf0a20204"
+    },
+    "dd35100-round3-uwsgi-round3-1": {
+      "running": true,
+      "oom": false,
+      "restarts": 0,
+      "image": "sha256:1ab854cd96b910298d5bb38f370e8e6ea5523d5404cde837bcc2cd5160adc23d"
+    }
+  },
+  "resource_guard": {
+    "min_host_free_percent": 34,
+    "min_swap_mib": 2114.75,
+    "max_swap_mib": 2566.38,
+    "guard_stops": []
+  },
+  "old_benchmark_apps_restored": true,
+  "optimized_test_port": 48084,
+  "original_port_unchanged": 8080
+}

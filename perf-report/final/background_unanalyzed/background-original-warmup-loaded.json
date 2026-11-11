@@ -1,0 +1,537 @@
+{
+  "requests": 40,
+  "statuses": {
+    "200": 40
+  },
+  "error_rate": 0.0,
+  "p50_ms": 718.17,
+  "p95_ms": 5245.038,
+  "p99_ms": null,
+  "rps": 5.4,
+  "bytes": 13404545,
+  "concurrency": 10,
+  "configured_users": 25,
+  "observed_users": 24,
+  "scheduled_requests": 40,
+  "elapsed_s": 7.408,
+  "started_at": 1794383916.0692291,
+  "ended_at": 1794383923.477155,
+  "variant": "original",
+  "scenario": "mixed",
+  "think_time": 0,
+  "fixed_users": false,
+  "seed": 35103,
+  "stopped": false,
+  "by_case": {
+    "findings": {
+      "requests": 12,
+      "statuses": {
+        "200": 12
+      },
+      "error_rate": 0.0,
+      "p50_ms": 670.666,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 1.62,
+      "bytes": 3524274
+    },
+    "filtered_product": {
+      "requests": 6,
+      "statuses": {
+        "200": 6
+      },
+      "error_rate": 0.0,
+      "p50_ms": 1023.612,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.81,
+      "bytes": 1727158
+    },
+    "finding_detail": {
+      "requests": 4,
+      "statuses": {
+        "200": 4
+      },
+      "error_rate": 0.0,
+      "p50_ms": 71.652,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.54,
+      "bytes": 10341
+    },
+    "products": {
+      "requests": 4,
+      "statuses": {
+        "200": 4
+      },
+      "error_rate": 0.0,
+      "p50_ms": 3807.586,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.54,
+      "bytes": 7731366
+    },
+    "tests": {
+      "requests": 4,
+      "statuses": {
+        "200": 4
+      },
+      "error_rate": 0.0,
+      "p50_ms": 44.396,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.54,
+      "bytes": 28144
+    },
+    "engagements": {
+      "requests": 2,
+      "statuses": {
+        "200": 2
+      },
+      "error_rate": 0.0,
+      "p50_ms": 46.494,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.27,
+      "bytes": 29240
+    },
+    "dashboard": {
+      "requests": 4,
+      "statuses": {
+        "200": 4
+      },
+      "error_rate": 0.0,
+      "p50_ms": 2228.11,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.54,
+      "bytes": 191509
+    },
+    "web_products": {
+      "requests": 2,
+      "statuses": {
+        "200": 2
+      },
+      "error_rate": 0.0,
+      "p50_ms": 3438.602,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.27,
+      "bytes": 162381
+    },
+    "endpoints": {
+      "requests": 2,
+      "statuses": {
+        "200": 2
+      },
+      "error_rate": 0.0,
+      "p50_ms": 23.175,
+      "p95_ms": null,
+      "p99_ms": null,
+      "rps": 0.27,
+      "bytes": 132
+    }
+  },
+  "samples": [
+    {
+      "ms": 2407.261,
+      "status": "200",
+      "case": "dashboard",
+      "bytes": 47872,
+      "actor": 5,
+      "at": 1794383916.069282,
+      "sql_count": 18,
+      "sql_ms": 2371.218
+    },
+    {
+      "ms": 2048.959,
+      "status": "200",
+      "case": "dashboard",
+      "bytes": 47871,
+      "actor": 12,
+      "at": 1794383918.476542,
+      "sql_count": 18,
+      "sql_ms": 2020.785
+    },
+    {
+      "ms": 5245.038,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 288089,
+      "actor": 22,
+      "at": 1794383916.0693572,
+      "sql_count": 124,
+      "sql_ms": 5121.892
+    },
+    {
+      "ms": 836.76,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 286092,
+      "actor": 21,
+      "at": 1794383916.069417,
+      "sql_count": 124,
+      "sql_ms": 694.419
+    },
+    {
+      "ms": 1019.881,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 289398,
+      "actor": 20,
+      "at": 1794383916.906208,
+      "sql_count": 124,
+      "sql_ms": 791.589
+    },
+    {
+      "ms": 86.251,
+      "status": "200",
+      "case": "finding_detail",
+      "bytes": 2592,
+      "actor": 3,
+      "at": 1794383917.92611,
+      "sql_count": 24,
+      "sql_ms": 48.137
+    },
+    {
+      "ms": 631.502,
+      "status": "200",
+      "case": "findings",
+      "bytes": 289448,
+      "actor": 19,
+      "at": 1794383918.012395,
+      "sql_count": 124,
+      "sql_ms": 498.998
+    },
+    {
+      "ms": 4832.844,
+      "status": "200",
+      "case": "products",
+      "bytes": 3670607,
+      "actor": 19,
+      "at": 1794383918.643927,
+      "sql_count": 10,
+      "sql_ms": 4670.238
+    },
+    {
+      "ms": 3134.647,
+      "status": "200",
+      "case": "dashboard",
+      "bytes": 47894,
+      "actor": 4,
+      "at": 1794383916.069461,
+      "sql_count": 18,
+      "sql_ms": 3093.457
+    },
+    {
+      "ms": 693.013,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 6,
+      "at": 1794383919.2040992,
+      "sql_count": 124,
+      "sql_ms": 421.361
+    },
+    {
+      "ms": 36.495,
+      "status": "200",
+      "case": "tests",
+      "bytes": 8887,
+      "actor": 1,
+      "at": 1794383919.897142,
+      "sql_count": 9,
+      "sql_ms": 12.789
+    },
+    {
+      "ms": 490.638,
+      "status": "200",
+      "case": "findings",
+      "bytes": 294210,
+      "actor": 20,
+      "at": 1794383919.933671,
+      "sql_count": 124,
+      "sql_ms": 387.433
+    },
+    {
+      "ms": 383.987,
+      "status": "200",
+      "case": "findings",
+      "bytes": 289448,
+      "actor": 1,
+      "at": 1794383920.424337,
+      "sql_count": 124,
+      "sql_ms": 287.073
+    },
+    {
+      "ms": 52.297,
+      "status": "200",
+      "case": "tests",
+      "bytes": 5185,
+      "actor": 6,
+      "at": 1794383916.0695071,
+      "sql_count": 9,
+      "sql_ms": 18.501
+    },
+    {
+      "ms": 1027.343,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 289398,
+      "actor": 5,
+      "at": 1794383916.121842,
+      "sql_count": 124,
+      "sql_ms": 744.819
+    },
+    {
+      "ms": 22.112,
+      "status": "200",
+      "case": "endpoints",
+      "bytes": 66,
+      "actor": 8,
+      "at": 1794383917.149205,
+      "sql_count": 5,
+      "sql_ms": 5.864
+    },
+    {
+      "ms": 1231.448,
+      "status": "200",
+      "case": "findings",
+      "bytes": 289448,
+      "actor": 16,
+      "at": 1794383917.171353,
+      "sql_count": 124,
+      "sql_ms": 1101.252
+    },
+    {
+      "ms": 35.277,
+      "status": "200",
+      "case": "tests",
+      "bytes": 8887,
+      "actor": 10,
+      "at": 1794383918.402821,
+      "sql_count": 9,
+      "sql_ms": 13.166
+    },
+    {
+      "ms": 648.319,
+      "status": "200",
+      "case": "findings",
+      "bytes": 294210,
+      "actor": 14,
+      "at": 1794383918.438132,
+      "sql_count": 124,
+      "sql_ms": 505.229
+    },
+    {
+      "ms": 603.899,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 18,
+      "at": 1794383919.08648,
+      "sql_count": 124,
+      "sql_ms": 478.803
+    },
+    {
+      "ms": 1547.602,
+      "status": "200",
+      "case": "dashboard",
+      "bytes": 47872,
+      "actor": 11,
+      "at": 1794383919.690403,
+      "sql_count": 18,
+      "sql_ms": 1444.063
+    },
+    {
+      "ms": 57.353,
+      "status": "200",
+      "case": "tests",
+      "bytes": 5185,
+      "actor": 17,
+      "at": 1794383916.069549,
+      "sql_count": 9,
+      "sql_ms": 21.045
+    },
+    {
+      "ms": 958.341,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 286092,
+      "actor": 15,
+      "at": 1794383916.126951,
+      "sql_count": 124,
+      "sql_ms": 792.463
+    },
+    {
+      "ms": 24.238,
+      "status": "200",
+      "case": "endpoints",
+      "bytes": 66,
+      "actor": 8,
+      "at": 1794383917.0853171,
+      "sql_count": 5,
+      "sql_ms": 7.658
+    },
+    {
+      "ms": 750.224,
+      "status": "200",
+      "case": "findings",
+      "bytes": 294210,
+      "actor": 2,
+      "at": 1794383917.1095848,
+      "sql_count": 124,
+      "sql_ms": 627.835
+    },
+    {
+      "ms": 3194.453,
+      "status": "200",
+      "case": "web_products",
+      "bytes": 81176,
+      "actor": 17,
+      "at": 1794383917.8598452,
+      "sql_count": 24,
+      "sql_ms": 3157.011
+    },
+    {
+      "ms": 5353.601,
+      "status": "200",
+      "case": "filtered_product",
+      "bytes": 288089,
+      "actor": 7,
+      "at": 1794383916.069589,
+      "sql_count": 124,
+      "sql_ms": 5121.482
+    },
+    {
+      "ms": 579.435,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 21,
+      "at": 1794383916.069639,
+      "sql_count": 124,
+      "sql_ms": 463.741
+    },
+    {
+      "ms": 722.268,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 12,
+      "at": 1794383916.649108,
+      "sql_count": 124,
+      "sql_ms": 601.149
+    },
+    {
+      "ms": 714.071,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 18,
+      "at": 1794383917.3713999,
+      "sql_count": 124,
+      "sql_ms": 574.824
+    },
+    {
+      "ms": 5260.892,
+      "status": "200",
+      "case": "products",
+      "bytes": 3670607,
+      "actor": 13,
+      "at": 1794383918.085501,
+      "sql_count": 10,
+      "sql_ms": 5176.584
+    },
+    {
+      "ms": 2782.329,
+      "status": "200",
+      "case": "products",
+      "bytes": 195445,
+      "actor": 11,
+      "at": 1794383916.069675,
+      "sql_count": 10,
+      "sql_ms": 2749.945
+    },
+    {
+      "ms": 42.215,
+      "status": "200",
+      "case": "engagements",
+      "bytes": 24950,
+      "actor": 0,
+      "at": 1794383918.852001,
+      "sql_count": 9,
+      "sql_ms": 13.504
+    },
+    {
+      "ms": 50.773,
+      "status": "200",
+      "case": "engagements",
+      "bytes": 4290,
+      "actor": 22,
+      "at": 1794383918.894258,
+      "sql_count": 9,
+      "sql_ms": 22.771
+    },
+    {
+      "ms": 41.67,
+      "status": "200",
+      "case": "finding_detail",
+      "bytes": 2583,
+      "actor": 0,
+      "at": 1794383918.945067,
+      "sql_count": 23,
+      "sql_ms": 18.786
+    },
+    {
+      "ms": 1999.761,
+      "status": "200",
+      "case": "products",
+      "bytes": 194707,
+      "actor": 9,
+      "at": 1794383918.986772,
+      "sql_count": 10,
+      "sql_ms": 1973.545
+    },
+    {
+      "ms": 74.121,
+      "status": "200",
+      "case": "finding_detail",
+      "bytes": 2583,
+      "actor": 13,
+      "at": 1794383916.069708,
+      "sql_count": 24,
+      "sql_ms": 38.426
+    },
+    {
+      "ms": 69.182,
+      "status": "200",
+      "case": "finding_detail",
+      "bytes": 2583,
+      "actor": 16,
+      "at": 1794383916.143865,
+      "sql_count": 24,
+      "sql_ms": 35.352
+    },
+    {
+      "ms": 738.565,
+      "status": "200",
+      "case": "findings",
+      "bytes": 295550,
+      "actor": 24,
+      "at": 1794383916.213085,
+      "sql_count": 124,
+      "sql_ms": 590.595
+    },
+    {
+      "ms": 3682.751,
+      "status": "200",
+      "case": "web_products",
+      "bytes": 81205,
+      "actor": 3,
+      "at": 1794383916.951676,
+      "sql_count": 24,
+      "sql_ms": 3638.291
+    }
+  ]
+}

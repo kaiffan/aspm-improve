@@ -1,0 +1,7 @@
+# Root causes and ranking
+
+1. **Scoped Product aggregates**: highest cumulative SQL family in the initial c25 trace. The one-Product nested-loop plan reread 422,808 shared blocks for 532,569 active IDs. Constant grouping plus Test-ID array removes the outer joins; actual plans, driver totals and HTTP A/B/C results are linked in [RESULTS](RESULTS.md). Full lists and order remain intact; multi-Product batch path stays unchanged.
+2. **Dashboard repeated table passes / wide DISTINCT**: monthly, daily and severity scans plus a full-width count consumed most remaining DB time. Narrow PK counters eliminate their wide sort spills; one daily/severity SQL feeds all charts. Exact counts, authorization and timezone semantics are tested.
+3. **Remaining exact counts / wide DISTINCT in Findings and Test UI**: still about 1.6/1.3 s in standalone scenarios. Measured and left outside the two-fix limit. Full Product ID serialization remains an unbounded contract; more data still increases memory/response size.
+
+Initial audit: [SQL ranking](sql_ranking_r4.json), [trace](raw/diagnostic-r4-sql.jsonl). Paired end check: [Round4](sql_ranking_r4_recheck.json), [Round5](sql_ranking_round5.json). These are driver wall timings, not pg_stat_statements server execution totals. Full SELECT plans: [before](phases_round4.json), [after](phases_round5.json). Raw rejected paths are preserved separately and excluded. No index or server setting was changed.

@@ -1,0 +1,1194 @@
+{
+  "request_count_including_warmup": 326,
+  "timing": "driver wall time, not server-only execution time",
+  "queries": [
+    {
+      "id": "24240be45299207f",
+      "sql": "SELECT \"dojo_engagement\".\"product_id\" AS \"test__engagement__product_id\", ARRAY_AGG(\"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"id\") AS \"finding_ids\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (%s)) GROUP BY 1",
+      "rows": 29,
+      "calls": 29,
+      "total_ms": 80419.04,
+      "mean_ms": 2773.070344827586,
+      "p95_ms": 8267.946
+    },
+    {
+      "id": "7c5bec7658fcc91a",
+      "sql": "SELECT DISTINCT DATE_TRUNC(%s, \"dojo_finding\".\"created\" AT TIME ZONE %s) AS \"month\", \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date >= %s) GROUP BY 2, 1",
+      "rows": 155,
+      "calls": 31,
+      "total_ms": 42592.225,
+      "mean_ms": 1373.9427419354838,
+      "p95_ms": 1917.084
+    },
+    {
+      "id": "f071dbbc164900be",
+      "sql": "SELECT \"dojo_engagement\".\"product_id\" AS \"test__engagement__product_id\", COUNT(\"dojo_finding\".\"id\") AS \"active\", COUNT(\"dojo_finding\".\"id\") FILTER (WHERE \"dojo_finding\".\"verified\") AS \"verified\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (%s)) GROUP BY 1",
+      "rows": 14,
+      "calls": 14,
+      "total_ms": 40418.98,
+      "mean_ms": 2887.07,
+      "p95_ms": null
+    },
+    {
+      "id": "431eceff0aeb20cb",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"mitigated\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+      "rows": 31,
+      "calls": 31,
+      "total_ms": 26596.482,
+      "mean_ms": 857.9510322580645,
+      "p95_ms": 1793.127
+    },
+    {
+      "id": "968eefcc030a9c63",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_finding\".\"severity\" IN (%s) AND \"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s))))",
+      "rows": 45,
+      "calls": 45,
+      "total_ms": 26532.148,
+      "mean_ms": 589.6032888888889,
+      "p95_ms": 1275.768
+    },
+    {
+      "id": "afbe80b8829c539e",
+      "sql": "SELECT DISTINCT (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date AS \"created__date\", COUNT(\"dojo_finding\".\"id\") AS \"count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date >= %s AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date < %s) GROUP BY 1 ORDER BY 1 ASC",
+      "rows": 31,
+      "calls": 31,
+      "total_ms": 21916.82,
+      "mean_ms": 706.9941935483871,
+      "p95_ms": 1608.827
+    },
+    {
+      "id": "b2750d7861b7f4d1",
+      "sql": "SELECT DISTINCT \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\") GROUP BY 1",
+      "rows": 155,
+      "calls": 31,
+      "total_ms": 18920.193,
+      "mean_ms": 610.3288064516129,
+      "p95_ms": 1056.762
+    },
+    {
+      "id": "b7470d05a930fe99",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))",
+      "rows": 98,
+      "calls": 98,
+      "total_ms": 12617.264,
+      "mean_ms": 128.7475918367347,
+      "p95_ms": 204.677
+    },
+    {
+      "id": "e335b5ee3d9f94e3",
+      "sql": "SELECT \"dojo_engagement\".\"product_id\" AS \"test__engagement__product_id\", ARRAY_AGG(\"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"id\") AS \"finding_ids\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (%s, ...)) GROUP BY 1",
+      "rows": 42,
+      "calls": 3,
+      "total_ms": 5628.015,
+      "mean_ms": 1876.005,
+      "p95_ms": null
+    },
+    {
+      "id": "c16ed524bc153a4e",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"severity\" IN (%s) AND \"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s))))",
+      "rows": 3,
+      "calls": 3,
+      "total_ms": 3431.2780000000002,
+      "mean_ms": 1143.7593333333334,
+      "p95_ms": null
+    },
+    {
+      "id": "9af09161fdfe44ca",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND \"dojo_finding\".\"date\" BETWEEN %s AND %s)) subquery",
+      "rows": 31,
+      "calls": 31,
+      "total_ms": 2968.617,
+      "mean_ms": 95.76183870967742,
+      "p95_ms": 293.807
+    },
+    {
+      "id": "0cf4a1025d0e3d03",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" WHERE (NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"mitigated\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 1802.09,
+      "mean_ms": 1802.09,
+      "p95_ms": null
+    },
+    {
+      "id": "f2200dca78e83abc",
+      "sql": "SELECT DISTINCT DATE_TRUNC(%s, \"dojo_finding\".\"created\" AT TIME ZONE %s) AS \"month\", \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\" FROM \"dojo_finding\" WHERE (NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date >= %s) GROUP BY 2, 1",
+      "rows": 5,
+      "calls": 1,
+      "total_ms": 1536.225,
+      "mean_ms": 1536.225,
+      "p95_ms": null
+    },
+    {
+      "id": "83131aed0ddeed29",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_finding\".\"severity\" IN (%s) AND \"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s)))) ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100",
+      "rows": 4500,
+      "calls": 45,
+      "total_ms": 1438.766,
+      "mean_ms": 31.97257777777778,
+      "p95_ms": 72.795
+    },
+    {
+      "id": "0e266d0ee2dfac98",
+      "sql": "SELECT DISTINCT \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\" FROM \"dojo_finding\" WHERE NOT \"dojo_finding\".\"duplicate\" GROUP BY 1",
+      "rows": 5,
+      "calls": 1,
+      "total_ms": 1354.183,
+      "mean_ms": 1354.183,
+      "p95_ms": null
+    },
+    {
+      "id": "e748a8674e186f28",
+      "sql": "SELECT \"dojo_engagement\".\"product_id\" AS \"test__engagement__product_id\", COUNT(\"dojo_finding\".\"id\") AS \"active\", COUNT(\"dojo_finding\".\"id\") FILTER (WHERE \"dojo_finding\".\"verified\") AS \"verified\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (%s, ...)) GROUP BY 1",
+      "rows": 28,
+      "calls": 2,
+      "total_ms": 1067.962,
+      "mean_ms": 533.981,
+      "p95_ms": null
+    },
+    {
+      "id": "e625169dfab7f919",
+      "sql": "SELECT \"dojo_system_settings\".\"id\", \"dojo_system_settings\".\"enable_deduplication\", \"dojo_system_settings\".\"delete_duplicates\", \"dojo_system_settings\".\"max_dupes\", \"dojo_system_settings\".\"email_from\", \"dojo_system_settings\".\"enable_jira\", \"dojo_system_settings\".\"enable_jira_web_hook\", \"dojo_system_settings\".\"disable_jira_webhook_secret\", \"dojo_system_settings\".\"jira_webhook_secret\", \"dojo_system_settings\".\"jira_minimum_severity\", \"dojo_system_settings\".\"jira_labels\", \"dojo_system_settings\".\"add_vulnerability_id_to_jira_label\", \"dojo_system_settings\".\"enable_github\", \"dojo_system_settings\".\"enable_slack_notifications\", \"dojo_system_settings\".\"slack_channel\", \"dojo_system_settings\".\"slack_token\", \"dojo_system_settings\".\"slack_username\", \"dojo_system_settings\".\"enable_msteams_notifications\", \"dojo_system_settings\".\"msteams_url\", \"dojo_system_settings\".\"enable_mail_notifications\", \"dojo_system_settings\".\"mail_notifications_to\", \"dojo_system_settings\".\"enable_webhooks_notifications\", \"dojo_system_settings\".\"webhooks_notifications_timeout\", \"dojo_system_settings\".\"enforce_verified_status\", \"dojo_system_settings\".\"enforce_verified_status_jira\", \"dojo_system_settings\".\"enforce_verified_status_product_grading\", \"dojo_system_settings\".\"enforce_verified_status_metrics\", \"dojo_system_settings\".\"false_positive_history\", \"dojo_system_settings\".\"retroactive_false_positive_history\", \"dojo_system_settings\".\"url_prefix\", \"dojo_system_settings\".\"team_name\", \"dojo_system_settings\".\"enable_product_grade\", \"dojo_system_settings\".\"product_grade_a\", \"dojo_system_settings\".\"product_grade_b\", \"dojo_system_settings\".\"product_grade_c\", \"dojo_system_settings\".\"product_grade_d\", \"dojo_system_settings\".\"product_grade_f\", \"dojo_system_settings\".\"enable_product_tag_inheritance\", \"dojo_system_settings\".\"enable_benchmark\", \"dojo_system_settings\".\"enable_similar_findings\", \"dojo_system_settings\".\"engagement_auto_close\", \"dojo_system_settings\".\"engagement_auto_close_days\", \"dojo_system_settings\".\"enable_finding_sla\", \"dojo_system_settings\".\"enable_notify_sla_active\", \"dojo_system_settings\".\"enable_notify_sla_active_verified\", \"dojo_system_settings\".\"enable_notify_sla_jira_only\", \"dojo_system_settings\".\"enable_notify_sla_exponential_backoff\", \"dojo_system_settings\".\"allow_anonymous_survey_repsonse\", \"dojo_system_settings\".\"disclaimer_notifications\", \"dojo_system_settings\".\"disclaimer_reports\", \"dojo_system_settings\".\"disclaimer_reports_forced\", \"dojo_system_settings\".\"disclaimer_notes\", \"dojo_system_settings\".\"risk_acceptance_form_default_days\", \"dojo_system_settings\".\"risk_acceptance_notify_before_expiration\", \"dojo_system_settings\".\"enable_questionnaires\", \"dojo_system_settings\".\"enable_checklists\", \"dojo_system_settings\".\"enable_endpoint_metadata_import\", \"dojo_system_settings\".\"enable_user_profile_editable\", \"dojo_system_settings\".\"enable_product_tracking_files\", \"dojo_system_settings\".\"enable_finding_groups\", \"dojo_system_settings\".\"enable_ui_table_based_searching\", \"dojo_system_settings\".\"enable_calendar\", \"dojo_system_settings\".\"enable_cvss3_display\", \"dojo_system_settings\".\"enable_cvss4_display\", \"dojo_system_settings\".\"minimum_password_length\", \"dojo_system_settings\".\"maximum_password_length\", \"dojo_system_settings\".\"number_character_required\", \"dojo_system_settings\".\"special_character_required\", \"dojo_system_settings\".\"lowercase_character_required\", \"dojo_system_settings\".\"uppercase_character_required\", \"dojo_system_settings\".\"non_common_password_required\", \"dojo_system_settings\".\"api_expose_error_details\", \"dojo_system_settings\".\"filter_string_matching\", \"dojo_system_settings\".\"read_only_mode\", \"dojo_system_settings\".\"install_id\" FROM \"dojo_system_settings\" LIMIT 21",
+      "rows": 326,
+      "calls": 326,
+      "total_ms": 895.272,
+      "mean_ms": 2.7462331288343558,
+      "p95_ms": 7.338
+    },
+    {
+      "id": "57298cd5e904339c",
+      "sql": "SELECT \"authtoken_token\".\"key\", \"authtoken_token\".\"user_id\", \"authtoken_token\".\"created\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"authtoken_token\" INNER JOIN \"auth_user\" ON (\"authtoken_token\".\"user_id\" = \"auth_user\".\"id\") WHERE \"authtoken_token\".\"key\" = %s LIMIT 21",
+      "rows": 278,
+      "calls": 278,
+      "total_ms": 871.649,
+      "mean_ms": 3.135428057553957,
+      "p95_ms": 10.391
+    },
+    {
+      "id": "691668a1ce8b2991",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100",
+      "rows": 9800,
+      "calls": 98,
+      "total_ms": 787.844,
+      "mean_ms": 8.039224489795918,
+      "p95_ms": 14.344
+    },
+    {
+      "id": "d589e2dd7a672afd",
+      "sql": "SELECT \"dojo_usercontactinfo\".\"id\", \"dojo_usercontactinfo\".\"user_id\", \"dojo_usercontactinfo\".\"title\", \"dojo_usercontactinfo\".\"phone_number\", \"dojo_usercontactinfo\".\"cell_number\", \"dojo_usercontactinfo\".\"twitter_username\", \"dojo_usercontactinfo\".\"github_username\", \"dojo_usercontactinfo\".\"slack_username\", \"dojo_usercontactinfo\".\"slack_user_id\", \"dojo_usercontactinfo\".\"block_execution\", \"dojo_usercontactinfo\".\"deduplication_execution_mode\", \"dojo_usercontactinfo\".\"force_password_reset\", \"dojo_usercontactinfo\".\"token_last_reset\", \"dojo_usercontactinfo\".\"token_expiry\", \"dojo_usercontactinfo\".\"password_last_reset\", \"dojo_usercontactinfo\".\"user_state_details\", \"dojo_usercontactinfo\".\"language\" FROM \"dojo_usercontactinfo\" WHERE \"dojo_usercontactinfo\".\"user_id\" = %s LIMIT 21",
+      "rows": 14,
+      "calls": 326,
+      "total_ms": 605.645,
+      "mean_ms": 1.8578067484662577,
+      "p95_ms": 7.421
+    },
+    {
+      "id": "8dc0e366f1a2c53a",
+      "sql": "SELECT (\"dojo_finding_found_by\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_test_type\".\"id\", \"dojo_test_type\".\"name\", \"dojo_test_type\".\"static_tool\", \"dojo_test_type\".\"dynamic_tool\", \"dojo_test_type\".\"active\", \"dojo_test_type\".\"dynamically_generated\" FROM \"dojo_test_type\" INNER JOIN \"dojo_finding_found_by\" ON (\"dojo_test_type\".\"id\" = \"dojo_finding_found_by\".\"test_type_id\") WHERE \"dojo_finding_found_by\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_test_type\".\"name\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 552.8870000000001,
+      "mean_ms": 3.7106510067114096,
+      "p95_ms": 10.483
+    },
+    {
+      "id": "2dd0028bfb9e679c",
+      "sql": "SELECT \"dojo_locationfindingreference\".\"id\", \"dojo_locationfindingreference\".\"created\", \"dojo_locationfindingreference\".\"updated\", \"dojo_locationfindingreference\".\"relationship\", \"dojo_locationfindingreference\".\"relationship_data\", \"dojo_locationfindingreference\".\"location_id\", \"dojo_locationfindingreference\".\"finding_id\", \"dojo_locationfindingreference\".\"test_id\", \"dojo_locationfindingreference\".\"auditor_id\", \"dojo_locationfindingreference\".\"audit_time\", \"dojo_locationfindingreference\".\"status\", \"dojo_locationfindingreference\".\"archived_at\", \"dojo_locationfindingreference\".\"archive_batch\" FROM \"dojo_locationfindingreference\" WHERE \"dojo_locationfindingreference\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_locationfindingreference\".\"id\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 523.987,
+      "mean_ms": 3.516691275167785,
+      "p95_ms": 11.064
+    },
+    {
+      "id": "e611157eb2c8589b",
+      "sql": "SELECT DISTINCT (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date AS \"created__date\", COUNT(\"dojo_finding\".\"id\") AS \"count\" FROM \"dojo_finding\" WHERE (NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date >= %s AND (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date < %s) GROUP BY 1 ORDER BY 1 ASC",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 510.549,
+      "mean_ms": 510.549,
+      "p95_ms": null
+    },
+    {
+      "id": "87809184e0c80f4e",
+      "sql": "SELECT (\"dojo_finding_notes\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_notes\".\"id\", \"dojo_notes\".\"note_type_id\", \"dojo_notes\".\"entry\", \"dojo_notes\".\"date\", \"dojo_notes\".\"author_id\", \"dojo_notes\".\"private\", \"dojo_notes\".\"edited\", \"dojo_notes\".\"editor_id\", \"dojo_notes\".\"edit_time\", \"dojo_note_type\".\"id\", \"dojo_note_type\".\"name\", \"dojo_note_type\".\"description\", \"dojo_note_type\".\"is_single\", \"dojo_note_type\".\"is_active\", \"dojo_note_type\".\"is_mandatory\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\", T6.\"id\", T6.\"password\", T6.\"last_login\", T6.\"is_superuser\", T6.\"username\", T6.\"first_name\", T6.\"last_name\", T6.\"email\", T6.\"is_staff\", T6.\"is_active\", T6.\"date_joined\" FROM \"dojo_notes\" INNER JOIN \"dojo_finding_notes\" ON (\"dojo_notes\".\"id\" = \"dojo_finding_notes\".\"notes_id\") LEFT OUTER JOIN \"dojo_note_type\" ON (\"dojo_notes\".\"note_type_id\" = \"dojo_note_type\".\"id\") INNER JOIN \"auth_user\" ON (\"dojo_notes\".\"author_id\" = \"auth_user\".\"id\") LEFT OUTER JOIN \"auth_user\" T6 ON (\"dojo_notes\".\"editor_id\" = T6.\"id\") WHERE \"dojo_finding_notes\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_notes\".\"date\" DESC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 485.447,
+      "mean_ms": 3.25803355704698,
+      "p95_ms": 9.06
+    },
+    {
+      "id": "5a8bb45d1064f6ab",
+      "sql": "SELECT \"dojo_findingvulnerabilityreference\".\"id\", \"dojo_findingvulnerabilityreference\".\"finding_id\", \"dojo_findingvulnerabilityreference\".\"vulnerability_id\", \"dojo_findingvulnerabilityreference\".\"order\", \"dojo_findingvulnerabilityreference\".\"created\", \"dojo_findingvulnerabilityreference\".\"archived_at\", \"dojo_findingvulnerabilityreference\".\"archive_batch\", \"dojo_vulnerability\".\"id\", \"dojo_vulnerability\".\"vulnerability_id\", \"dojo_vulnerability\".\"vulnerability_id_type\", \"dojo_vulnerability\".\"epss_score\", \"dojo_vulnerability\".\"epss_percentile\", \"dojo_vulnerability\".\"known_exploited\", \"dojo_vulnerability\".\"ransomware_used\", \"dojo_vulnerability\".\"kev_date\", \"dojo_vulnerability\".\"kev_due_date\", \"dojo_vulnerability\".\"enrichment_updated\", \"dojo_vulnerability\".\"created\", \"dojo_vulnerability\".\"updated\" FROM \"dojo_findingvulnerabilityreference\" INNER JOIN \"dojo_vulnerability\" ON (\"dojo_findingvulnerabilityreference\".\"vulnerability_id\" = \"dojo_vulnerability\".\"id\") WHERE \"dojo_findingvulnerabilityreference\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_findingvulnerabilityreference\".\"order\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 454.608,
+      "mean_ms": 3.0510604026845636,
+      "p95_ms": 11.558
+    },
+    {
+      "id": "27d8a6aed4c9cbdb",
+      "sql": "SELECT (\"dojo_finding_reviewers\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"auth_user\" INNER JOIN \"dojo_finding_reviewers\" ON (\"auth_user\".\"id\" = \"dojo_finding_reviewers\".\"dojo_user_id\") WHERE \"dojo_finding_reviewers\".\"finding_id\" IN (%s, ...) ORDER BY \"auth_user\".\"first_name\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 400.567,
+      "mean_ms": 2.6883691275167787,
+      "p95_ms": 7.819
+    },
+    {
+      "id": "09f5be84b5ebc77c",
+      "sql": "SELECT \"dojo_test\".\"id\", \"dojo_test\".\"engagement_id\", \"dojo_test\".\"lead_id\", \"dojo_test\".\"test_type_id\", \"dojo_test\".\"scan_type\", \"dojo_test\".\"title\", \"dojo_test\".\"description\", \"dojo_test\".\"target_start\", \"dojo_test\".\"target_end\", \"dojo_test\".\"percent_complete\", \"dojo_test\".\"environment_id\", \"dojo_test\".\"updated\", \"dojo_test\".\"created\", \"dojo_test\".\"version\", \"dojo_test\".\"build_id\", \"dojo_test\".\"commit_hash\", \"dojo_test\".\"branch_tag\", \"dojo_test\".\"api_scan_configuration_id\", \"dojo_test\".\"archived_at\", \"dojo_test\".\"archive_batch\" FROM \"dojo_test\" WHERE (\"dojo_test\".\"id\") IN ((%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s))",
+      "rows": 1168,
+      "calls": 146,
+      "total_ms": 382.276,
+      "mean_ms": 2.6183287671232875,
+      "p95_ms": 8.475
+    },
+    {
+      "id": "63638e72bcddb7a4",
+      "sql": "SELECT \"dojo_burprawrequestresponse\".\"id\", \"dojo_burprawrequestresponse\".\"finding_id\", \"dojo_burprawrequestresponse\".\"burpRequestBase64\", \"dojo_burprawrequestresponse\".\"burpResponseBase64\" FROM \"dojo_burprawrequestresponse\" WHERE \"dojo_burprawrequestresponse\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 373.831,
+      "mean_ms": 2.5089328859060402,
+      "p95_ms": 8.134
+    },
+    {
+      "id": "aa7629d5cc16b429",
+      "sql": "SELECT (\"dojo_risk_acceptance_accepted_findings\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_risk_acceptance\".\"id\", \"dojo_risk_acceptance\".\"name\", \"dojo_risk_acceptance\".\"recommendation\", \"dojo_risk_acceptance\".\"recommendation_details\", \"dojo_risk_acceptance\".\"decision\", \"dojo_risk_acceptance\".\"decision_details\", \"dojo_risk_acceptance\".\"accepted_by\", \"dojo_risk_acceptance\".\"path\", \"dojo_risk_acceptance\".\"owner_id\", \"dojo_risk_acceptance\".\"expiration_date\", \"dojo_risk_acceptance\".\"expiration_date_warned\", \"dojo_risk_acceptance\".\"expiration_date_handled\", \"dojo_risk_acceptance\".\"reactivate_expired\", \"dojo_risk_acceptance\".\"restart_sla_expired\", \"dojo_risk_acceptance\".\"restore_verified_expired\", \"dojo_risk_acceptance\".\"created\", \"dojo_risk_acceptance\".\"updated\" FROM \"dojo_risk_acceptance\" INNER JOIN \"dojo_risk_acceptance_accepted_findings\" ON (\"dojo_risk_acceptance\".\"id\" = \"dojo_risk_acceptance_accepted_findings\".\"risk_acceptance_id\") WHERE \"dojo_risk_acceptance_accepted_findings\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 356.211,
+      "mean_ms": 2.3906778523489933,
+      "p95_ms": 7.402
+    },
+    {
+      "id": "8b0edd6ef8ca4f0c",
+      "sql": "SELECT \"dojo_product\".\"id\" AS \"id\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s) ORDER BY 1 ASC",
+      "rows": 189,
+      "calls": 189,
+      "total_ms": 354.64300000000003,
+      "mean_ms": 1.8764179894179895,
+      "p95_ms": 6.99
+    },
+    {
+      "id": "2962703f061fc261",
+      "sql": "SELECT \"dojo_endpoint_status\".\"id\", \"dojo_endpoint_status\".\"date\", \"dojo_endpoint_status\".\"last_modified\", \"dojo_endpoint_status\".\"mitigated\", \"dojo_endpoint_status\".\"mitigated_time\", \"dojo_endpoint_status\".\"mitigated_by_id\", \"dojo_endpoint_status\".\"false_positive\", \"dojo_endpoint_status\".\"out_of_scope\", \"dojo_endpoint_status\".\"risk_accepted\", \"dojo_endpoint_status\".\"endpoint_id\", \"dojo_endpoint_status\".\"finding_id\", \"dojo_endpoint_status\".\"archived_at\", \"dojo_endpoint_status\".\"archive_batch\" FROM \"dojo_endpoint_status\" WHERE \"dojo_endpoint_status\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 350.907,
+      "mean_ms": 2.3550805369127517,
+      "p95_ms": 7.696
+    },
+    {
+      "id": "2ac8ded1dfdae410",
+      "sql": "SELECT DISTINCT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\", \"dojo_product_platform\".\"id\", \"dojo_product_platform\".\"value\", \"dojo_product_platform\".\"name\", \"dojo_product_platform\".\"icon\", \"dojo_product_platform\".\"display_order\", \"dojo_product_lifecycle\".\"id\", \"dojo_product_lifecycle\".\"value\", \"dojo_product_lifecycle\".\"name\", \"dojo_product_lifecycle\".\"icon\", \"dojo_product_lifecycle\".\"display_order\", \"dojo_product_origin\".\"id\", \"dojo_product_origin\".\"value\", \"dojo_product_origin\".\"name\", \"dojo_product_origin\".\"icon\", \"dojo_product_origin\".\"display_order\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") LEFT OUTER JOIN \"dojo_product_platform\" ON (\"dojo_product\".\"platform_id\" = \"dojo_product_platform\".\"id\") LEFT OUTER JOIN \"dojo_product_lifecycle\" ON (\"dojo_product\".\"lifecycle_id\" = \"dojo_product_lifecycle\".\"id\") LEFT OUTER JOIN \"dojo_product_origin\" ON (\"dojo_product\".\"origin_id\" = \"dojo_product_origin\".\"id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s) ORDER BY \"dojo_product\".\"name\" ASC LIMIT 100",
+      "rows": 29,
+      "calls": 29,
+      "total_ms": 350.827,
+      "mean_ms": 12.09748275862069,
+      "p95_ms": 19.997
+    },
+    {
+      "id": "ec59f35cc6888c14",
+      "sql": "SELECT DISTINCT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_locationproductreference\" U0 WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_count\", COALESCE((SELECT COUNT(DISTINCT U3.\"host\") AS \"c\" FROM \"dojo_locationproductreference\" U0 INNER JOIN \"dojo_location\" U2 ON (U0.\"location_id\" = U2.\"id\") LEFT OUTER JOIN \"dojo_url\" U3 ON (U2.\"id\" = U3.\"location_id\") WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_host_count\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_engagement\" U0 WHERE (U0.\"product_id\" = (\"dojo_product\".\"id\") AND U0.\"active\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"active_engagement_count\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_engagement\" U0 WHERE (U0.\"product_id\" = (\"dojo_product\".\"id\") AND NOT U0.\"active\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"closed_engagement_count\", (SELECT U0.\"target_start\" AS \"target_start\" FROM \"dojo_engagement\" U0 WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") ORDER BY 1 DESC LIMIT 1) AS \"last_engagement_date\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_test_import\" U0 INNER JOIN \"dojo_test\" U1 ON (U0.\"test_id\" = U1.\"id\") INNER JOIN \"dojo_engagement\" U2 ON (U1.\"engagement_id\" = U2.\"id\") WHERE (U2.\"product_id\" = (\"dojo_product\".\"id\") AND U0.\"type\" = %s) GROUP BY U2.\"product_id\" ORDER BY U2.\"product_id\" ASC LIMIT 1), %s) AS \"total_reimport_count\", T7.\"id\", T7.\"password\", T7.\"last_login\", T7.\"is_superuser\", T7.\"username\", T7.\"first_name\", T7.\"last_name\", T7.\"email\", T7.\"is_staff\", T7.\"is_active\", T7.\"date_joined\", T8.\"id\", T8.\"password\", T8.\"last_login\", T8.\"is_superuser\", T8.\"username\", T8.\"first_name\", T8.\"last_name\", T8.\"email\", T8.\"is_staff\", T8.\"is_active\", T8.\"date_joined\", T9.\"id\", T9.\"password\", T9.\"last_login\", T9.\"is_superuser\", T9.\"username\", T9.\"first_name\", T9.\"last_name\", T9.\"email\", T9.\"is_staff\", T9.\"is_active\", T9.\"date_joined\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") LEFT OUTER JOIN \"auth_user\" T7 ON (\"dojo_product\".\"product_manager_id\" = T7.\"id\") LEFT OUTER JOIN \"auth_user\" T8 ON (\"dojo_product\".\"technical_contact_id\" = T8.\"id\") LEFT OUTER JOIN \"auth_user\" T9 ON (\"dojo_product\".\"team_manager_id\" = T9.\"id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s) ORDER BY \"dojo_product\".\"name\" ASC LIMIT 1",
+      "rows": 14,
+      "calls": 14,
+      "total_ms": 337.315,
+      "mean_ms": 24.09392857142857,
+      "p95_ms": null
+    },
+    {
+      "id": "997d23a1687face6",
+      "sql": "SELECT (\"dojo_finding_tags\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_tagulous_finding_tags\".\"id\", \"dojo_tagulous_finding_tags\".\"name\", \"dojo_tagulous_finding_tags\".\"slug\", \"dojo_tagulous_finding_tags\".\"count\", \"dojo_tagulous_finding_tags\".\"protected\" FROM \"dojo_tagulous_finding_tags\" INNER JOIN \"dojo_finding_tags\" ON (\"dojo_tagulous_finding_tags\".\"id\" = \"dojo_finding_tags\".\"tagulous_finding_tags_id\") WHERE \"dojo_finding_tags\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_tagulous_finding_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 334.897,
+      "mean_ms": 2.2476308724832212,
+      "p95_ms": 7.316
+    },
+    {
+      "id": "f23a0aa979743b80",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_finding\".\"id\" = %s) LIMIT 21",
+      "rows": 32,
+      "calls": 32,
+      "total_ms": 329.733,
+      "mean_ms": 10.30415625,
+      "p95_ms": 21.523
+    },
+    {
+      "id": "05bd20eee990e15b",
+      "sql": "SELECT \"dojo_jira_issue\".\"id\", \"dojo_jira_issue\".\"jira_project_id\", \"dojo_jira_issue\".\"jira_id\", \"dojo_jira_issue\".\"jira_key\", \"dojo_jira_issue\".\"finding_id\", \"dojo_jira_issue\".\"engagement_id\", \"dojo_jira_issue\".\"finding_group_id\", \"dojo_jira_issue\".\"jira_creation\", \"dojo_jira_issue\".\"jira_change\", \"dojo_jira_issue\".\"archived_at\", \"dojo_jira_issue\".\"archive_batch\" FROM \"dojo_jira_issue\" WHERE \"dojo_jira_issue\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 317.228,
+      "mean_ms": 2.129046979865772,
+      "p95_ms": 8.913
+    },
+    {
+      "id": "19e462003cd3eddb",
+      "sql": "SELECT (\"dojo_finding_files\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_fileupload\".\"id\", \"dojo_fileupload\".\"title\", \"dojo_fileupload\".\"file\" FROM \"dojo_fileupload\" INNER JOIN \"dojo_finding_files\" ON (\"dojo_fileupload\".\"id\" = \"dojo_finding_files\".\"fileupload_id\") WHERE \"dojo_finding_files\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 307.366,
+      "mean_ms": 2.0628590604026846,
+      "p95_ms": 6.403
+    },
+    {
+      "id": "32f88719907f1de4",
+      "sql": "SELECT \"dojo_finding_cwe\".\"id\", \"dojo_finding_cwe\".\"finding_id\", \"dojo_finding_cwe\".\"cwe\" FROM \"dojo_finding_cwe\" WHERE \"dojo_finding_cwe\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 306.753,
+      "mean_ms": 2.058744966442953,
+      "p95_ms": 6.803
+    },
+    {
+      "id": "d8070c7808b5d02e",
+      "sql": "SELECT \"dojo_product_type\".\"id\", \"dojo_product_type\".\"created\", \"dojo_product_type\".\"updated\", \"dojo_product_type\".\"name\", \"dojo_product_type\".\"description\", \"dojo_product_type\".\"critical_product\", \"dojo_product_type\".\"key_product\", \"dojo_product_type\".\"archived_at\", \"dojo_product_type\".\"archive_batch\" FROM \"dojo_product_type\" WHERE (\"dojo_product_type\".\"id\") IN ((%s))",
+      "rows": 182,
+      "calls": 182,
+      "total_ms": 303.101,
+      "mean_ms": 1.6653901098901098,
+      "p95_ms": 4.139
+    },
+    {
+      "id": "24890b89d5b79dcc",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\"",
+      "rows": 3,
+      "calls": 3,
+      "total_ms": 294.236,
+      "mean_ms": 98.07866666666666,
+      "p95_ms": null
+    },
+    {
+      "id": "7a604a36efdafc56",
+      "sql": "SELECT \"dojo_test_type\".\"id\", \"dojo_test_type\".\"name\", \"dojo_test_type\".\"static_tool\", \"dojo_test_type\".\"dynamic_tool\", \"dojo_test_type\".\"active\", \"dojo_test_type\".\"dynamically_generated\" FROM \"dojo_test_type\" WHERE (\"dojo_test_type\".\"id\") IN ((%s))",
+      "rows": 182,
+      "calls": 182,
+      "total_ms": 291.777,
+      "mean_ms": 1.6031703296703297,
+      "p95_ms": 6.562
+    },
+    {
+      "id": "70b65c5a5bf85388",
+      "sql": "SELECT (\"dojo_finding_group_findings\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_finding_group\".\"id\", \"dojo_finding_group\".\"created\", \"dojo_finding_group\".\"modified\", \"dojo_finding_group\".\"name\", \"dojo_finding_group\".\"test_id\", \"dojo_finding_group\".\"creator_id\", \"dojo_finding_group\".\"archived_at\", \"dojo_finding_group\".\"archive_batch\" FROM \"dojo_finding_group\" INNER JOIN \"dojo_finding_group_findings\" ON (\"dojo_finding_group\".\"id\" = \"dojo_finding_group_findings\".\"finding_group_id\") WHERE \"dojo_finding_group_findings\".\"finding_id\" IN (%s, ...) ORDER BY \"dojo_finding_group\".\"id\" ASC",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 290.306,
+      "mean_ms": 1.9483624161073825,
+      "p95_ms": 6.526
+    },
+    {
+      "id": "45f504252dbce0b9",
+      "sql": "SELECT \"dojo_dojometa\".\"id\", \"dojo_dojometa\".\"name\", \"dojo_dojometa\".\"value\", \"dojo_dojometa\".\"product_id\", \"dojo_dojometa\".\"endpoint_id\", \"dojo_dojometa\".\"finding_id\", \"dojo_dojometa\".\"location_id\", \"dojo_dojometa\".\"location_product_id\", \"dojo_dojometa\".\"archived_at\", \"dojo_dojometa\".\"archive_batch\" FROM \"dojo_dojometa\" WHERE \"dojo_dojometa\".\"finding_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 149,
+      "total_ms": 286.226,
+      "mean_ms": 1.920979865771812,
+      "p95_ms": 6.855
+    },
+    {
+      "id": "8f80550cdcea05cc",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") INNER JOIN \"dojo_risk_acceptance_accepted_findings\" ON (\"dojo_finding\".\"id\" = \"dojo_risk_acceptance_accepted_findings\".\"finding_id\") INNER JOIN \"dojo_risk_acceptance\" ON (\"dojo_risk_acceptance_accepted_findings\".\"risk_acceptance_id\" = \"dojo_risk_acceptance\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_risk_acceptance\".\"created\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+      "rows": 31,
+      "calls": 31,
+      "total_ms": 228.957,
+      "mean_ms": 7.385709677419355,
+      "p95_ms": 14.786
+    },
+    {
+      "id": "fa805d7c1b328ad9",
+      "sql": "SELECT \"django_session\".\"session_key\", \"django_session\".\"session_data\", \"django_session\".\"expire_date\" FROM \"django_session\" WHERE (\"django_session\".\"expire_date\" > %s AND \"django_session\".\"session_key\" = %s) LIMIT 21",
+      "rows": 48,
+      "calls": 48,
+      "total_ms": 198.78,
+      "mean_ms": 4.14125,
+      "p95_ms": 11.645
+    },
+    {
+      "id": "b453c3f8a7fe763a",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_test\".\"id\" AS \"col1\", \"dojo_test\".\"engagement_id\" AS \"col2\", \"dojo_test\".\"lead_id\" AS \"col3\", \"dojo_test\".\"test_type_id\" AS \"col4\", \"dojo_test\".\"scan_type\" AS \"col5\", \"dojo_test\".\"title\" AS \"col6\", \"dojo_test\".\"description\" AS \"col7\", \"dojo_test\".\"target_start\" AS \"col8\", \"dojo_test\".\"target_end\" AS \"col9\", \"dojo_test\".\"percent_complete\" AS \"col10\", \"dojo_test\".\"environment_id\" AS \"col11\", \"dojo_test\".\"updated\" AS \"col12\", \"dojo_test\".\"created\" AS \"col13\", \"dojo_test\".\"version\" AS \"col14\", \"dojo_test\".\"build_id\" AS \"col15\", \"dojo_test\".\"commit_hash\" AS \"col16\", \"dojo_test\".\"branch_tag\" AS \"col17\", \"dojo_test\".\"api_scan_configuration_id\" AS \"col18\", \"dojo_test\".\"archived_at\" AS \"col19\", \"dojo_test\".\"archive_batch\" AS \"col20\" FROM \"dojo_test\" INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))) subquery",
+      "rows": 32,
+      "calls": 32,
+      "total_ms": 196.981,
+      "mean_ms": 6.15565625,
+      "p95_ms": 15.583
+    },
+    {
+      "id": "60a3956744d7019e",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_engagement\".\"id\" AS \"col1\", \"dojo_engagement\".\"created\" AS \"col2\", \"dojo_engagement\".\"updated\" AS \"col3\", \"dojo_engagement\".\"name\" AS \"col4\", \"dojo_engagement\".\"description\" AS \"col5\", \"dojo_engagement\".\"version\" AS \"col6\", \"dojo_engagement\".\"first_contacted\" AS \"col7\", \"dojo_engagement\".\"target_start\" AS \"col8\", \"dojo_engagement\".\"target_end\" AS \"col9\", \"dojo_engagement\".\"lead_id\" AS \"col10\", \"dojo_engagement\".\"requester_id\" AS \"col11\", \"dojo_engagement\".\"preset_id\" AS \"col12\", \"dojo_engagement\".\"reason\" AS \"col13\", \"dojo_engagement\".\"report_type_id\" AS \"col14\", \"dojo_engagement\".\"product_id\" AS \"col15\", \"dojo_engagement\".\"active\" AS \"col16\", \"dojo_engagement\".\"tracker\" AS \"col17\", \"dojo_engagement\".\"test_strategy\" AS \"col18\", \"dojo_engagement\".\"threat_model\" AS \"col19\", \"dojo_engagement\".\"api_test\" AS \"col20\", \"dojo_engagement\".\"pen_test\" AS \"col21\", \"dojo_engagement\".\"check_list\" AS \"col22\", \"dojo_engagement\".\"status\" AS \"col23\", \"dojo_engagement\".\"progress\" AS \"col24\", \"dojo_engagement\".\"tmodel_path\" AS \"col25\", \"dojo_engagement\".\"done_testing\" AS \"col26\", \"dojo_engagement\".\"engagement_type\" AS \"col27\", \"dojo_engagement\".\"build_id\" AS \"col28\", \"dojo_engagement\".\"commit_hash\" AS \"col29\", \"dojo_engagement\".\"branch_tag\" AS \"col30\", \"dojo_engagement\".\"source_code_management_uri\" AS \"col31\", \"dojo_engagement\".\"cicd_scm_server_id\" AS \"col32\", \"dojo_engagement\".\"cicd_build_server_id\" AS \"col33\", \"dojo_engagement\".\"cicd_orchestration_engine_id\" AS \"col34\", \"dojo_engagement\".\"deduplication_on_engagement\" AS \"col35\", \"dojo_engagement\".\"archived_at\" AS \"col36\", \"dojo_engagement\".\"archive_batch\" AS \"col37\" FROM \"dojo_engagement\" WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_engagement\".\"active\")) subquery",
+      "rows": 31,
+      "calls": 31,
+      "total_ms": 191.299,
+      "mean_ms": 6.170935483870968,
+      "p95_ms": 14.735
+    },
+    {
+      "id": "b10d7cde821812f0",
+      "sql": "SELECT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\" FROM \"dojo_product\" WHERE (\"dojo_product\".\"id\") IN ((%s))",
+      "rows": 179,
+      "calls": 179,
+      "total_ms": 180.47,
+      "mean_ms": 1.0082122905027933,
+      "p95_ms": 4.943
+    },
+    {
+      "id": "6bfc4a41c5b73c8e",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" WHERE (NOT \"dojo_finding\".\"duplicate\" AND \"dojo_finding\".\"date\" BETWEEN %s AND %s)) subquery",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 155.184,
+      "mean_ms": 155.184,
+      "p95_ms": null
+    },
+    {
+      "id": "2e5e5cc1d4ac9e00",
+      "sql": "SELECT \"dojo_engagement\".\"id\", \"dojo_engagement\".\"created\", \"dojo_engagement\".\"updated\", \"dojo_engagement\".\"name\", \"dojo_engagement\".\"description\", \"dojo_engagement\".\"version\", \"dojo_engagement\".\"first_contacted\", \"dojo_engagement\".\"target_start\", \"dojo_engagement\".\"target_end\", \"dojo_engagement\".\"lead_id\", \"dojo_engagement\".\"requester_id\", \"dojo_engagement\".\"preset_id\", \"dojo_engagement\".\"reason\", \"dojo_engagement\".\"report_type_id\", \"dojo_engagement\".\"product_id\", \"dojo_engagement\".\"active\", \"dojo_engagement\".\"tracker\", \"dojo_engagement\".\"test_strategy\", \"dojo_engagement\".\"threat_model\", \"dojo_engagement\".\"api_test\", \"dojo_engagement\".\"pen_test\", \"dojo_engagement\".\"check_list\", \"dojo_engagement\".\"status\", \"dojo_engagement\".\"progress\", \"dojo_engagement\".\"tmodel_path\", \"dojo_engagement\".\"done_testing\", \"dojo_engagement\".\"engagement_type\", \"dojo_engagement\".\"build_id\", \"dojo_engagement\".\"commit_hash\", \"dojo_engagement\".\"branch_tag\", \"dojo_engagement\".\"source_code_management_uri\", \"dojo_engagement\".\"cicd_scm_server_id\", \"dojo_engagement\".\"cicd_build_server_id\", \"dojo_engagement\".\"cicd_orchestration_engine_id\", \"dojo_engagement\".\"deduplication_on_engagement\", \"dojo_engagement\".\"archived_at\", \"dojo_engagement\".\"archive_batch\" FROM \"dojo_engagement\" WHERE (\"dojo_engagement\".\"id\") IN ((%s), (%s))",
+      "rows": 292,
+      "calls": 146,
+      "total_ms": 146.328,
+      "mean_ms": 1.0022465753424659,
+      "p95_ms": 4.453
+    },
+    {
+      "id": "9c1788639787deef",
+      "sql": "SELECT \"django_content_type\".\"app_label\" AS \"content_type__app_label\", \"auth_permission\".\"codename\" AS \"codename\" FROM \"auth_permission\" INNER JOIN \"auth_group_permissions\" ON (\"auth_permission\".\"id\" = \"auth_group_permissions\".\"permission_id\") INNER JOIN \"django_content_type\" ON (\"auth_permission\".\"content_type_id\" = \"django_content_type\".\"id\") WHERE \"auth_group_permissions\".\"group_id\" IN (SELECT U0.\"id\" FROM \"auth_group\" U0 INNER JOIN \"auth_user_groups\" U1 ON (U0.\"id\" = U1.\"group_id\") WHERE U1.\"user_id\" = %s)",
+      "rows": 0,
+      "calls": 45,
+      "total_ms": 138.38,
+      "mean_ms": 3.075111111111111,
+      "p95_ms": 8.585
+    },
+    {
+      "id": "62683baa1e2cdf58",
+      "sql": "SELECT \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"auth_user\" WHERE \"auth_user\".\"id\" = %s LIMIT 21",
+      "rows": 48,
+      "calls": 48,
+      "total_ms": 133.706,
+      "mean_ms": 2.7855416666666666,
+      "p95_ms": 12.361
+    },
+    {
+      "id": "fd377b138cfaab4c",
+      "sql": "UPDATE \"django_session\" SET \"session_data\" = %s, \"expire_date\" = %s WHERE \"django_session\".\"session_key\" = %s",
+      "rows": 48,
+      "calls": 48,
+      "total_ms": 132.11,
+      "mean_ms": 2.752291666666667,
+      "p95_ms": 12.632
+    },
+    {
+      "id": "dd383ce1163129e6",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_product\".\"id\" AS \"col1\", \"dojo_product\".\"created\" AS \"col2\", \"dojo_product\".\"updated\" AS \"col3\", \"dojo_product\".\"name\" AS \"col4\", \"dojo_product\".\"description\" AS \"col5\", \"dojo_product\".\"product_manager_id\" AS \"col6\", \"dojo_product\".\"technical_contact_id\" AS \"col7\", \"dojo_product\".\"team_manager_id\" AS \"col8\", \"dojo_product\".\"prod_type_id\" AS \"col9\", \"dojo_product\".\"sla_configuration_id\" AS \"col10\", \"dojo_product\".\"tid\" AS \"col11\", \"dojo_product\".\"prod_numeric_grade\" AS \"col12\", \"dojo_product\".\"business_criticality\" AS \"col13\", \"dojo_product\".\"platform_id\" AS \"col14\", \"dojo_product\".\"lifecycle_id\" AS \"col15\", \"dojo_product\".\"origin_id\" AS \"col16\", \"dojo_product\".\"user_records\" AS \"col17\", \"dojo_product\".\"revenue\" AS \"col18\", \"dojo_product\".\"external_audience\" AS \"col19\", \"dojo_product\".\"internet_accessible\" AS \"col20\", \"dojo_product\".\"enable_product_tag_inheritance\" AS \"col21\", \"dojo_product\".\"enable_simple_risk_acceptance\" AS \"col22\", \"dojo_product\".\"enable_full_risk_acceptance\" AS \"col23\", \"dojo_product\".\"disable_sla_breach_notifications\" AS \"col24\", \"dojo_product\".\"async_updating\" AS \"col25\", \"dojo_product\".\"archived_at\" AS \"col26\", \"dojo_product\".\"archive_batch\" AS \"col27\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s)) subquery",
+      "rows": 29,
+      "calls": 29,
+      "total_ms": 118.909,
+      "mean_ms": 4.100310344827586,
+      "p95_ms": 9.448
+    },
+    {
+      "id": "bc6b79f25d83c004",
+      "sql": "SELECT \"django_content_type\".\"app_label\" AS \"content_type__app_label\", \"auth_permission\".\"codename\" AS \"codename\" FROM \"auth_permission\" INNER JOIN \"auth_user_user_permissions\" ON (\"auth_permission\".\"id\" = \"auth_user_user_permissions\".\"permission_id\") INNER JOIN \"django_content_type\" ON (\"auth_permission\".\"content_type_id\" = \"django_content_type\".\"id\") WHERE \"auth_user_user_permissions\".\"user_id\" = %s",
+      "rows": 0,
+      "calls": 45,
+      "total_ms": 118.491,
+      "mean_ms": 2.6331333333333333,
+      "p95_ms": 6.44
+    },
+    {
+      "id": "9de060f855d66a00",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_engagement\".\"id\" AS \"col1\", \"dojo_engagement\".\"created\" AS \"col2\", \"dojo_engagement\".\"updated\" AS \"col3\", \"dojo_engagement\".\"name\" AS \"col4\", \"dojo_engagement\".\"description\" AS \"col5\", \"dojo_engagement\".\"version\" AS \"col6\", \"dojo_engagement\".\"first_contacted\" AS \"col7\", \"dojo_engagement\".\"target_start\" AS \"col8\", \"dojo_engagement\".\"target_end\" AS \"col9\", \"dojo_engagement\".\"lead_id\" AS \"col10\", \"dojo_engagement\".\"requester_id\" AS \"col11\", \"dojo_engagement\".\"preset_id\" AS \"col12\", \"dojo_engagement\".\"reason\" AS \"col13\", \"dojo_engagement\".\"report_type_id\" AS \"col14\", \"dojo_engagement\".\"product_id\" AS \"col15\", \"dojo_engagement\".\"active\" AS \"col16\", \"dojo_engagement\".\"tracker\" AS \"col17\", \"dojo_engagement\".\"test_strategy\" AS \"col18\", \"dojo_engagement\".\"threat_model\" AS \"col19\", \"dojo_engagement\".\"api_test\" AS \"col20\", \"dojo_engagement\".\"pen_test\" AS \"col21\", \"dojo_engagement\".\"check_list\" AS \"col22\", \"dojo_engagement\".\"status\" AS \"col23\", \"dojo_engagement\".\"progress\" AS \"col24\", \"dojo_engagement\".\"tmodel_path\" AS \"col25\", \"dojo_engagement\".\"done_testing\" AS \"col26\", \"dojo_engagement\".\"engagement_type\" AS \"col27\", \"dojo_engagement\".\"build_id\" AS \"col28\", \"dojo_engagement\".\"commit_hash\" AS \"col29\", \"dojo_engagement\".\"branch_tag\" AS \"col30\", \"dojo_engagement\".\"source_code_management_uri\" AS \"col31\", \"dojo_engagement\".\"cicd_scm_server_id\" AS \"col32\", \"dojo_engagement\".\"cicd_build_server_id\" AS \"col33\", \"dojo_engagement\".\"cicd_orchestration_engine_id\" AS \"col34\", \"dojo_engagement\".\"deduplication_on_engagement\" AS \"col35\", \"dojo_engagement\".\"archived_at\" AS \"col36\", \"dojo_engagement\".\"archive_batch\" AS \"col37\" FROM \"dojo_engagement\" WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))) subquery",
+      "rows": 16,
+      "calls": 16,
+      "total_ms": 113.97,
+      "mean_ms": 7.123125,
+      "p95_ms": null
+    },
+    {
+      "id": "a36bdc8ff76ab392",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_product\".\"id\" AS \"col1\", \"dojo_product\".\"created\" AS \"col2\", \"dojo_product\".\"updated\" AS \"col3\", \"dojo_product\".\"name\" AS \"col4\", \"dojo_product\".\"description\" AS \"col5\", \"dojo_product\".\"product_manager_id\" AS \"col6\", \"dojo_product\".\"technical_contact_id\" AS \"col7\", \"dojo_product\".\"team_manager_id\" AS \"col8\", \"dojo_product\".\"prod_type_id\" AS \"col9\", \"dojo_product\".\"sla_configuration_id\" AS \"col10\", \"dojo_product\".\"tid\" AS \"col11\", \"dojo_product\".\"prod_numeric_grade\" AS \"col12\", \"dojo_product\".\"business_criticality\" AS \"col13\", \"dojo_product\".\"platform_id\" AS \"col14\", \"dojo_product\".\"lifecycle_id\" AS \"col15\", \"dojo_product\".\"origin_id\" AS \"col16\", \"dojo_product\".\"user_records\" AS \"col17\", \"dojo_product\".\"revenue\" AS \"col18\", \"dojo_product\".\"external_audience\" AS \"col19\", \"dojo_product\".\"internet_accessible\" AS \"col20\", \"dojo_product\".\"enable_product_tag_inheritance\" AS \"col21\", \"dojo_product\".\"enable_simple_risk_acceptance\" AS \"col22\", \"dojo_product\".\"enable_full_risk_acceptance\" AS \"col23\", \"dojo_product\".\"disable_sla_breach_notifications\" AS \"col24\", \"dojo_product\".\"async_updating\" AS \"col25\", \"dojo_product\".\"archived_at\" AS \"col26\", \"dojo_product\".\"archive_batch\" AS \"col27\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_locationproductreference\" U0 WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_count\", COALESCE((SELECT COUNT(DISTINCT U3.\"host\") AS \"c\" FROM \"dojo_locationproductreference\" U0 INNER JOIN \"dojo_location\" U2 ON (U0.\"location_id\" = U2.\"id\") LEFT OUTER JOIN \"dojo_url\" U3 ON (U2.\"id\" = U3.\"location_id\") WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_host_count\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s)) subquery",
+      "rows": 14,
+      "calls": 14,
+      "total_ms": 109.845,
+      "mean_ms": 7.846071428571428,
+      "p95_ms": null
+    },
+    {
+      "id": "0fabec604cc1b0c0",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_alerts\" WHERE \"dojo_alerts\".\"user_id_id\" = %s",
+      "rows": 48,
+      "calls": 48,
+      "total_ms": 92.228,
+      "mean_ms": 1.9214166666666666,
+      "p95_ms": 5.881
+    },
+    {
+      "id": "6aee1d80e55607d7",
+      "sql": "SELECT \"dojo_locationfindingreference\".\"id\", \"dojo_locationfindingreference\".\"created\", \"dojo_locationfindingreference\".\"updated\", \"dojo_locationfindingreference\".\"relationship\", \"dojo_locationfindingreference\".\"relationship_data\", \"dojo_locationfindingreference\".\"location_id\", \"dojo_locationfindingreference\".\"finding_id\", \"dojo_locationfindingreference\".\"test_id\", \"dojo_locationfindingreference\".\"auditor_id\", \"dojo_locationfindingreference\".\"audit_time\", \"dojo_locationfindingreference\".\"status\", \"dojo_locationfindingreference\".\"archived_at\", \"dojo_locationfindingreference\".\"archive_batch\" FROM \"dojo_locationfindingreference\" WHERE \"dojo_locationfindingreference\".\"finding_id\" IN (%s) ORDER BY \"dojo_locationfindingreference\".\"id\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 90.333,
+      "mean_ms": 2.737363636363636,
+      "p95_ms": 10.393
+    },
+    {
+      "id": "acb7902ed441f4f4",
+      "sql": "SELECT (\"dojo_finding_notes\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_notes\".\"id\", \"dojo_notes\".\"note_type_id\", \"dojo_notes\".\"entry\", \"dojo_notes\".\"date\", \"dojo_notes\".\"author_id\", \"dojo_notes\".\"private\", \"dojo_notes\".\"edited\", \"dojo_notes\".\"editor_id\", \"dojo_notes\".\"edit_time\", \"dojo_note_type\".\"id\", \"dojo_note_type\".\"name\", \"dojo_note_type\".\"description\", \"dojo_note_type\".\"is_single\", \"dojo_note_type\".\"is_active\", \"dojo_note_type\".\"is_mandatory\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\", T6.\"id\", T6.\"password\", T6.\"last_login\", T6.\"is_superuser\", T6.\"username\", T6.\"first_name\", T6.\"last_name\", T6.\"email\", T6.\"is_staff\", T6.\"is_active\", T6.\"date_joined\" FROM \"dojo_notes\" INNER JOIN \"dojo_finding_notes\" ON (\"dojo_notes\".\"id\" = \"dojo_finding_notes\".\"notes_id\") LEFT OUTER JOIN \"dojo_note_type\" ON (\"dojo_notes\".\"note_type_id\" = \"dojo_note_type\".\"id\") INNER JOIN \"auth_user\" ON (\"dojo_notes\".\"author_id\" = \"auth_user\".\"id\") LEFT OUTER JOIN \"auth_user\" T6 ON (\"dojo_notes\".\"editor_id\" = T6.\"id\") WHERE \"dojo_finding_notes\".\"finding_id\" IN (%s) ORDER BY \"dojo_notes\".\"date\" DESC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 89.295,
+      "mean_ms": 2.705909090909091,
+      "p95_ms": 7.201
+    },
+    {
+      "id": "2cd8f31a5f71df5c",
+      "sql": "SELECT (\"dojo_finding_reviewers\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"auth_user\" INNER JOIN \"dojo_finding_reviewers\" ON (\"auth_user\".\"id\" = \"dojo_finding_reviewers\".\"dojo_user_id\") WHERE \"dojo_finding_reviewers\".\"finding_id\" IN (%s) ORDER BY \"auth_user\".\"first_name\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 73.434,
+      "mean_ms": 2.2252727272727273,
+      "p95_ms": 10.776
+    },
+    {
+      "id": "33a08b0d5983eeec",
+      "sql": "SELECT DISTINCT \"dojo_test\".\"id\", \"dojo_test\".\"engagement_id\", \"dojo_test\".\"lead_id\", \"dojo_test\".\"test_type_id\", \"dojo_test\".\"scan_type\", \"dojo_test\".\"title\", \"dojo_test\".\"description\", \"dojo_test\".\"target_start\", \"dojo_test\".\"target_end\", \"dojo_test\".\"percent_complete\", \"dojo_test\".\"environment_id\", \"dojo_test\".\"updated\", \"dojo_test\".\"created\", \"dojo_test\".\"version\", \"dojo_test\".\"build_id\", \"dojo_test\".\"commit_hash\", \"dojo_test\".\"branch_tag\", \"dojo_test\".\"api_scan_configuration_id\", \"dojo_test\".\"archived_at\", \"dojo_test\".\"archive_batch\", \"dojo_test_type\".\"id\", \"dojo_test_type\".\"name\", \"dojo_test_type\".\"static_tool\", \"dojo_test_type\".\"dynamic_tool\", \"dojo_test_type\".\"active\", \"dojo_test_type\".\"dynamically_generated\" FROM \"dojo_test\" INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") INNER JOIN \"dojo_test_type\" ON (\"dojo_test\".\"test_type_id\" = \"dojo_test_type\".\"id\") WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) LIMIT 100",
+      "rows": 256,
+      "calls": 32,
+      "total_ms": 71.598,
+      "mean_ms": 2.2374375,
+      "p95_ms": 9.104
+    },
+    {
+      "id": "07e72a97b2f2e3fd",
+      "sql": "SELECT (\"dojo_product_tags\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"dojo_tagulous_product_tags\".\"id\", \"dojo_tagulous_product_tags\".\"name\", \"dojo_tagulous_product_tags\".\"slug\", \"dojo_tagulous_product_tags\".\"count\", \"dojo_tagulous_product_tags\".\"protected\" FROM \"dojo_tagulous_product_tags\" INNER JOIN \"dojo_product_tags\" ON (\"dojo_tagulous_product_tags\".\"id\" = \"dojo_product_tags\".\"tagulous_product_tags_id\") WHERE \"dojo_product_tags\".\"product_id\" IN (%s) ORDER BY \"dojo_tagulous_product_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 43,
+      "total_ms": 71.02,
+      "mean_ms": 1.651627906976744,
+      "p95_ms": 4.324
+    },
+    {
+      "id": "231c9a8b09d53088",
+      "sql": "SELECT (\"dojo_test_notes\".\"test_id\") AS \"_prefetch_related_val_test_id\", \"dojo_notes\".\"id\", \"dojo_notes\".\"note_type_id\", \"dojo_notes\".\"entry\", \"dojo_notes\".\"date\", \"dojo_notes\".\"author_id\", \"dojo_notes\".\"private\", \"dojo_notes\".\"edited\", \"dojo_notes\".\"editor_id\", \"dojo_notes\".\"edit_time\", \"dojo_note_type\".\"id\", \"dojo_note_type\".\"name\", \"dojo_note_type\".\"description\", \"dojo_note_type\".\"is_single\", \"dojo_note_type\".\"is_active\", \"dojo_note_type\".\"is_mandatory\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\", T6.\"id\", T6.\"password\", T6.\"last_login\", T6.\"is_superuser\", T6.\"username\", T6.\"first_name\", T6.\"last_name\", T6.\"email\", T6.\"is_staff\", T6.\"is_active\", T6.\"date_joined\" FROM \"dojo_notes\" INNER JOIN \"dojo_test_notes\" ON (\"dojo_notes\".\"id\" = \"dojo_test_notes\".\"notes_id\") LEFT OUTER JOIN \"dojo_note_type\" ON (\"dojo_notes\".\"note_type_id\" = \"dojo_note_type\".\"id\") INNER JOIN \"auth_user\" ON (\"dojo_notes\".\"author_id\" = \"auth_user\".\"id\") LEFT OUTER JOIN \"auth_user\" T6 ON (\"dojo_notes\".\"editor_id\" = T6.\"id\") WHERE \"dojo_test_notes\".\"test_id\" IN (%s, ...) ORDER BY \"dojo_notes\".\"date\" DESC",
+      "rows": 0,
+      "calls": 32,
+      "total_ms": 70.087,
+      "mean_ms": 2.19021875,
+      "p95_ms": 9.386
+    },
+    {
+      "id": "6df4872b669d345f",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_product_type\" INNER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s",
+      "rows": 59,
+      "calls": 59,
+      "total_ms": 65.503,
+      "mean_ms": 1.110220338983051,
+      "p95_ms": 6.08
+    },
+    {
+      "id": "512424f1a4b03940",
+      "sql": "SELECT (\"dojo_finding_found_by\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_test_type\".\"id\", \"dojo_test_type\".\"name\", \"dojo_test_type\".\"static_tool\", \"dojo_test_type\".\"dynamic_tool\", \"dojo_test_type\".\"active\", \"dojo_test_type\".\"dynamically_generated\" FROM \"dojo_test_type\" INNER JOIN \"dojo_finding_found_by\" ON (\"dojo_test_type\".\"id\" = \"dojo_finding_found_by\".\"test_type_id\") WHERE \"dojo_finding_found_by\".\"finding_id\" IN (%s) ORDER BY \"dojo_test_type\".\"name\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 64.854,
+      "mean_ms": 1.9652727272727273,
+      "p95_ms": 5.656
+    },
+    {
+      "id": "820c377bd63b7694",
+      "sql": "SELECT (\"dojo_finding_group_findings\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_finding_group\".\"id\", \"dojo_finding_group\".\"created\", \"dojo_finding_group\".\"modified\", \"dojo_finding_group\".\"name\", \"dojo_finding_group\".\"test_id\", \"dojo_finding_group\".\"creator_id\", \"dojo_finding_group\".\"archived_at\", \"dojo_finding_group\".\"archive_batch\" FROM \"dojo_finding_group\" INNER JOIN \"dojo_finding_group_findings\" ON (\"dojo_finding_group\".\"id\" = \"dojo_finding_group_findings\".\"finding_group_id\") WHERE \"dojo_finding_group_findings\".\"finding_id\" IN (%s) ORDER BY \"dojo_finding_group\".\"id\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 61.536,
+      "mean_ms": 1.8647272727272728,
+      "p95_ms": 5.745
+    },
+    {
+      "id": "04792eedbe2e0ec2",
+      "sql": "SELECT \"dojo_findingvulnerabilityreference\".\"id\", \"dojo_findingvulnerabilityreference\".\"finding_id\", \"dojo_findingvulnerabilityreference\".\"vulnerability_id\", \"dojo_findingvulnerabilityreference\".\"order\", \"dojo_findingvulnerabilityreference\".\"created\", \"dojo_findingvulnerabilityreference\".\"archived_at\", \"dojo_findingvulnerabilityreference\".\"archive_batch\", \"dojo_vulnerability\".\"id\", \"dojo_vulnerability\".\"vulnerability_id\", \"dojo_vulnerability\".\"vulnerability_id_type\", \"dojo_vulnerability\".\"epss_score\", \"dojo_vulnerability\".\"epss_percentile\", \"dojo_vulnerability\".\"known_exploited\", \"dojo_vulnerability\".\"ransomware_used\", \"dojo_vulnerability\".\"kev_date\", \"dojo_vulnerability\".\"kev_due_date\", \"dojo_vulnerability\".\"enrichment_updated\", \"dojo_vulnerability\".\"created\", \"dojo_vulnerability\".\"updated\" FROM \"dojo_findingvulnerabilityreference\" INNER JOIN \"dojo_vulnerability\" ON (\"dojo_findingvulnerabilityreference\".\"vulnerability_id\" = \"dojo_vulnerability\".\"id\") WHERE \"dojo_findingvulnerabilityreference\".\"finding_id\" IN (%s) ORDER BY \"dojo_findingvulnerabilityreference\".\"order\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 58.023,
+      "mean_ms": 1.7582727272727274,
+      "p95_ms": 6.442
+    },
+    {
+      "id": "70ae594e934b8f5c",
+      "sql": "SELECT (\"dojo_product_regulations\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"dojo_regulation\".\"id\", \"dojo_regulation\".\"name\", \"dojo_regulation\".\"acronym\", \"dojo_regulation\".\"category\", \"dojo_regulation\".\"jurisdiction\", \"dojo_regulation\".\"description\", \"dojo_regulation\".\"reference\" FROM \"dojo_regulation\" INNER JOIN \"dojo_product_regulations\" ON (\"dojo_regulation\".\"id\" = \"dojo_product_regulations\".\"regulation_id\") WHERE \"dojo_product_regulations\".\"product_id\" IN (%s) ORDER BY \"dojo_regulation\".\"name\" ASC",
+      "rows": 0,
+      "calls": 29,
+      "total_ms": 55.722,
+      "mean_ms": 1.921448275862069,
+      "p95_ms": 5.267
+    },
+    {
+      "id": "1d462d1528de4726",
+      "sql": "SELECT (\"dojo_risk_acceptance_accepted_findings\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_risk_acceptance\".\"id\", \"dojo_risk_acceptance\".\"name\", \"dojo_risk_acceptance\".\"recommendation\", \"dojo_risk_acceptance\".\"recommendation_details\", \"dojo_risk_acceptance\".\"decision\", \"dojo_risk_acceptance\".\"decision_details\", \"dojo_risk_acceptance\".\"accepted_by\", \"dojo_risk_acceptance\".\"path\", \"dojo_risk_acceptance\".\"owner_id\", \"dojo_risk_acceptance\".\"expiration_date\", \"dojo_risk_acceptance\".\"expiration_date_warned\", \"dojo_risk_acceptance\".\"expiration_date_handled\", \"dojo_risk_acceptance\".\"reactivate_expired\", \"dojo_risk_acceptance\".\"restart_sla_expired\", \"dojo_risk_acceptance\".\"restore_verified_expired\", \"dojo_risk_acceptance\".\"created\", \"dojo_risk_acceptance\".\"updated\" FROM \"dojo_risk_acceptance\" INNER JOIN \"dojo_risk_acceptance_accepted_findings\" ON (\"dojo_risk_acceptance\".\"id\" = \"dojo_risk_acceptance_accepted_findings\".\"risk_acceptance_id\") WHERE \"dojo_risk_acceptance_accepted_findings\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 49.422000000000004,
+      "mean_ms": 1.4976363636363637,
+      "p95_ms": 4.683
+    },
+    {
+      "id": "2ba88214d9d5d750",
+      "sql": "SELECT (\"dojo_test_files\".\"test_id\") AS \"_prefetch_related_val_test_id\", \"dojo_fileupload\".\"id\", \"dojo_fileupload\".\"title\", \"dojo_fileupload\".\"file\" FROM \"dojo_fileupload\" INNER JOIN \"dojo_test_files\" ON (\"dojo_fileupload\".\"id\" = \"dojo_test_files\".\"fileupload_id\") WHERE \"dojo_test_files\".\"test_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 32,
+      "total_ms": 49.117000000000004,
+      "mean_ms": 1.5349062500000001,
+      "p95_ms": 10.304
+    },
+    {
+      "id": "5f5a3c937c33125c",
+      "sql": "SELECT (\"dojo_engagement_notes\".\"engagement_id\") AS \"_prefetch_related_val_engagement_id\", \"dojo_notes\".\"id\", \"dojo_notes\".\"note_type_id\", \"dojo_notes\".\"entry\", \"dojo_notes\".\"date\", \"dojo_notes\".\"author_id\", \"dojo_notes\".\"private\", \"dojo_notes\".\"edited\", \"dojo_notes\".\"editor_id\", \"dojo_notes\".\"edit_time\", \"dojo_note_type\".\"id\", \"dojo_note_type\".\"name\", \"dojo_note_type\".\"description\", \"dojo_note_type\".\"is_single\", \"dojo_note_type\".\"is_active\", \"dojo_note_type\".\"is_mandatory\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\", T6.\"id\", T6.\"password\", T6.\"last_login\", T6.\"is_superuser\", T6.\"username\", T6.\"first_name\", T6.\"last_name\", T6.\"email\", T6.\"is_staff\", T6.\"is_active\", T6.\"date_joined\" FROM \"dojo_notes\" INNER JOIN \"dojo_engagement_notes\" ON (\"dojo_notes\".\"id\" = \"dojo_engagement_notes\".\"notes_id\") LEFT OUTER JOIN \"dojo_note_type\" ON (\"dojo_notes\".\"note_type_id\" = \"dojo_note_type\".\"id\") INNER JOIN \"auth_user\" ON (\"dojo_notes\".\"author_id\" = \"auth_user\".\"id\") LEFT OUTER JOIN \"auth_user\" T6 ON (\"dojo_notes\".\"editor_id\" = T6.\"id\") WHERE \"dojo_engagement_notes\".\"engagement_id\" IN (%s, %s) ORDER BY \"dojo_notes\".\"date\" DESC",
+      "rows": 0,
+      "calls": 16,
+      "total_ms": 48.964999999999996,
+      "mean_ms": 3.0603124999999998,
+      "p95_ms": null
+    },
+    {
+      "id": "3ba044882cf6a0b2",
+      "sql": "SELECT \"dojo_userannouncement\".\"id\", \"dojo_userannouncement\".\"announcement_id\", \"dojo_userannouncement\".\"user_id\", \"dojo_announcement\".\"id\", \"dojo_announcement\".\"message\", \"dojo_announcement\".\"style\", \"dojo_announcement\".\"dismissable\" FROM \"dojo_userannouncement\" LEFT OUTER JOIN \"dojo_announcement\" ON (\"dojo_userannouncement\".\"announcement_id\" = \"dojo_announcement\".\"id\") WHERE \"dojo_userannouncement\".\"user_id\" = %s LIMIT 21",
+      "rows": 0,
+      "calls": 48,
+      "total_ms": 47.272,
+      "mean_ms": 0.9848333333333333,
+      "p95_ms": 2.597
+    },
+    {
+      "id": "869472507664aa02",
+      "sql": "SELECT (\"dojo_finding_tags\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_tagulous_finding_tags\".\"id\", \"dojo_tagulous_finding_tags\".\"name\", \"dojo_tagulous_finding_tags\".\"slug\", \"dojo_tagulous_finding_tags\".\"count\", \"dojo_tagulous_finding_tags\".\"protected\" FROM \"dojo_tagulous_finding_tags\" INNER JOIN \"dojo_finding_tags\" ON (\"dojo_tagulous_finding_tags\".\"id\" = \"dojo_finding_tags\".\"tagulous_finding_tags_id\") WHERE \"dojo_finding_tags\".\"finding_id\" IN (%s) ORDER BY \"dojo_tagulous_finding_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 46.732,
+      "mean_ms": 1.4161212121212121,
+      "p95_ms": 3.522
+    },
+    {
+      "id": "c75d37d372963cf8",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_locationproductreference\" INNER JOIN \"dojo_location\" ON (\"dojo_locationproductreference\".\"location_id\" = \"dojo_location\".\"id\") WHERE (\"dojo_locationproductreference\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_location\".\"location_type\" = %s)",
+      "rows": 15,
+      "calls": 15,
+      "total_ms": 46.415,
+      "mean_ms": 3.094333333333333,
+      "p95_ms": null
+    },
+    {
+      "id": "b1f9f5d5d0e7fada",
+      "sql": "SELECT \"dojo_jira_issue\".\"id\", \"dojo_jira_issue\".\"jira_project_id\", \"dojo_jira_issue\".\"jira_id\", \"dojo_jira_issue\".\"jira_key\", \"dojo_jira_issue\".\"finding_id\", \"dojo_jira_issue\".\"engagement_id\", \"dojo_jira_issue\".\"finding_group_id\", \"dojo_jira_issue\".\"jira_creation\", \"dojo_jira_issue\".\"jira_change\", \"dojo_jira_issue\".\"archived_at\", \"dojo_jira_issue\".\"archive_batch\" FROM \"dojo_jira_issue\" WHERE \"dojo_jira_issue\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 46.25,
+      "mean_ms": 1.4015151515151516,
+      "p95_ms": 4.027
+    },
+    {
+      "id": "abf5a62b41ad66d7",
+      "sql": "SELECT %s AS \"a\" FROM \"dojo_product\" WHERE NOT (\"dojo_product\".\"id\" IN (SELECT DISTINCT U0.\"id\" AS \"pk\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))) LIMIT 1",
+      "rows": 15,
+      "calls": 15,
+      "total_ms": 46.204,
+      "mean_ms": 3.0802666666666667,
+      "p95_ms": null
+    },
+    {
+      "id": "fd816624751a1a56",
+      "sql": "SELECT \"dojo_dojometa\".\"id\", \"dojo_dojometa\".\"name\", \"dojo_dojometa\".\"value\", \"dojo_dojometa\".\"product_id\", \"dojo_dojometa\".\"endpoint_id\", \"dojo_dojometa\".\"finding_id\", \"dojo_dojometa\".\"location_id\", \"dojo_dojometa\".\"location_product_id\", \"dojo_dojometa\".\"archived_at\", \"dojo_dojometa\".\"archive_batch\" FROM \"dojo_dojometa\" WHERE \"dojo_dojometa\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 45.331,
+      "mean_ms": 1.3736666666666668,
+      "p95_ms": 5.873
+    },
+    {
+      "id": "65a5cbf86c224ef3",
+      "sql": "SELECT (\"dojo_test_tags\".\"test_id\") AS \"_prefetch_related_val_test_id\", \"dojo_tagulous_test_tags\".\"id\", \"dojo_tagulous_test_tags\".\"name\", \"dojo_tagulous_test_tags\".\"slug\", \"dojo_tagulous_test_tags\".\"count\", \"dojo_tagulous_test_tags\".\"protected\" FROM \"dojo_tagulous_test_tags\" INNER JOIN \"dojo_test_tags\" ON (\"dojo_tagulous_test_tags\".\"id\" = \"dojo_test_tags\".\"tagulous_test_tags_id\") WHERE \"dojo_test_tags\".\"test_id\" IN (%s, ...) ORDER BY \"dojo_tagulous_test_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 32,
+      "total_ms": 44.934,
+      "mean_ms": 1.4041875,
+      "p95_ms": 6.828
+    },
+    {
+      "id": "4c011d0ee6cfb8bf",
+      "sql": "SELECT \"dojo_test\".\"id\", \"dojo_test\".\"engagement_id\", \"dojo_test\".\"lead_id\", \"dojo_test\".\"test_type_id\", \"dojo_test\".\"scan_type\", \"dojo_test\".\"title\", \"dojo_test\".\"description\", \"dojo_test\".\"target_start\", \"dojo_test\".\"target_end\", \"dojo_test\".\"percent_complete\", \"dojo_test\".\"environment_id\", \"dojo_test\".\"updated\", \"dojo_test\".\"created\", \"dojo_test\".\"version\", \"dojo_test\".\"build_id\", \"dojo_test\".\"commit_hash\", \"dojo_test\".\"branch_tag\", \"dojo_test\".\"api_scan_configuration_id\", \"dojo_test\".\"archived_at\", \"dojo_test\".\"archive_batch\" FROM \"dojo_test\" WHERE (\"dojo_test\".\"id\") IN ((%s))",
+      "rows": 33,
+      "calls": 33,
+      "total_ms": 44.689,
+      "mean_ms": 1.3542121212121212,
+      "p95_ms": 5.62
+    },
+    {
+      "id": "0d5f275588002a46",
+      "sql": "SELECT \"dojo_finding_group\".\"id\", \"dojo_finding_group\".\"created\", \"dojo_finding_group\".\"modified\", \"dojo_finding_group\".\"name\", \"dojo_finding_group\".\"test_id\", \"dojo_finding_group\".\"creator_id\", \"dojo_finding_group\".\"archived_at\", \"dojo_finding_group\".\"archive_batch\" FROM \"dojo_finding_group\" WHERE \"dojo_finding_group\".\"test_id\" IN (%s, ...) ORDER BY \"dojo_finding_group\".\"id\" ASC",
+      "rows": 0,
+      "calls": 32,
+      "total_ms": 40.853,
+      "mean_ms": 1.27665625,
+      "p95_ms": 6.173
+    },
+    {
+      "id": "741b65b70823aee7",
+      "sql": "SELECT (\"dojo_finding_files\".\"finding_id\") AS \"_prefetch_related_val_finding_id\", \"dojo_fileupload\".\"id\", \"dojo_fileupload\".\"title\", \"dojo_fileupload\".\"file\" FROM \"dojo_fileupload\" INNER JOIN \"dojo_finding_files\" ON (\"dojo_fileupload\".\"id\" = \"dojo_finding_files\".\"fileupload_id\") WHERE \"dojo_finding_files\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 40.016,
+      "mean_ms": 1.2126060606060605,
+      "p95_ms": 3.813
+    },
+    {
+      "id": "5ee29339aa9b70b9",
+      "sql": "SELECT DISTINCT \"dojo_product\".\"name\" AS \"name\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_authorized_users\" ON (\"dojo_product\".\"id\" = \"dojo_product_authorized_users\".\"product_id\") INNER JOIN \"dojo_product_type\" ON (\"dojo_product\".\"prod_type_id\" = \"dojo_product_type\".\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE (\"dojo_product_authorized_users\".\"dojo_user_id\" = %s OR \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s) ORDER BY 1 ASC",
+      "rows": 14,
+      "calls": 14,
+      "total_ms": 39.859,
+      "mean_ms": 2.8470714285714287,
+      "p95_ms": null
+    },
+    {
+      "id": "bf20f5e0bdf2b508",
+      "sql": "SELECT \"dojo_dojometa\".\"id\", \"dojo_dojometa\".\"name\", \"dojo_dojometa\".\"value\", \"dojo_dojometa\".\"product_id\", \"dojo_dojometa\".\"endpoint_id\", \"dojo_dojometa\".\"finding_id\", \"dojo_dojometa\".\"location_id\", \"dojo_dojometa\".\"location_product_id\", \"dojo_dojometa\".\"archived_at\", \"dojo_dojometa\".\"archive_batch\" FROM \"dojo_dojometa\" WHERE \"dojo_dojometa\".\"product_id\" IN (%s)",
+      "rows": 0,
+      "calls": 29,
+      "total_ms": 38.407000000000004,
+      "mean_ms": 1.3243793103448278,
+      "p95_ms": 4.971
+    },
+    {
+      "id": "eeee3915bc992cd9",
+      "sql": "SELECT \"dojo_burprawrequestresponse\".\"id\", \"dojo_burprawrequestresponse\".\"finding_id\", \"dojo_burprawrequestresponse\".\"burpRequestBase64\", \"dojo_burprawrequestresponse\".\"burpResponseBase64\" FROM \"dojo_burprawrequestresponse\" WHERE \"dojo_burprawrequestresponse\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 37.611,
+      "mean_ms": 1.1397272727272727,
+      "p95_ms": 5.136
+    },
+    {
+      "id": "36daf5b7a23412ff",
+      "sql": "SELECT \"dojo_endpoint_status\".\"id\", \"dojo_endpoint_status\".\"date\", \"dojo_endpoint_status\".\"last_modified\", \"dojo_endpoint_status\".\"mitigated\", \"dojo_endpoint_status\".\"mitigated_time\", \"dojo_endpoint_status\".\"mitigated_by_id\", \"dojo_endpoint_status\".\"false_positive\", \"dojo_endpoint_status\".\"out_of_scope\", \"dojo_endpoint_status\".\"risk_accepted\", \"dojo_endpoint_status\".\"endpoint_id\", \"dojo_endpoint_status\".\"finding_id\", \"dojo_endpoint_status\".\"archived_at\", \"dojo_endpoint_status\".\"archive_batch\" FROM \"dojo_endpoint_status\" WHERE \"dojo_endpoint_status\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 37.461,
+      "mean_ms": 1.135181818181818,
+      "p95_ms": 5.179
+    },
+    {
+      "id": "bbae548ebb3c31cd",
+      "sql": "SELECT \"dojo_finding_cwe\".\"id\", \"dojo_finding_cwe\".\"finding_id\", \"dojo_finding_cwe\".\"cwe\" FROM \"dojo_finding_cwe\" WHERE \"dojo_finding_cwe\".\"finding_id\" IN (%s)",
+      "rows": 0,
+      "calls": 33,
+      "total_ms": 34.812,
+      "mean_ms": 1.0549090909090908,
+      "p95_ms": 2.562
+    },
+    {
+      "id": "1d9ce0112047cd05",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"severity\" IN (%s) AND \"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s)))) ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100",
+      "rows": 300,
+      "calls": 3,
+      "total_ms": 32.778,
+      "mean_ms": 10.926,
+      "p95_ms": null
+    },
+    {
+      "id": "4b0ea890afee0c29",
+      "sql": "SELECT DISTINCT \"dojo_engagement\".\"id\", \"dojo_engagement\".\"created\", \"dojo_engagement\".\"updated\", \"dojo_engagement\".\"name\", \"dojo_engagement\".\"description\", \"dojo_engagement\".\"version\", \"dojo_engagement\".\"first_contacted\", \"dojo_engagement\".\"target_start\", \"dojo_engagement\".\"target_end\", \"dojo_engagement\".\"lead_id\", \"dojo_engagement\".\"requester_id\", \"dojo_engagement\".\"preset_id\", \"dojo_engagement\".\"reason\", \"dojo_engagement\".\"report_type_id\", \"dojo_engagement\".\"product_id\", \"dojo_engagement\".\"active\", \"dojo_engagement\".\"tracker\", \"dojo_engagement\".\"test_strategy\", \"dojo_engagement\".\"threat_model\", \"dojo_engagement\".\"api_test\", \"dojo_engagement\".\"pen_test\", \"dojo_engagement\".\"check_list\", \"dojo_engagement\".\"status\", \"dojo_engagement\".\"progress\", \"dojo_engagement\".\"tmodel_path\", \"dojo_engagement\".\"done_testing\", \"dojo_engagement\".\"engagement_type\", \"dojo_engagement\".\"build_id\", \"dojo_engagement\".\"commit_hash\", \"dojo_engagement\".\"branch_tag\", \"dojo_engagement\".\"source_code_management_uri\", \"dojo_engagement\".\"cicd_scm_server_id\", \"dojo_engagement\".\"cicd_build_server_id\", \"dojo_engagement\".\"cicd_orchestration_engine_id\", \"dojo_engagement\".\"deduplication_on_engagement\", \"dojo_engagement\".\"archived_at\", \"dojo_engagement\".\"archive_batch\" FROM \"dojo_engagement\" WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) ORDER BY \"dojo_engagement\".\"id\" ASC LIMIT 100",
+      "rows": 32,
+      "calls": 16,
+      "total_ms": 31.76,
+      "mean_ms": 1.985,
+      "p95_ms": null
+    },
+    {
+      "id": "d544603d275d0f76",
+      "sql": "SELECT \"dojo_tagulous_product_tags\".\"id\", \"dojo_tagulous_product_tags\".\"name\", \"dojo_tagulous_product_tags\".\"slug\", \"dojo_tagulous_product_tags\".\"count\", \"dojo_tagulous_product_tags\".\"protected\" FROM \"dojo_tagulous_product_tags\" ORDER BY \"dojo_tagulous_product_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 32,
+      "total_ms": 30.523,
+      "mean_ms": 0.95384375,
+      "p95_ms": 4.699
+    },
+    {
+      "id": "ef42af708701e8ed",
+      "sql": "SELECT (\"dojo_engagement_risk_acceptance\".\"engagement_id\") AS \"_prefetch_related_val_engagement_id\", \"dojo_risk_acceptance\".\"id\", \"dojo_risk_acceptance\".\"name\", \"dojo_risk_acceptance\".\"recommendation\", \"dojo_risk_acceptance\".\"recommendation_details\", \"dojo_risk_acceptance\".\"decision\", \"dojo_risk_acceptance\".\"decision_details\", \"dojo_risk_acceptance\".\"accepted_by\", \"dojo_risk_acceptance\".\"path\", \"dojo_risk_acceptance\".\"owner_id\", \"dojo_risk_acceptance\".\"expiration_date\", \"dojo_risk_acceptance\".\"expiration_date_warned\", \"dojo_risk_acceptance\".\"expiration_date_handled\", \"dojo_risk_acceptance\".\"reactivate_expired\", \"dojo_risk_acceptance\".\"restart_sla_expired\", \"dojo_risk_acceptance\".\"restore_verified_expired\", \"dojo_risk_acceptance\".\"created\", \"dojo_risk_acceptance\".\"updated\" FROM \"dojo_risk_acceptance\" INNER JOIN \"dojo_engagement_risk_acceptance\" ON (\"dojo_risk_acceptance\".\"id\" = \"dojo_engagement_risk_acceptance\".\"risk_acceptance_id\") WHERE \"dojo_engagement_risk_acceptance\".\"engagement_id\" IN (%s, %s)",
+      "rows": 0,
+      "calls": 16,
+      "total_ms": 30.379,
+      "mean_ms": 1.8986875,
+      "p95_ms": null
+    },
+    {
+      "id": "700a966ce4e53a1f",
+      "sql": "SELECT \"dojo_product_lifecycle\".\"id\", \"dojo_product_lifecycle\".\"value\", \"dojo_product_lifecycle\".\"name\", \"dojo_product_lifecycle\".\"icon\", \"dojo_product_lifecycle\".\"display_order\" FROM \"dojo_product_lifecycle\" ORDER BY \"dojo_product_lifecycle\".\"display_order\" ASC, \"dojo_product_lifecycle\".\"name\" ASC",
+      "rows": 48,
+      "calls": 16,
+      "total_ms": 29.523999999999997,
+      "mean_ms": 1.8452499999999998,
+      "p95_ms": null
+    },
+    {
+      "id": "5eeb25f8fb4f924b",
+      "sql": "SELECT \"dojo_product_type\".\"id\", \"dojo_product_type\".\"created\", \"dojo_product_type\".\"updated\", \"dojo_product_type\".\"name\", \"dojo_product_type\".\"description\", \"dojo_product_type\".\"critical_product\", \"dojo_product_type\".\"key_product\", \"dojo_product_type\".\"archived_at\", \"dojo_product_type\".\"archive_batch\" FROM \"dojo_product_type\" WHERE \"dojo_product_type\".\"id\" = %s LIMIT 21",
+      "rows": 44,
+      "calls": 44,
+      "total_ms": 27.462999999999997,
+      "mean_ms": 0.6241590909090908,
+      "p95_ms": 3.008
+    },
+    {
+      "id": "d54100feb165037c",
+      "sql": "SELECT \"dojo_product_type\".\"id\", \"dojo_product_type\".\"created\", \"dojo_product_type\".\"updated\", \"dojo_product_type\".\"name\", \"dojo_product_type\".\"description\", \"dojo_product_type\".\"critical_product\", \"dojo_product_type\".\"key_product\", \"dojo_product_type\".\"archived_at\", \"dojo_product_type\".\"archive_batch\" FROM \"dojo_product_type\" INNER JOIN \"dojo_product_type_authorized_users\" ON (\"dojo_product_type\".\"id\" = \"dojo_product_type_authorized_users\".\"product_type_id\") WHERE \"dojo_product_type_authorized_users\".\"dojo_user_id\" = %s ORDER BY \"dojo_product_type\".\"name\" ASC",
+      "rows": 0,
+      "calls": 14,
+      "total_ms": 24.618000000000002,
+      "mean_ms": 1.7584285714285717,
+      "p95_ms": null
+    },
+    {
+      "id": "41271aed4cecdcea",
+      "sql": "SELECT (\"dojo_product_authorized_users\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"auth_user\" INNER JOIN \"dojo_product_authorized_users\" ON (\"auth_user\".\"id\" = \"dojo_product_authorized_users\".\"dojo_user_id\") WHERE \"dojo_product_authorized_users\".\"product_id\" IN (%s) ORDER BY \"auth_user\".\"first_name\" ASC",
+      "rows": 232,
+      "calls": 29,
+      "total_ms": 20.79,
+      "mean_ms": 0.7168965517241379,
+      "p95_ms": 2.545
+    },
+    {
+      "id": "7b3d3eecedca3379",
+      "sql": "SELECT \"dojo_product_platform\".\"id\", \"dojo_product_platform\".\"value\", \"dojo_product_platform\".\"name\", \"dojo_product_platform\".\"icon\", \"dojo_product_platform\".\"display_order\" FROM \"dojo_product_platform\" ORDER BY \"dojo_product_platform\".\"display_order\" ASC, \"dojo_product_platform\".\"name\" ASC",
+      "rows": 80,
+      "calls": 16,
+      "total_ms": 20.386,
+      "mean_ms": 1.274125,
+      "p95_ms": null
+    },
+    {
+      "id": "bf9c2b60802dbb52",
+      "sql": "SELECT \"dojo_jira_project\".\"id\", \"dojo_jira_project\".\"jira_instance_id\", \"dojo_jira_project\".\"project_key\", \"dojo_jira_project\".\"product_id\", \"dojo_jira_project\".\"issue_template_dir\", \"dojo_jira_project\".\"engagement_id\", \"dojo_jira_project\".\"component\", \"dojo_jira_project\".\"custom_fields\", \"dojo_jira_project\".\"close_transition_fields\", \"dojo_jira_project\".\"reopen_transition_fields\", \"dojo_jira_project\".\"default_assignee\", \"dojo_jira_project\".\"jira_labels\", \"dojo_jira_project\".\"add_vulnerability_id_to_jira_label\", \"dojo_jira_project\".\"push_all_issues\", \"dojo_jira_project\".\"enable_engagement_epic_mapping\", \"dojo_jira_project\".\"epic_issue_type_name\", \"dojo_jira_project\".\"push_notes\", \"dojo_jira_project\".\"product_jira_sla_notification\", \"dojo_jira_project\".\"risk_acceptance_expiration_notification\", \"dojo_jira_project\".\"enabled\", \"dojo_jira_project\".\"archived_at\", \"dojo_jira_project\".\"archive_batch\" FROM \"dojo_jira_project\" WHERE \"dojo_jira_project\".\"product_id\" IN (%s)",
+      "rows": 0,
+      "calls": 14,
+      "total_ms": 19.541999999999998,
+      "mean_ms": 1.3958571428571427,
+      "p95_ms": null
+    },
+    {
+      "id": "8fec800b41d58586",
+      "sql": "SELECT (\"dojo_engagement_files\".\"engagement_id\") AS \"_prefetch_related_val_engagement_id\", \"dojo_fileupload\".\"id\", \"dojo_fileupload\".\"title\", \"dojo_fileupload\".\"file\" FROM \"dojo_fileupload\" INNER JOIN \"dojo_engagement_files\" ON (\"dojo_fileupload\".\"id\" = \"dojo_engagement_files\".\"fileupload_id\") WHERE \"dojo_engagement_files\".\"engagement_id\" IN (%s, %s)",
+      "rows": 0,
+      "calls": 16,
+      "total_ms": 18.421,
+      "mean_ms": 1.1513125,
+      "p95_ms": null
+    },
+    {
+      "id": "2d16a8cc99c7ae99",
+      "sql": "SELECT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_locationproductreference\" U0 WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_count\", COALESCE((SELECT COUNT(DISTINCT U3.\"host\") AS \"c\" FROM \"dojo_locationproductreference\" U0 INNER JOIN \"dojo_location\" U2 ON (U0.\"location_id\" = U2.\"id\") LEFT OUTER JOIN \"dojo_url\" U3 ON (U2.\"id\" = U3.\"location_id\") WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"location_host_count\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_engagement\" U0 WHERE (U0.\"product_id\" = (\"dojo_product\".\"id\") AND U0.\"active\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"active_engagement_count\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_engagement\" U0 WHERE (U0.\"product_id\" = (\"dojo_product\".\"id\") AND NOT U0.\"active\") GROUP BY U0.\"product_id\" ORDER BY U0.\"product_id\" ASC LIMIT 1), %s) AS \"closed_engagement_count\", (SELECT U0.\"target_start\" AS \"target_start\" FROM \"dojo_engagement\" U0 WHERE U0.\"product_id\" = (\"dojo_product\".\"id\") ORDER BY 1 DESC LIMIT 1) AS \"last_engagement_date\", COALESCE((SELECT COUNT(U0.\"id\") AS \"c\" FROM \"dojo_test_import\" U0 INNER JOIN \"dojo_test\" U1 ON (U0.\"test_id\" = U1.\"id\") INNER JOIN \"dojo_engagement\" U2 ON (U1.\"engagement_id\" = U2.\"id\") WHERE (U2.\"product_id\" = (\"dojo_product\".\"id\") AND U0.\"type\" = %s) GROUP BY U2.\"product_id\" ORDER BY U2.\"product_id\" ASC LIMIT 1), %s) AS \"total_reimport_count\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\", T3.\"id\", T3.\"password\", T3.\"last_login\", T3.\"is_superuser\", T3.\"username\", T3.\"first_name\", T3.\"last_name\", T3.\"email\", T3.\"is_staff\", T3.\"is_active\", T3.\"date_joined\", T4.\"id\", T4.\"password\", T4.\"last_login\", T4.\"is_superuser\", T4.\"username\", T4.\"first_name\", T4.\"last_name\", T4.\"email\", T4.\"is_staff\", T4.\"is_active\", T4.\"date_joined\" FROM \"dojo_product\" LEFT OUTER JOIN \"auth_user\" ON (\"dojo_product\".\"product_manager_id\" = \"auth_user\".\"id\") LEFT OUTER JOIN \"auth_user\" T3 ON (\"dojo_product\".\"technical_contact_id\" = T3.\"id\") LEFT OUTER JOIN \"auth_user\" T4 ON (\"dojo_product\".\"team_manager_id\" = T4.\"id\") ORDER BY \"dojo_product\".\"name\" ASC LIMIT 15",
+      "rows": 30,
+      "calls": 2,
+      "total_ms": 17.801000000000002,
+      "mean_ms": 8.900500000000001,
+      "p95_ms": null
+    },
+    {
+      "id": "5a442ee04dcef63c",
+      "sql": "SELECT \"dojo_product_origin\".\"id\", \"dojo_product_origin\".\"value\", \"dojo_product_origin\".\"name\", \"dojo_product_origin\".\"icon\", \"dojo_product_origin\".\"display_order\" FROM \"dojo_product_origin\" ORDER BY \"dojo_product_origin\".\"display_order\" ASC, \"dojo_product_origin\".\"name\" ASC",
+      "rows": 96,
+      "calls": 16,
+      "total_ms": 16.313,
+      "mean_ms": 1.0195625,
+      "p95_ms": null
+    },
+    {
+      "id": "3b884ac9b2cd03d1",
+      "sql": "SELECT (\"dojo_engagement_tags\".\"engagement_id\") AS \"_prefetch_related_val_engagement_id\", \"dojo_tagulous_engagement_tags\".\"id\", \"dojo_tagulous_engagement_tags\".\"name\", \"dojo_tagulous_engagement_tags\".\"slug\", \"dojo_tagulous_engagement_tags\".\"count\", \"dojo_tagulous_engagement_tags\".\"protected\" FROM \"dojo_tagulous_engagement_tags\" INNER JOIN \"dojo_engagement_tags\" ON (\"dojo_tagulous_engagement_tags\".\"id\" = \"dojo_engagement_tags\".\"tagulous_engagement_tags_id\") WHERE \"dojo_engagement_tags\".\"engagement_id\" IN (%s, %s) ORDER BY \"dojo_tagulous_engagement_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 16,
+      "total_ms": 15.555,
+      "mean_ms": 0.9721875,
+      "p95_ms": null
+    },
+    {
+      "id": "6f347a8ba25c56ea",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100",
+      "rows": 300,
+      "calls": 3,
+      "total_ms": 12.442,
+      "mean_ms": 4.147333333333333,
+      "p95_ms": null
+    },
+    {
+      "id": "d348b7566bdc0c72",
+      "sql": "SELECT DISTINCT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\", \"dojo_product_platform\".\"id\", \"dojo_product_platform\".\"value\", \"dojo_product_platform\".\"name\", \"dojo_product_platform\".\"icon\", \"dojo_product_platform\".\"display_order\", \"dojo_product_lifecycle\".\"id\", \"dojo_product_lifecycle\".\"value\", \"dojo_product_lifecycle\".\"name\", \"dojo_product_lifecycle\".\"icon\", \"dojo_product_lifecycle\".\"display_order\", \"dojo_product_origin\".\"id\", \"dojo_product_origin\".\"value\", \"dojo_product_origin\".\"name\", \"dojo_product_origin\".\"icon\", \"dojo_product_origin\".\"display_order\" FROM \"dojo_product\" LEFT OUTER JOIN \"dojo_product_platform\" ON (\"dojo_product\".\"platform_id\" = \"dojo_product_platform\".\"id\") LEFT OUTER JOIN \"dojo_product_lifecycle\" ON (\"dojo_product\".\"lifecycle_id\" = \"dojo_product_lifecycle\".\"id\") LEFT OUTER JOIN \"dojo_product_origin\" ON (\"dojo_product\".\"origin_id\" = \"dojo_product_origin\".\"id\") ORDER BY \"dojo_product\".\"name\" ASC LIMIT 100",
+      "rows": 45,
+      "calls": 3,
+      "total_ms": 10.280999999999999,
+      "mean_ms": 3.4269999999999996,
+      "p95_ms": null
+    },
+    {
+      "id": "925456a2b8d3b0db",
+      "sql": "SELECT \"dojo_engagement\".\"id\", \"dojo_engagement\".\"created\", \"dojo_engagement\".\"updated\", \"dojo_engagement\".\"name\", \"dojo_engagement\".\"description\", \"dojo_engagement\".\"version\", \"dojo_engagement\".\"first_contacted\", \"dojo_engagement\".\"target_start\", \"dojo_engagement\".\"target_end\", \"dojo_engagement\".\"lead_id\", \"dojo_engagement\".\"requester_id\", \"dojo_engagement\".\"preset_id\", \"dojo_engagement\".\"reason\", \"dojo_engagement\".\"report_type_id\", \"dojo_engagement\".\"product_id\", \"dojo_engagement\".\"active\", \"dojo_engagement\".\"tracker\", \"dojo_engagement\".\"test_strategy\", \"dojo_engagement\".\"threat_model\", \"dojo_engagement\".\"api_test\", \"dojo_engagement\".\"pen_test\", \"dojo_engagement\".\"check_list\", \"dojo_engagement\".\"status\", \"dojo_engagement\".\"progress\", \"dojo_engagement\".\"tmodel_path\", \"dojo_engagement\".\"done_testing\", \"dojo_engagement\".\"engagement_type\", \"dojo_engagement\".\"build_id\", \"dojo_engagement\".\"commit_hash\", \"dojo_engagement\".\"branch_tag\", \"dojo_engagement\".\"source_code_management_uri\", \"dojo_engagement\".\"cicd_scm_server_id\", \"dojo_engagement\".\"cicd_build_server_id\", \"dojo_engagement\".\"cicd_orchestration_engine_id\", \"dojo_engagement\".\"deduplication_on_engagement\", \"dojo_engagement\".\"archived_at\", \"dojo_engagement\".\"archive_batch\" FROM \"dojo_engagement\" WHERE (\"dojo_engagement\".\"id\") IN ((%s))",
+      "rows": 33,
+      "calls": 33,
+      "total_ms": 9.43,
+      "mean_ms": 0.28575757575757577,
+      "p95_ms": 0.986
+    },
+    {
+      "id": "76634afe7926fe8b",
+      "sql": "SELECT (\"dojo_product_regulations\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"dojo_regulation\".\"id\", \"dojo_regulation\".\"name\", \"dojo_regulation\".\"acronym\", \"dojo_regulation\".\"category\", \"dojo_regulation\".\"jurisdiction\", \"dojo_regulation\".\"description\", \"dojo_regulation\".\"reference\" FROM \"dojo_regulation\" INNER JOIN \"dojo_product_regulations\" ON (\"dojo_regulation\".\"id\" = \"dojo_product_regulations\".\"regulation_id\") WHERE \"dojo_product_regulations\".\"product_id\" IN (%s, ...) ORDER BY \"dojo_regulation\".\"name\" ASC",
+      "rows": 3,
+      "calls": 3,
+      "total_ms": 9.224,
+      "mean_ms": 3.074666666666667,
+      "p95_ms": null
+    },
+    {
+      "id": "9f2c81bc1f5e7b2d",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_engagement\".\"id\" AS \"col1\", \"dojo_engagement\".\"created\" AS \"col2\", \"dojo_engagement\".\"updated\" AS \"col3\", \"dojo_engagement\".\"name\" AS \"col4\", \"dojo_engagement\".\"description\" AS \"col5\", \"dojo_engagement\".\"version\" AS \"col6\", \"dojo_engagement\".\"first_contacted\" AS \"col7\", \"dojo_engagement\".\"target_start\" AS \"col8\", \"dojo_engagement\".\"target_end\" AS \"col9\", \"dojo_engagement\".\"lead_id\" AS \"col10\", \"dojo_engagement\".\"requester_id\" AS \"col11\", \"dojo_engagement\".\"preset_id\" AS \"col12\", \"dojo_engagement\".\"reason\" AS \"col13\", \"dojo_engagement\".\"report_type_id\" AS \"col14\", \"dojo_engagement\".\"product_id\" AS \"col15\", \"dojo_engagement\".\"active\" AS \"col16\", \"dojo_engagement\".\"tracker\" AS \"col17\", \"dojo_engagement\".\"test_strategy\" AS \"col18\", \"dojo_engagement\".\"threat_model\" AS \"col19\", \"dojo_engagement\".\"api_test\" AS \"col20\", \"dojo_engagement\".\"pen_test\" AS \"col21\", \"dojo_engagement\".\"check_list\" AS \"col22\", \"dojo_engagement\".\"status\" AS \"col23\", \"dojo_engagement\".\"progress\" AS \"col24\", \"dojo_engagement\".\"tmodel_path\" AS \"col25\", \"dojo_engagement\".\"done_testing\" AS \"col26\", \"dojo_engagement\".\"engagement_type\" AS \"col27\", \"dojo_engagement\".\"build_id\" AS \"col28\", \"dojo_engagement\".\"commit_hash\" AS \"col29\", \"dojo_engagement\".\"branch_tag\" AS \"col30\", \"dojo_engagement\".\"source_code_management_uri\" AS \"col31\", \"dojo_engagement\".\"cicd_scm_server_id\" AS \"col32\", \"dojo_engagement\".\"cicd_build_server_id\" AS \"col33\", \"dojo_engagement\".\"cicd_orchestration_engine_id\" AS \"col34\", \"dojo_engagement\".\"deduplication_on_engagement\" AS \"col35\", \"dojo_engagement\".\"archived_at\" AS \"col36\", \"dojo_engagement\".\"archive_batch\" AS \"col37\" FROM \"dojo_engagement\" WHERE \"dojo_engagement\".\"active\") subquery",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 7.007,
+      "mean_ms": 7.007,
+      "p95_ms": null
+    },
+    {
+      "id": "b238e24754efd2f7",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_product_type\"",
+      "rows": 5,
+      "calls": 5,
+      "total_ms": 6.645,
+      "mean_ms": 1.329,
+      "p95_ms": null
+    },
+    {
+      "id": "7720e92a78a4b003",
+      "sql": "SELECT \"django_content_type\".\"id\", \"django_content_type\".\"app_label\", \"django_content_type\".\"model\" FROM \"django_content_type\" WHERE (\"django_content_type\".\"app_label\" = %s AND \"django_content_type\".\"model\" = %s) LIMIT 21",
+      "rows": 4,
+      "calls": 4,
+      "total_ms": 6.192,
+      "mean_ms": 1.548,
+      "p95_ms": null
+    },
+    {
+      "id": "25e73497955e63c6",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"col1\", \"dojo_finding\".\"created\" AS \"col2\", \"dojo_finding\".\"updated\" AS \"col3\", \"dojo_finding\".\"title\" AS \"col4\", \"dojo_finding\".\"date\" AS \"col5\", \"dojo_finding\".\"sla_start_date\" AS \"col6\", \"dojo_finding\".\"sla_expiration_date\" AS \"col7\", \"dojo_finding\".\"cwe\" AS \"col8\", \"dojo_finding\".\"cve\" AS \"col9\", \"dojo_finding\".\"epss_score\" AS \"col10\", \"dojo_finding\".\"epss_percentile\" AS \"col11\", \"dojo_finding\".\"known_exploited\" AS \"col12\", \"dojo_finding\".\"ransomware_used\" AS \"col13\", \"dojo_finding\".\"kev_date\" AS \"col14\", \"dojo_finding\".\"cvssv3\" AS \"col15\", \"dojo_finding\".\"cvssv3_score\" AS \"col16\", \"dojo_finding\".\"cvssv4\" AS \"col17\", \"dojo_finding\".\"cvssv4_score\" AS \"col18\", \"dojo_finding\".\"url\" AS \"col19\", \"dojo_finding\".\"severity\" AS \"col20\", \"dojo_finding\".\"description\" AS \"col21\", \"dojo_finding\".\"mitigation\" AS \"col22\", \"dojo_finding\".\"fix_available\" AS \"col23\", \"dojo_finding\".\"fix_version\" AS \"col24\", \"dojo_finding\".\"impact\" AS \"col25\", \"dojo_finding\".\"steps_to_reproduce\" AS \"col26\", \"dojo_finding\".\"severity_justification\" AS \"col27\", \"dojo_finding\".\"refs\" AS \"col28\", \"dojo_finding\".\"test_id\" AS \"col29\", \"dojo_finding\".\"active\" AS \"col30\", \"dojo_finding\".\"verified\" AS \"col31\", \"dojo_finding\".\"false_p\" AS \"col32\", \"dojo_finding\".\"duplicate\" AS \"col33\", \"dojo_finding\".\"duplicate_finding_id\" AS \"col34\", \"dojo_finding\".\"out_of_scope\" AS \"col35\", \"dojo_finding\".\"risk_accepted\" AS \"col36\", \"dojo_finding\".\"under_review\" AS \"col37\", \"dojo_finding\".\"last_status_update\" AS \"col38\", \"dojo_finding\".\"review_requested_by_id\" AS \"col39\", \"dojo_finding\".\"under_defect_review\" AS \"col40\", \"dojo_finding\".\"defect_review_requested_by_id\" AS \"col41\", \"dojo_finding\".\"is_mitigated\" AS \"col42\", \"dojo_finding\".\"thread_id\" AS \"col43\", \"dojo_finding\".\"mitigated\" AS \"col44\", \"dojo_finding\".\"mitigated_by_id\" AS \"col45\", \"dojo_finding\".\"reporter_id\" AS \"col46\", \"dojo_finding\".\"numerical_severity\" AS \"col47\", \"dojo_finding\".\"last_reviewed\" AS \"col48\", \"dojo_finding\".\"last_reviewed_by_id\" AS \"col49\", \"dojo_finding\".\"param\" AS \"col50\", \"dojo_finding\".\"payload\" AS \"col51\", \"dojo_finding\".\"hash_code\" AS \"col52\", \"dojo_finding\".\"line\" AS \"col53\", \"dojo_finding\".\"file_path\" AS \"col54\", \"dojo_finding\".\"component_name\" AS \"col55\", \"dojo_finding\".\"component_version\" AS \"col56\", \"dojo_finding\".\"static_finding\" AS \"col57\", \"dojo_finding\".\"dynamic_finding\" AS \"col58\", \"dojo_finding\".\"scanner_confidence\" AS \"col59\", \"dojo_finding\".\"sonarqube_issue_id\" AS \"col60\", \"dojo_finding\".\"unique_id_from_tool\" AS \"col61\", \"dojo_finding\".\"vuln_id_from_tool\" AS \"col62\", \"dojo_finding\".\"sast_source_object\" AS \"col63\", \"dojo_finding\".\"sast_sink_object\" AS \"col64\", \"dojo_finding\".\"sast_source_line\" AS \"col65\", \"dojo_finding\".\"sast_source_file_path\" AS \"col66\", \"dojo_finding\".\"nb_occurences\" AS \"col67\", \"dojo_finding\".\"publish_date\" AS \"col68\", \"dojo_finding\".\"service\" AS \"col69\", \"dojo_finding\".\"planned_remediation_date\" AS \"col70\", \"dojo_finding\".\"planned_remediation_version\" AS \"col71\", \"dojo_finding\".\"effort_for_fixing\" AS \"col72\", \"dojo_finding\".\"archived_at\" AS \"col73\", \"dojo_finding\".\"archive_batch\" AS \"col74\" FROM \"dojo_finding\" INNER JOIN \"dojo_risk_acceptance_accepted_findings\" ON (\"dojo_finding\".\"id\" = \"dojo_risk_acceptance_accepted_findings\".\"finding_id\") INNER JOIN \"dojo_risk_acceptance\" ON (\"dojo_risk_acceptance_accepted_findings\".\"risk_acceptance_id\" = \"dojo_risk_acceptance\".\"id\") WHERE (NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_risk_acceptance\".\"created\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 6.059,
+      "mean_ms": 6.059,
+      "p95_ms": null
+    },
+    {
+      "id": "64c31d30c69b0027",
+      "sql": "SELECT \"dojo_locationproductreference\".\"id\", \"dojo_locationproductreference\".\"created\", \"dojo_locationproductreference\".\"updated\", \"dojo_locationproductreference\".\"relationship\", \"dojo_locationproductreference\".\"relationship_data\", \"dojo_locationproductreference\".\"location_id\", \"dojo_locationproductreference\".\"product_id\", \"dojo_locationproductreference\".\"status\", \"dojo_locationproductreference\".\"archived_at\", \"dojo_locationproductreference\".\"archive_batch\", COALESCE((SELECT COUNT(V0.\"id\") AS \"c\" FROM \"dojo_locationfindingreference\" V0 WHERE (V0.\"finding_id\" IN (SELECT V1.\"id\" FROM \"dojo_finding\" V1) AND V0.\"location_id\" = (\"dojo_locationproductreference\".\"location_id\") AND V0.\"status\" = %s) GROUP BY V0.\"location_id\" ORDER BY V0.\"location_id\" ASC LIMIT 1), %s) AS \"active_finding_count\" FROM \"dojo_locationproductreference\" INNER JOIN \"dojo_location\" ON (\"dojo_locationproductreference\".\"location_id\" = \"dojo_location\".\"id\") WHERE \"dojo_location\".\"location_type\" = %s ORDER BY \"dojo_locationproductreference\".\"id\" ASC LIMIT 100",
+      "rows": 100,
+      "calls": 1,
+      "total_ms": 5.851,
+      "mean_ms": 5.851,
+      "p95_ms": null
+    },
+    {
+      "id": "888bac19f220b9f7",
+      "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_product\".\"id\" AS \"col1\", \"dojo_product\".\"created\" AS \"col2\", \"dojo_product\".\"updated\" AS \"col3\", \"dojo_product\".\"name\" AS \"col4\", \"dojo_product\".\"description\" AS \"col5\", \"dojo_product\".\"product_manager_id\" AS \"col6\", \"dojo_product\".\"technical_contact_id\" AS \"col7\", \"dojo_product\".\"team_manager_id\" AS \"col8\", \"dojo_product\".\"prod_type_id\" AS \"col9\", \"dojo_product\".\"sla_configuration_id\" AS \"col10\", \"dojo_product\".\"tid\" AS \"col11\", \"dojo_product\".\"prod_numeric_grade\" AS \"col12\", \"dojo_product\".\"business_criticality\" AS \"col13\", \"dojo_product\".\"platform_id\" AS \"col14\", \"dojo_product\".\"lifecycle_id\" AS \"col15\", \"dojo_product\".\"origin_id\" AS \"col16\", \"dojo_product\".\"user_records\" AS \"col17\", \"dojo_product\".\"revenue\" AS \"col18\", \"dojo_product\".\"external_audience\" AS \"col19\", \"dojo_product\".\"internet_accessible\" AS \"col20\", \"dojo_product\".\"enable_product_tag_inheritance\" AS \"col21\", \"dojo_product\".\"enable_simple_risk_acceptance\" AS \"col22\", \"dojo_product\".\"enable_full_risk_acceptance\" AS \"col23\", \"dojo_product\".\"disable_sla_breach_notifications\" AS \"col24\", \"dojo_product\".\"async_updating\" AS \"col25\", \"dojo_product\".\"archived_at\" AS \"col26\", \"dojo_product\".\"archive_batch\" AS \"col27\" FROM \"dojo_product\") subquery",
+      "rows": 3,
+      "calls": 3,
+      "total_ms": 5.742,
+      "mean_ms": 1.914,
+      "p95_ms": null
+    },
+    {
+      "id": "d5c792c06eedacbe",
+      "sql": "SELECT (\"dojo_product_tags\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"dojo_tagulous_product_tags\".\"id\", \"dojo_tagulous_product_tags\".\"name\", \"dojo_tagulous_product_tags\".\"slug\", \"dojo_tagulous_product_tags\".\"count\", \"dojo_tagulous_product_tags\".\"protected\" FROM \"dojo_tagulous_product_tags\" INNER JOIN \"dojo_product_tags\" ON (\"dojo_tagulous_product_tags\".\"id\" = \"dojo_product_tags\".\"tagulous_product_tags_id\") WHERE \"dojo_product_tags\".\"product_id\" IN (%s, ...) ORDER BY \"dojo_tagulous_product_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 5,
+      "total_ms": 5.425,
+      "mean_ms": 1.085,
+      "p95_ms": null
+    },
+    {
+      "id": "fba14c8c49ab9ad3",
+      "sql": "SELECT \"dojo_jira_project\".\"id\", \"dojo_jira_project\".\"jira_instance_id\", \"dojo_jira_project\".\"project_key\", \"dojo_jira_project\".\"product_id\", \"dojo_jira_project\".\"issue_template_dir\", \"dojo_jira_project\".\"engagement_id\", \"dojo_jira_project\".\"component\", \"dojo_jira_project\".\"custom_fields\", \"dojo_jira_project\".\"close_transition_fields\", \"dojo_jira_project\".\"reopen_transition_fields\", \"dojo_jira_project\".\"default_assignee\", \"dojo_jira_project\".\"jira_labels\", \"dojo_jira_project\".\"add_vulnerability_id_to_jira_label\", \"dojo_jira_project\".\"push_all_issues\", \"dojo_jira_project\".\"enable_engagement_epic_mapping\", \"dojo_jira_project\".\"epic_issue_type_name\", \"dojo_jira_project\".\"push_notes\", \"dojo_jira_project\".\"product_jira_sla_notification\", \"dojo_jira_project\".\"risk_acceptance_expiration_notification\", \"dojo_jira_project\".\"enabled\", \"dojo_jira_project\".\"archived_at\", \"dojo_jira_project\".\"archive_batch\" FROM \"dojo_jira_project\" WHERE \"dojo_jira_project\".\"product_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 2,
+      "total_ms": 5.208,
+      "mean_ms": 2.604,
+      "p95_ms": null
+    },
+    {
+      "id": "d61f5eb707aca7a5",
+      "sql": "SELECT \"dojo_test\".\"id\", \"dojo_test\".\"engagement_id\", \"dojo_test\".\"lead_id\", \"dojo_test\".\"test_type_id\", \"dojo_test\".\"scan_type\", \"dojo_test\".\"title\", \"dojo_test\".\"description\", \"dojo_test\".\"target_start\", \"dojo_test\".\"target_end\", \"dojo_test\".\"percent_complete\", \"dojo_test\".\"environment_id\", \"dojo_test\".\"updated\", \"dojo_test\".\"created\", \"dojo_test\".\"version\", \"dojo_test\".\"build_id\", \"dojo_test\".\"commit_hash\", \"dojo_test\".\"branch_tag\", \"dojo_test\".\"api_scan_configuration_id\", \"dojo_test\".\"archived_at\", \"dojo_test\".\"archive_batch\" FROM \"dojo_test\" WHERE (\"dojo_test\".\"id\") IN ((%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s))",
+      "rows": 105,
+      "calls": 3,
+      "total_ms": 5.146,
+      "mean_ms": 1.7153333333333334,
+      "p95_ms": null
+    },
+    {
+      "id": "14906c2b5ee240e1",
+      "sql": "SELECT \"dojo_product\".\"id\", \"dojo_product\".\"created\", \"dojo_product\".\"updated\", \"dojo_product\".\"name\", \"dojo_product\".\"description\", \"dojo_product\".\"product_manager_id\", \"dojo_product\".\"technical_contact_id\", \"dojo_product\".\"team_manager_id\", \"dojo_product\".\"prod_type_id\", \"dojo_product\".\"sla_configuration_id\", \"dojo_product\".\"tid\", \"dojo_product\".\"prod_numeric_grade\", \"dojo_product\".\"business_criticality\", \"dojo_product\".\"platform_id\", \"dojo_product\".\"lifecycle_id\", \"dojo_product\".\"origin_id\", \"dojo_product\".\"user_records\", \"dojo_product\".\"revenue\", \"dojo_product\".\"external_audience\", \"dojo_product\".\"internet_accessible\", \"dojo_product\".\"enable_product_tag_inheritance\", \"dojo_product\".\"enable_simple_risk_acceptance\", \"dojo_product\".\"enable_full_risk_acceptance\", \"dojo_product\".\"disable_sla_breach_notifications\", \"dojo_product\".\"async_updating\", \"dojo_product\".\"archived_at\", \"dojo_product\".\"archive_batch\" FROM \"dojo_product\" WHERE (\"dojo_product\".\"id\") IN ((%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s))",
+      "rows": 36,
+      "calls": 3,
+      "total_ms": 5.106999999999999,
+      "mean_ms": 1.702333333333333,
+      "p95_ms": null
+    },
+    {
+      "id": "a29aa5cef1e19f21",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_product\"",
+      "rows": 2,
+      "calls": 2,
+      "total_ms": 5.029,
+      "mean_ms": 2.5145,
+      "p95_ms": null
+    },
+    {
+      "id": "32a8a66dbcb0b1b7",
+      "sql": "SELECT \"dojo_dojometa\".\"id\", \"dojo_dojometa\".\"name\", \"dojo_dojometa\".\"value\", \"dojo_dojometa\".\"product_id\", \"dojo_dojometa\".\"endpoint_id\", \"dojo_dojometa\".\"finding_id\", \"dojo_dojometa\".\"location_id\", \"dojo_dojometa\".\"location_product_id\", \"dojo_dojometa\".\"archived_at\", \"dojo_dojometa\".\"archive_batch\" FROM \"dojo_dojometa\" WHERE \"dojo_dojometa\".\"product_id\" IN (%s, ...)",
+      "rows": 0,
+      "calls": 3,
+      "total_ms": 3.552,
+      "mean_ms": 1.184,
+      "p95_ms": null
+    },
+    {
+      "id": "b30e7369670ca6d7",
+      "sql": "SELECT oid, typarray FROM pg_type WHERE typname = %s",
+      "rows": 0,
+      "calls": 10,
+      "total_ms": 3.033,
+      "mean_ms": 0.3033,
+      "p95_ms": null
+    },
+    {
+      "id": "5e7afcc86324f5f5",
+      "sql": "SELECT \"dojo_engagement\".\"id\", \"dojo_engagement\".\"created\", \"dojo_engagement\".\"updated\", \"dojo_engagement\".\"name\", \"dojo_engagement\".\"description\", \"dojo_engagement\".\"version\", \"dojo_engagement\".\"first_contacted\", \"dojo_engagement\".\"target_start\", \"dojo_engagement\".\"target_end\", \"dojo_engagement\".\"lead_id\", \"dojo_engagement\".\"requester_id\", \"dojo_engagement\".\"preset_id\", \"dojo_engagement\".\"reason\", \"dojo_engagement\".\"report_type_id\", \"dojo_engagement\".\"product_id\", \"dojo_engagement\".\"active\", \"dojo_engagement\".\"tracker\", \"dojo_engagement\".\"test_strategy\", \"dojo_engagement\".\"threat_model\", \"dojo_engagement\".\"api_test\", \"dojo_engagement\".\"pen_test\", \"dojo_engagement\".\"check_list\", \"dojo_engagement\".\"status\", \"dojo_engagement\".\"progress\", \"dojo_engagement\".\"tmodel_path\", \"dojo_engagement\".\"done_testing\", \"dojo_engagement\".\"engagement_type\", \"dojo_engagement\".\"build_id\", \"dojo_engagement\".\"commit_hash\", \"dojo_engagement\".\"branch_tag\", \"dojo_engagement\".\"source_code_management_uri\", \"dojo_engagement\".\"cicd_scm_server_id\", \"dojo_engagement\".\"cicd_build_server_id\", \"dojo_engagement\".\"cicd_orchestration_engine_id\", \"dojo_engagement\".\"deduplication_on_engagement\", \"dojo_engagement\".\"archived_at\", \"dojo_engagement\".\"archive_batch\" FROM \"dojo_engagement\" WHERE (\"dojo_engagement\".\"id\") IN ((%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s))",
+      "rows": 51,
+      "calls": 3,
+      "total_ms": 2.873,
+      "mean_ms": 0.9576666666666668,
+      "p95_ms": null
+    },
+    {
+      "id": "c3162cb5e82345a0",
+      "sql": "SELECT \"dojo_test_type\".\"name\" AS \"name\" FROM \"dojo_test_type\" WHERE NOT \"dojo_test_type\".\"active\" ORDER BY 1 ASC",
+      "rows": 0,
+      "calls": 8,
+      "total_ms": 2.639,
+      "mean_ms": 0.329875,
+      "p95_ms": null
+    },
+    {
+      "id": "1ddf066911d35c3b",
+      "sql": "SELECT (\"dojo_product_authorized_users\".\"product_id\") AS \"_prefetch_related_val_product_id\", \"auth_user\".\"id\", \"auth_user\".\"password\", \"auth_user\".\"last_login\", \"auth_user\".\"is_superuser\", \"auth_user\".\"username\", \"auth_user\".\"first_name\", \"auth_user\".\"last_name\", \"auth_user\".\"email\", \"auth_user\".\"is_staff\", \"auth_user\".\"is_active\", \"auth_user\".\"date_joined\" FROM \"auth_user\" INNER JOIN \"dojo_product_authorized_users\" ON (\"auth_user\".\"id\" = \"dojo_product_authorized_users\".\"dojo_user_id\") WHERE \"dojo_product_authorized_users\".\"product_id\" IN (%s, ...) ORDER BY \"auth_user\".\"first_name\" ASC",
+      "rows": 72,
+      "calls": 3,
+      "total_ms": 1.986,
+      "mean_ms": 0.662,
+      "p95_ms": null
+    },
+    {
+      "id": "5f6449df8f809a55",
+      "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" WHERE \"dojo_finding\".\"id\" = %s LIMIT 21",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 1.646,
+      "mean_ms": 1.646,
+      "p95_ms": null
+    },
+    {
+      "id": "ec14205a8f3ec9e3",
+      "sql": "SELECT (\"dojo_location_tags\".\"location_id\") AS \"_prefetch_related_val_location_id\", \"dojo_tagulous_location_tags\".\"id\", \"dojo_tagulous_location_tags\".\"name\", \"dojo_tagulous_location_tags\".\"slug\", \"dojo_tagulous_location_tags\".\"count\", \"dojo_tagulous_location_tags\".\"protected\" FROM \"dojo_tagulous_location_tags\" INNER JOIN \"dojo_location_tags\" ON (\"dojo_tagulous_location_tags\".\"id\" = \"dojo_location_tags\".\"tagulous_location_tags_id\") WHERE \"dojo_location_tags\".\"location_id\" IN (%s, ...) ORDER BY \"dojo_tagulous_location_tags\".\"name\" ASC",
+      "rows": 0,
+      "calls": 1,
+      "total_ms": 1.595,
+      "mean_ms": 1.595,
+      "p95_ms": null
+    },
+    {
+      "id": "f108989403c28992",
+      "sql": "SELECT \"dojo_product\".\"name\" AS \"name\" FROM \"dojo_product\" ORDER BY 1 ASC",
+      "rows": 30,
+      "calls": 2,
+      "total_ms": 1.282,
+      "mean_ms": 0.641,
+      "p95_ms": null
+    },
+    {
+      "id": "34e38b132c0d2ab9",
+      "sql": "SELECT \"dojo_location\".\"id\", \"dojo_location\".\"created\", \"dojo_location\".\"updated\", \"dojo_location\".\"location_type\", \"dojo_location\".\"location_value\", %s AS \"caller_may_read_tags\", \"dojo_url\".\"id\", \"dojo_url\".\"location_id\", \"dojo_url\".\"identity_hash\", \"dojo_url\".\"protocol\", \"dojo_url\".\"user_info\", \"dojo_url\".\"host\", \"dojo_url\".\"port\", \"dojo_url\".\"path\", \"dojo_url\".\"query\", \"dojo_url\".\"fragment\", \"dojo_url\".\"host_validation_failure\" FROM \"dojo_location\" LEFT OUTER JOIN \"dojo_url\" ON (\"dojo_location\".\"id\" = \"dojo_url\".\"location_id\") WHERE (\"dojo_location\".\"id\") IN ((%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s), (%s))",
+      "rows": 100,
+      "calls": 1,
+      "total_ms": 1.034,
+      "mean_ms": 1.034,
+      "p95_ms": null
+    },
+    {
+      "id": "4dbdc17a20f5bc81",
+      "sql": "SELECT %s AS \"a\" FROM \"dojo_product\" WHERE NOT (\"dojo_product\".\"id\" IN (SELECT U0.\"id\" AS \"pk\" FROM \"dojo_product\" U0)) LIMIT 1",
+      "rows": 0,
+      "calls": 1,
+      "total_ms": 0.964,
+      "mean_ms": 0.964,
+      "p95_ms": null
+    },
+    {
+      "id": "0178fe6beff31e56",
+      "sql": "SELECT \"dojo_answered_survey\".\"id\", \"dojo_answered_survey\".\"engagement_id\", \"dojo_answered_survey\".\"survey_id\", \"dojo_answered_survey\".\"assignee_id\", \"dojo_answered_survey\".\"responder_id\", \"dojo_answered_survey\".\"completed\", \"dojo_answered_survey\".\"answered_on\" FROM \"dojo_answered_survey\" WHERE (\"dojo_answered_survey\".\"assignee_id\" IS NULL AND \"dojo_answered_survey\".\"completed\" > %s AND (\"dojo_answered_survey\".\"engagement_id\" IS NULL OR \"dojo_answered_survey\".\"engagement_id\" IN (SELECT DISTINCT \"dojo_engagement\".\"id\" FROM \"dojo_engagement\")))",
+      "rows": 0,
+      "calls": 1,
+      "total_ms": 0.847,
+      "mean_ms": 0.847,
+      "p95_ms": null
+    },
+    {
+      "id": "170eadabbca1e51c",
+      "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_locationproductreference\" INNER JOIN \"dojo_location\" ON (\"dojo_locationproductreference\".\"location_id\" = \"dojo_location\".\"id\") WHERE \"dojo_location\".\"location_type\" = %s",
+      "rows": 1,
+      "calls": 1,
+      "total_ms": 0.839,
+      "mean_ms": 0.839,
+      "p95_ms": null
+    },
+    {
+      "id": "3f0353c01f12807f",
+      "sql": "SELECT \"dojo_product_platform\".\"id\", \"dojo_product_platform\".\"value\", \"dojo_product_platform\".\"name\", \"dojo_product_platform\".\"icon\", \"dojo_product_platform\".\"display_order\" FROM \"dojo_product_platform\" WHERE \"dojo_product_platform\".\"id\" = %s LIMIT 21",
+      "rows": 2,
+      "calls": 2,
+      "total_ms": 0.474,
+      "mean_ms": 0.237,
+      "p95_ms": null
+    },
+    {
+      "id": "5760993f1c94f12f",
+      "sql": "SELECT \"dojo_product_type\".\"id\", \"dojo_product_type\".\"created\", \"dojo_product_type\".\"updated\", \"dojo_product_type\".\"name\", \"dojo_product_type\".\"description\", \"dojo_product_type\".\"critical_product\", \"dojo_product_type\".\"key_product\", \"dojo_product_type\".\"archived_at\", \"dojo_product_type\".\"archive_batch\" FROM \"dojo_product_type\" ORDER BY \"dojo_product_type\".\"name\" ASC",
+      "rows": 0,
+      "calls": 2,
+      "total_ms": 0.442,
+      "mean_ms": 0.221,
+      "p95_ms": null
+    },
+    {
+      "id": "378ee216dfedc024",
+      "sql": "SELECT \"dojo_product_lifecycle\".\"id\", \"dojo_product_lifecycle\".\"value\", \"dojo_product_lifecycle\".\"name\", \"dojo_product_lifecycle\".\"icon\", \"dojo_product_lifecycle\".\"display_order\" FROM \"dojo_product_lifecycle\" WHERE \"dojo_product_lifecycle\".\"id\" = %s LIMIT 21",
+      "rows": 2,
+      "calls": 2,
+      "total_ms": 0.323,
+      "mean_ms": 0.1615,
+      "p95_ms": null
+    },
+    {
+      "id": "4f8303b4a6ac673b",
+      "sql": "SELECT \"dojo_product_origin\".\"id\", \"dojo_product_origin\".\"value\", \"dojo_product_origin\".\"name\", \"dojo_product_origin\".\"icon\", \"dojo_product_origin\".\"display_order\" FROM \"dojo_product_origin\" WHERE \"dojo_product_origin\".\"id\" = %s LIMIT 21",
+      "rows": 2,
+      "calls": 2,
+      "total_ms": 0.32,
+      "mean_ms": 0.16,
+      "p95_ms": null
+    }
+  ]
+}

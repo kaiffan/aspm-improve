@@ -1,0 +1,106 @@
+{
+  "findings": {
+    "url": "/api/v2/findings/?limit=100",
+    "auth": "token"
+  },
+  "finding_detail": {
+    "url": "/api/v2/findings/{finding}/",
+    "auth": "token"
+  },
+  "filtered_product": {
+    "url": "/api/v2/findings/?test__engagement__product={product}&severity=High&active=true&limit=100",
+    "auth": "token"
+  },
+  "filtered_severity": {
+    "url": "/api/v2/findings/?severity=High&active=true&limit=100",
+    "auth": "token"
+  },
+  "offset": {
+    "url": "/api/v2/findings/?limit=100&offset=500000",
+    "auth": "token"
+  },
+  "products": {
+    "url": "/api/v2/products/?limit=100",
+    "auth": "token"
+  },
+  "product_detail": {
+    "url": "/api/v2/products/{product}/",
+    "auth": "token"
+  },
+  "engagements": {
+    "url": "/api/v2/engagements/?limit=100",
+    "auth": "token"
+  },
+  "engagement_detail": {
+    "url": "/api/v2/engagements/{engagement}/",
+    "auth": "token"
+  },
+  "tests": {
+    "url": "/api/v2/tests/?limit=100",
+    "auth": "token"
+  },
+  "test_detail": {
+    "url": "/api/v2/tests/{test}/",
+    "auth": "token"
+  },
+  "product_types": {
+    "url": "/api/v2/product_types/?limit=100",
+    "auth": "token"
+  },
+  "users": {
+    "url": "/api/v2/users/?limit=100",
+    "auth": "token"
+  },
+  "endpoints": {
+    "url": "/api/v2/endpoints/?limit=100",
+    "auth": "token"
+  },
+  "endpoint_status": {
+    "url": "/api/v2/endpoint_status/?limit=100",
+    "auth": "token"
+  },
+  "notes": {
+    "url": "/api/v2/notes/?limit=100",
+    "auth": "token"
+  },
+  "dashboard": {
+    "url": "/dashboard",
+    "auth": "session"
+  },
+  "web_products": {
+    "url": "/asset",
+    "auth": "session"
+  },
+  "web_findings": {
+    "url": "/finding/open",
+    "auth": "session"
+  },
+  "web_engagements": {
+    "url": "/engagement",
+    "auth": "session"
+  },
+  "web_test": {
+    "url": "/test/{test}",
+    "auth": "session"
+  },
+  "simple_metrics": {
+    "url": "/metrics/simple",
+    "auth": "session"
+  },
+  "products_count": {
+    "url": "/api/v2/products/?findings=count&limit=100",
+    "auth": "token"
+  },
+  "products_none": {
+    "url": "/api/v2/products/?findings=none&limit=100",
+    "auth": "token"
+  },
+  "fast_offset": {
+    "url": "/api/v2/findings/?limit=100&offset=500000&fast_offset=1",
+    "auth": "token"
+  },
+  "simple_metrics_cold": {
+    "url": "/metrics/simple?perf_nonce={nonce}",
+    "auth": "session"
+  }
+}

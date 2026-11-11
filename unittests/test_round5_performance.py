@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from dojo.home.views import get_severities_all, get_severities_by_month
-from dojo.models import Finding, Risk_Acceptance
+from dojo.models import Engagement, Finding, Risk_Acceptance, Test
 from dojo.product.queries import get_active_finding_counts_by_product
 from dojo.utils import get_punchcard_data
 from unittests import test_round4_performance as round4
@@ -91,9 +91,14 @@ class TestRound5Performance(DojoTestCase):
             acceptance.accepted_findings.add(*self.findings)
         self.scope.filter(pk=self.findings[2].pk).update(duplicate=True)
         Finding.objects.create(test=self.findings[0].test, title="extra", severity="Medium", duplicate=False)
+        now = timezone.now()
+        hidden_engagement = Engagement.objects.create(product=self.other, target_start=now.date(), target_end=now.date())
+        hidden_test = Test.objects.create(engagement=hidden_engagement, test_type=self.findings[0].test.test_type, target_start=now, target_end=now)
+        hidden = Finding.objects.create(test=hidden_test, title="hidden", severity="Critical", duplicate=False, date=now.date(), mitigated=now)
         self.client.force_login(self.reader)
         with CaptureQueriesContext(connection) as queries:
             response = self.client.get(reverse("dashboard"))
+        dashboard_queries = [query["sql"] for query in queries]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["finding_count"], 3)
         self.assertEqual(response.context["mitigated_count"], 2)
@@ -101,6 +106,12 @@ class TestRound5Performance(DojoTestCase):
         self.assertEqual(response.context["high"], 1)
         self.assertEqual(response.context["low"], 1)
         self.assertEqual(response.context["info"], 0)
-        counts = [q["sql"] for q in queries if 'FROM "dojo_finding"' in q["sql"] and "COUNT(*)" in q["sql"]]
+        self.assertEqual(response.context["critical"], 0)
+        filtered = self.client.get("/api/v2/findings/", {"test__engagement__product": self.other.pk})
+        self.assertEqual(filtered.status_code, 200)
+        self.assertEqual(filtered.json()["count"], 0)
+        self.assertEqual(filtered.json()["results"], [])
+        self.assertIn(self.client.get(f"/api/v2/findings/{hidden.pk}/").status_code, (403, 404))
+        counts = [sql for sql in dashboard_queries if 'FROM "dojo_finding"' in sql and "COUNT(*)" in sql]
         self.assertEqual(len(counts), 3)
         self.assertTrue(all('"description"' not in q for q in counts))

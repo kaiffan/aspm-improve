@@ -1,0 +1,18 @@
+{
+  "fixed_before_measurements": true,
+  "weights": {
+    "findings": 0.3,
+    "filtered_product": 0.15,
+    "finding_detail": 0.1,
+    "products": 0.1,
+    "tests": 0.1,
+    "engagements": 0.05,
+    "dashboard": 0.1,
+    "web_products": 0.05,
+    "endpoints": 0.05
+  },
+  "saturation_think_time_s": 0,
+  "user_model_think_time_s": 0.25,
+  "note": "Standard full Product responses in the primary mix; opt-in modes are separate.",
+  "cache_policy": "Separate per-run cache namespace on the same existing backend. The primary mix uses uncached Dashboard statistics and related endpoints; Simple Metrics warm-cache and fresh-render costs are separate endpoint scenarios."
+}

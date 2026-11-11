@@ -1,0 +1,73 @@
+Checking docker compose version
+Supported docker compose version
+Running docker compose unit tests with test case unittests.test_round5_performance ...
+[11/Nov/2026 09:59:33] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[11/Nov/2026 09:59:33] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[11/Nov/2026 09:59:33] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+Using existing test database for alias 'default' ('test_dd_r4_check')...
+System check identified some issues:
+
+WARNINGS:
+?: (dojo.W003) DD_CREDENTIAL_AES_256_KEY is the value shipped with DefectDojo.
+	HINT: Set DD_CREDENTIAL_AES_256_KEY to a random 32-character value on a new instance. On an existing instance, stored tool configuration passwords are encrypted with the current key and must be re-entered after changing it.
+?: (dojo.W004) DD_ALLOWED_HOSTS contains '*'.
+	HINT: List the host names the instance is served under, for example DD_ALLOWED_HOSTS=defectdojo.example.com.
+
+System check identified 2 issues (4 silenced).
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: admin
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user1
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user2
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user3
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user4
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: user5
+[11/Nov/2026 09:59:34] INFO [dojo.notifications.signals:33] creating default set of notifications for: globalWriter
+test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings (unittests.test_round5_performance.TestRound5Performance.test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings) ... [11/Nov/2026 09:59:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 09:59:35] INFO [dojo.utils:2115] login user: round4_reader via ip: None
+FAIL
+test_full_product_response_keeps_order_count_and_visibility (unittests.test_round5_performance.TestRound5Performance.test_full_product_response_keeps_order_count_and_visibility) ... [11/Nov/2026 09:59:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+[11/Nov/2026 09:59:35] INFO [dojo.utils:2115] login user: round4_reader via ip: None
+FAIL
+test_single_product_counts_do_not_join_each_finding_to_test (unittests.test_round5_performance.TestRound5Performance.test_single_product_counts_do_not_join_each_finding_to_test) ... [11/Nov/2026 09:59:35] INFO [dojo.notifications.signals:33] creating default set of notifications for: (round4_reader)
+FAIL
+
+======================================================================
+FAIL: test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings (unittests.test_round5_performance.TestRound5Performance.test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/unittests/test_round5_performance.py", line 75, in test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings
+    self.assertTrue(all('"description"' not in q for q in counts))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_full_product_response_keeps_order_count_and_visibility (unittests.test_round5_performance.TestRound5Performance.test_full_product_response_keeps_order_count_and_visibility)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/unittests/test_round5_performance.py", line 41, in test_full_product_response_keeps_order_count_and_visibility
+    self.assertNotIn('"dojo_finding"."test_id" = "dojo_test"."id"', aggregates[0])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '"dojo_finding"."test_id" = "dojo_test"."id"' unexpectedly found in 'SELECT "dojo_engagement"."product_id" AS "test__engagement__product_id", ARRAY_AGG("dojo_finding"."id" ORDER BY "dojo_finding"."id") AS "finding_ids" FROM "dojo_finding" INNER JOIN "dojo_test" ON ("dojo_finding"."test_id" = "dojo_test"."id") INNER JOIN "dojo_engagement" ON ("dojo_test"."engagement_id" = "dojo_engagement"."id") WHERE ("dojo_finding"."active" AND "dojo_engagement"."product_id" IN (6)) GROUP BY 1'
+
+======================================================================
+FAIL: test_single_product_counts_do_not_join_each_finding_to_test (unittests.test_round5_performance.TestRound5Performance.test_single_product_counts_do_not_join_each_finding_to_test)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/unittests/test_round5_performance.py", line 22, in test_single_product_counts_do_not_join_each_finding_to_test
+    self.assertNotIn('"dojo_finding"."test_id" = "dojo_test"."id"', queries[0]["sql"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '"dojo_finding"."test_id" = "dojo_test"."id"' unexpectedly found in 'SELECT "dojo_engagement"."product_id" AS "test__engagement__product_id", COUNT("dojo_finding"."id") AS "active", COUNT("dojo_finding"."id") FILTER (WHERE "dojo_finding"."verified") AS "verified" FROM "dojo_finding" INNER JOIN "dojo_test" ON ("dojo_finding"."test_id" = "dojo_test"."id") INNER JOIN "dojo_engagement" ON ("dojo_test"."engagement_id" = "dojo_engagement"."id") WHERE ("dojo_finding"."active" AND "dojo_engagement"."product_id" IN (8)) GROUP BY 1'
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.079s
+
+FAILED (failures=3)
+Preserving test database for alias 'default' ('test_dd_r4_check')...
+Found 3 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: dbbackup, django_filters, django_htmx, drf_spectacular, drf_spectacular_sidecar, fontawesomefree, humanize, imagekit, messages, multiselectfield, pgtrigger, polymorphic, postgres, rest_framework, staticfiles, tagulous
+  Apply all migrations: admin, auditlog, auth, authtoken, contenttypes, django_celery_results, dojo, pghistory, sessions, single_session, sites, watson
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  No migrations to apply.

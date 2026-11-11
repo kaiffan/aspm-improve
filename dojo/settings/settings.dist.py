@@ -602,6 +602,13 @@ PASSWORD_RESET_TIMEOUT = env("DD_PASSWORD_RESET_TIMEOUT")
 OS_MESSAGE_ENABLED = env("DD_OS_MESSAGE_ENABLED")
 GITHUB_STAR_PROMPT_ENABLED = env("DD_GITHUB_STAR_PROMPT_ENABLED")
 
+# ASPM product metadata is separate from the upstream DefectDojo version.
+ASPM_BRAND_NAME = env("DD_ASPM_BRAND_NAME", default="ASPM")
+ASPM_BRAND_MARK = env("DD_ASPM_BRAND_MARK", default="dojo/img/aspm-mark.svg")
+ASPM_FAVICON = env("DD_ASPM_FAVICON", default="dojo/img/aspm-mark.svg")
+ASPM_GIT_SHA = env("DD_ASPM_GIT_SHA", default="")
+ASPM_SHOW_UPSTREAM_PROMOTIONS = env.bool("DD_ASPM_SHOW_UPSTREAM_PROMOTIONS", default=False)
+
 DOCUMENTATION_URL = env("DD_DOCUMENTATION_URL")
 
 # Setting SLA_NOTIFY_ACTIVE and SLA_NOTIFY_ACTIVE_VERIFIED to False will disable the feature

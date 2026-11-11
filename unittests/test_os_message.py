@@ -207,6 +207,7 @@ class TestGetOsBanner(SimpleTestCase):
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestGlobalizeVarsOsBanner(SimpleTestCase):
 
     def setUp(self):

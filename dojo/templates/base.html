@@ -21,7 +21,7 @@
             {% elif product_tab.title %}
                 {{ product_tab.title }} |
             {% endif %}
-            DefectDojo
+            {{ ASPM.name }}
         </title>
         <script src="{% static 'dojo/js/aspm.js' %}?v={% static_v 'dojo/js/aspm.js' %}"></script>
         {% block add_css_before %}
@@ -72,8 +72,7 @@
         {% endblock %}
         <link rel="stylesheet" href="{% static "jquery-ui/dist/themes/flick/jquery-ui.min.css" %}">
         <link rel="stylesheet" href="{% static "flatpickr/dist/flatpickr.min.css" %}">
-        <link rel="icon" type="image/svg+xml" href="{% static "dojo/img/favicon.svg" %}"/>
-        <link rel="alternate icon" type="image/png" href="{% static "dojo/img/favicon.png" %}"/>
+        <link rel="icon" type="image/svg+xml" href="{% static ASPM.favicon %}"/>
         <link rel="stylesheet" href="{% static "chosen-bootstrap/chosen.bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "fullcalendar/dist/fullcalendar.min.css" %}">
         {% block dojo_css %}
@@ -188,7 +187,7 @@
                 <div class="dd-logo-bar flex items-center h-[var(--dd-topbar-height)] px-4 flex-shrink-0">
                     {% block header_logo %}
                         <a href="{% url 'home' %}" class="flex items-center min-w-0">
-                            <img src="{% static "dojo/img/logo.svg" %}" alt="{% trans 'DefectDojo' %}" class="h-5 w-auto max-w-full">
+                            {% include "dojo/aspm/brand.html" %}
                         </a>
                     {% endblock %}
                     <button type="button" data-nav-close class="aspm-nav-close ms-auto" aria-label="{% trans 'Close navigation' %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
@@ -426,10 +425,6 @@
                         <i class="fa-solid fa-life-ring w-5 text-center flex-shrink-0"></i>
                         <span class="truncate">{% trans "Support" %}</span>
                     </a>
-                    <a href="{% url 'support' %}#sp-pro" class="flex items-center gap-3 px-4 py-2 transition-colors">
-                        <i class="fa-solid fa-rocket w-5 text-center flex-shrink-0"></i>
-                        <span class="truncate">{% trans "Upgrade to Pro" %}</span>
-                    </a>
                     {% endblock %}
                 </nav>
             </aside>
@@ -449,7 +444,7 @@
             <!-- ===== Topbar ===== -->
             <header id="aspm-topbar" class="sticky top-0 z-30 bg-frame border-b border-border h-[var(--dd-topbar-height)] flex items-center px-4 gap-4 flex-shrink-0">
                 <button id="aspm-nav-toggle" class="aspm-nav-toggle" type="button" aria-controls="dd-sidebar" aria-expanded="false" aria-label="{% trans 'Open navigation' %}"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
-                <span class="aspm-workspace-label">{% trans "Security workspace" %}</span>
+                <a class="aspm-workspace-label" href="{% url 'dashboard' %}" aria-label="{{ ASPM.name }}">{{ ASPM.name }} <span class="aspm-workspace-meta">{% trans "Workspace" %}</span></a>
                 <!-- Search -->
                 <form id="custom_search_form" method="get" action="{% url 'simple_search' %}" class="ms-auto w-full max-w-md">
                     <div class="flex">
@@ -466,7 +461,7 @@
                     {% include "dojo/aspm/theme_switcher.html" %}
                     <!-- Alerts dropdown -->
                     {% if not 'DISABLE_ALERT_COUNTER'|setting_enabled %}
-                    <div x-data="{ alertsOpen: false }" class="relative">
+                    <div x-data="{ alertsOpen: false }" @keydown.escape.window="alertsOpen = false" class="relative">
                         <button @click="alertsOpen = !alertsOpen; if(alertsOpen) htmx.trigger('#alerts-dropdown', 'loadAlerts')"
                                 :aria-expanded="alertsOpen" aria-controls="alerts-dropdown"
                                 class="relative p-2 text-gray-500 hover:text-gray-700 transition-colors"
@@ -483,7 +478,7 @@
                         <div id="alerts-dropdown"
                              x-show="alertsOpen" x-transition
                              @click.outside="alertsOpen = false"
-                             role="menu" aria-label="{% trans 'Alerts' %}"
+                             aria-label="{% trans 'Alerts' %}"
                              hx-get="{% url 'alerts_partial' %}?limit=12"
                              hx-trigger="loadAlerts"
                              hx-swap="innerHTML"
@@ -495,7 +490,7 @@
                     {% endif %}
 
                     <!-- User dropdown -->
-                    <div x-data="{ userOpen: false }" class="relative">
+                    <div x-data="{ userOpen: false }" @keydown.escape.window="userOpen = false" class="relative">
                         <button @click="userOpen = !userOpen"
                                 :aria-expanded="userOpen" aria-controls="user-dropdown"
                                 class="flex items-center gap-1 p-2 text-gray-500 hover:text-gray-700 transition-colors"
@@ -505,7 +500,6 @@
                         </button>
                         <div id="user-dropdown" x-show="userOpen" x-transition
                              @click.outside="userOpen = false"
-                             role="menu"
                              class="absolute end-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1"
                              x-cloak>
                             {% block settings-dropdown-items %}
@@ -537,11 +531,6 @@
                             {% endblock %}
                             {% if request.user.is_authenticated %}
                                 <div class="border-t border-gray-200 my-1"></div>
-                                {% if SHOW_PLG_LINK %}
-                                    <a href="https://cloud.defectdojo.com/onboarding?payg=1" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <i class="fa-solid fa-level-up fa-fw"></i> {% trans "Get Pro from $100/mo" %}
-                                    </a>
-                                {% endif %}
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fa-solid fa-right-from-bracket fa-fw"></i> {% trans "Logout" %}
                                 </a>
@@ -1001,10 +990,10 @@
                     <div class="text-center text-sm text-gray-500">
                         <p>
                             <a href="{% url 'home' %}">
-                                <img src="{% static "dojo/img/symbol.svg" %}" alt="{% trans "DefectDojo Chop" %}" style="height:40px;width:auto;display:inline-block"/>
+                                <img src="{% static ASPM.mark %}" alt="{{ ASPM.name }}" width="28" height="28" style="display:inline-block"/>
                             </a>
                         </p>
-                        <p class="mt-2">{% dojo_version %} ({% dojo_current_hash %})</p>
+                        <p class="mt-2"><strong>{{ ASPM.name }} {{ ASPM.version }}</strong> · {{ ASPM.channel|upper }} · {{ ASPM.git_short_sha }}<br>{% trans "Based on" %} {{ ASPM.upstream }} {{ ASPM.upstream_version }}</p>
                         <p>
                             Detailed DefectDojo documentation can be found in our <a href="{% dojo_docs_url %}" class="text-dd-interactive-700 hover:underline">GitHub Pages</a>.
                         </p>

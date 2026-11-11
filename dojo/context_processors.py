@@ -6,6 +6,7 @@ from django.contrib import messages
 
 from dojo.announcement.github_star import should_show_github_star_prompt
 from dojo.announcement.os_message import OS_MESSAGE_DISMISSED_KEY, get_os_banner
+from dojo.aspm.branding import get_branding
 from dojo.labels import get_labels
 from dojo.location.feature import locations_enabled
 from dojo.middleware import READ_ONLY_MODE_MESSAGE
@@ -21,11 +22,12 @@ def globalize_vars(request):
         "DOCUMENTATION_URL": settings.DOCUMENTATION_URL,
         "API_TOKENS_ENABLED": settings.API_TOKENS_ENABLED,
         "API_TOKEN_AUTH_ENDPOINT_ENABLED": settings.API_TOKEN_AUTH_ENDPOINT_ENABLED,
-        "SHOW_PLG_LINK": True,
+        "SHOW_PLG_LINK": False,
+        "ASPM": get_branding(),
         # V3 Feature Flags
         "V3_FEATURE_LOCATIONS": locations_enabled(),
         "SHOW_A11Y_REQUIRED_FIELDS_NOTICE": settings.SHOW_A11Y_REQUIRED_FIELDS_NOTICE,
-        "SHOW_GITHUB_STAR_PROMPT": should_show_github_star_prompt(getattr(request, "user", None)),
+        "SHOW_GITHUB_STAR_PROMPT": settings.ASPM_SHOW_UPSTREAM_PROMOTIONS and should_show_github_star_prompt(getattr(request, "user", None)),
     }
 
     additional_banners = []
@@ -33,7 +35,7 @@ def globalize_vars(request):
     if System_Settings.objects.get().read_only_mode:
         additional_banners.append({"source": "read_only_mode", "message": str(READ_ONLY_MODE_MESSAGE), "style": "warning"})
 
-    if (os_banner := get_os_banner()) is not None:
+    if settings.ASPM_SHOW_UPSTREAM_PROMOTIONS and (os_banner := get_os_banner()) is not None:
         token = os_banner.get("dismiss_token", "")
         user = getattr(request, "user", None)
         dismissible = bool(token and getattr(user, "is_authenticated", False))

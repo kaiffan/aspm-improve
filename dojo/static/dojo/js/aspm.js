@@ -126,24 +126,31 @@
 })();
 
 /* Select2 replaces the native control; retain its existing form label.
-   Tagulous may rebuild its select asynchronously, so observe only that field. */
+   Widgets may initialize after load, so observe only their field groups. */
 window.addEventListener('load', function () {
     function labelSelections(scope) {
-        scope.querySelectorAll('.select2-selection[role="combobox"]').forEach(function (selection) {
+        scope.querySelectorAll('.select2-selection[role="combobox"], .select2-search__field').forEach(function (selection) {
             var container = selection.closest('.select2-container');
             var nativeControl = container && container.previousElementSibling;
-            var group = selection.closest('.form-group');
+            var group = selection.closest('.form-group, .filter-form-input');
             var label = (nativeControl && nativeControl.labels && nativeControl.labels[0]) || (group && group.querySelector('label[for]'));
             if (label) {
                 if (!label.id) label.id = (label.htmlFor || nativeControl.id) + '-aspm-label';
                 selection.setAttribute('aria-labelledby', label.id);
+            } else if (selection.matches('.select2-search__field') && !selection.getAttribute('aria-label') && !selection.getAttribute('aria-labelledby')) {
+                selection.setAttribute('aria-label', 'Search options');
             }
         });
     }
     labelSelections(document);
-    var tags = document.getElementById('id_tags');
-    var group = tags && tags.closest('.form-group');
-    if (group) {
-        new MutationObserver(function () { labelSelections(group); }).observe(group, {childList: true, subtree: true});
+    if (window.jQuery) {
+        window.jQuery(document).on('select2:open', function () { labelSelections(document); });
     }
+    var tags = document.getElementById('id_tags');
+    var group = tags && tags.closest('.form-group, .filter-form-input');
+    var groups = Array.from(document.querySelectorAll('.filter-form-input'));
+    if (group && groups.indexOf(group) === -1) groups.push(group);
+    groups.forEach(function (field) {
+        new MutationObserver(function () { labelSelections(field); }).observe(field, {childList: true, subtree: true});
+    });
 });

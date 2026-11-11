@@ -6,6 +6,7 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from dojo import context_processors
 from dojo.aspm.branding import get_branding
+from dojo.product_announcements import ErrorPageProductAnnouncement
 
 
 class TestASPMBranding(SimpleTestCase):
@@ -47,3 +48,24 @@ class TestASPMBranding(SimpleTestCase):
         self.assertIn("DefectDojo OSS 3.5.100", html)
         self.assertIn("a" * 40, html)
         self.assertNotIn("fonts.googleapis.com", html)
+
+    @override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=False)
+    def test_error_promos_are_not_stored_but_api_error_contract_is_preserved(self):
+        request = RequestFactory().get("/finding/1")
+        request.session = {}
+        ErrorPageProductAnnouncement(request=request)
+        self.assertNotIn("_product_banners", request.session)
+        data = {"detail": "Permission denied"}
+        ErrorPageProductAnnouncement(response_data=data)
+        self.assertEqual(data["detail"], "Permission denied")
+        self.assertEqual(len(data["pro"]), 1)
+
+    @override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=False)
+    def test_old_promos_are_consumed_without_removing_operator_banners(self):
+        request = RequestFactory().get("/")
+        request.session = {"_product_banners": [{"source": "product_announcement", "message": "Old promo"}, {"source": "operator", "message": "Maintenance"}]}
+        with patch.object(context_processors.System_Settings.objects, "get") as settings_get:
+            settings_get.return_value.read_only_mode = False
+            context = context_processors.globalize_vars(request)
+        self.assertEqual(context["additional_banners"], [{"source": "operator", "message": "Maintenance"}])
+        self.assertNotIn("_product_banners", request.session)

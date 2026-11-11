@@ -1,6 +1,7 @@
 
 import logging
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -47,6 +48,8 @@ class ProductAnnouncementManager:
 
     def _add_session_banner(self, request: HttpRequest, message: str):
         """Store a banner in the session for rendering via additional_banners."""
+        if not settings.ASPM_SHOW_UPSTREAM_PROMOTIONS:
+            return
         # Requests rejected before SessionMiddleware runs (for example a
         # DisallowedHost raised by CommonMiddleware) have no session to store into.
         if not hasattr(request, "session"):

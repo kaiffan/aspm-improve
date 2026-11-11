@@ -1,7 +1,7 @@
 from collections import UserDict
 
 from django.http import HttpRequest, HttpResponse
-from django.test import RequestFactory, SimpleTestCase
+from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from dojo.product_announcements import (
     ErrorPageProductAnnouncement,
@@ -28,6 +28,7 @@ def _make_response(data=None):
     return response
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestProductAnnouncementSessionBanner(SimpleTestCase):
 
     def test_stores_banner_in_session(self):
@@ -75,6 +76,7 @@ class TestProductAnnouncementSessionBanner(SimpleTestCase):
         self.assertEqual(len(request.session["_product_banners"]), 1)
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestProductAnnouncementApiPath(SimpleTestCase):
 
     def test_api_response_gets_pro_key(self):
@@ -100,6 +102,7 @@ class TestProductAnnouncementApiPath(SimpleTestCase):
             ErrorPageProductAnnouncement()
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestErrorPageProductAnnouncement(SimpleTestCase):
 
     def test_message_content(self):
@@ -114,6 +117,7 @@ class TestErrorPageProductAnnouncement(SimpleTestCase):
         self.assertIn("Pro comes with support.", str(response.data["pro"][0]))
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestLargeScanSizeProductAnnouncement(SimpleTestCase):
 
     def test_fires_when_duration_exceeds_threshold(self):
@@ -140,6 +144,7 @@ class TestLargeScanSizeProductAnnouncement(SimpleTestCase):
         self.assertEqual(len(request.session.get("_product_banners", [])), 0)
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestLongRunningRequestProductAnnouncement(SimpleTestCase):
 
     def test_fires_when_duration_exceeds_threshold(self):
@@ -160,6 +165,7 @@ class TestLongRunningRequestProductAnnouncement(SimpleTestCase):
         self.assertEqual(len(request.session.get("_product_banners", [])), 0)
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestScanTypeProductAnnouncement(SimpleTestCase):
 
     def test_fires_for_supported_scan_type(self):
@@ -196,6 +202,7 @@ class TestScanTypeProductAnnouncement(SimpleTestCase):
         self.assertIn("Wiz Scan", str(data["pro"][0]))
 
 
+@override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=True)
 class TestBannerDictSchema(SimpleTestCase):
 
     """Verify every banner stored in the session has the expected keys."""

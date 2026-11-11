@@ -53,6 +53,8 @@ def globalize_vars(request):
 
     if hasattr(request, "session"):
         for banner in request.session.pop("_product_banners", []):
+            if not settings.ASPM_SHOW_UPSTREAM_PROMOTIONS and isinstance(banner, dict) and banner.get("source") == "product_announcement":
+                continue
             additional_banners.append(banner)
 
     if additional_banners:

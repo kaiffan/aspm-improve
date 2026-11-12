@@ -4,9 +4,10 @@ from django.db import connection
 from django.test import RequestFactory, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
 
 from dojo.finding.queries import prefetch_for_findings
-from dojo.models import Finding
+from dojo.models import Finding, Risk_Acceptance
 from dojo.utils import get_page_items, get_words_for_field
 from unittests import test_round4_performance as round4
 from unittests.dojo_test_case import DojoTestCase, versioned_fixtures
@@ -49,6 +50,16 @@ class TestRC3FindingPage(DojoTestCase):
         findings = list(self.scope.order_by("pk"))
         self.assertIs(prefetch_for_findings(findings), findings)
         self.assertEqual([finding.pk for finding in prefetch_for_findings(self.scope.order_by("pk"))], [finding.pk for finding in findings])
+
+    def test_related_ordering_retains_original_page_cardinality(self):
+        for day in (1, 2):
+            acceptance = Risk_Acceptance.objects.create(name=f"RC3 acceptance {day}", owner=self.admin)
+            Risk_Acceptance.objects.filter(pk=acceptance.pk).update(created=timezone.now().replace(day=day))
+            acceptance.accepted_findings.add(self.findings[0])
+        ordered = self.scope.filter(pk=self.findings[0].pk).order_by("risk_acceptance__created__date", "pk")
+        expected = list(prefetch_for_findings(ordered)[:1])
+        actual = list(prefetch_for_findings(ordered[:1]))
+        self.assertEqual([finding.pk for finding in actual], [finding.pk for finding in expected])
 
     @override_settings(MAX_AUTOCOMPLETE_WORDS=1)
     def test_capped_autocomplete_projects_only_authorized_values(self):

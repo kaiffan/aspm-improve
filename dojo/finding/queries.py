@@ -55,12 +55,16 @@ def prefetch_for_findings(findings, prefetch_type="all", *, exclude_untouched=Tr
         logger.debug("unable to prefetch because query was already executed")
         return findings
 
-    if findings.query.is_sliced and findings._result_cache is None and "?" not in findings.query.order_by:
+    ordering = findings.query.order_by or (findings.model._meta.ordering if findings.query.default_ordering else ()) or ()
+    page_ordering = all(isinstance(field, str) and field != "?" and "__" not in field for field in ordering)
+    if findings.query.is_sliced and findings._result_cache is None and page_ordering and not findings.query.extra_order_by:
         # Endpoint annotations add GROUP BY. Apply them to the selected page,
         # rather than grouping every matching Finding before the page's LIMIT.
         # Retain the original filters, annotations and ordering on both sides;
         # only the clone has its limits removed. The authorized PK subquery and
-        # hydration run in one statement and one database snapshot.
+        # hydration run in one statement and one database snapshot. Related
+        # orderings can produce several groups for one PK (risk acceptances),
+        # so leave their original LIMIT after annotation instead.
         page_ids = findings.values("pk")
         findings = findings.all()
         findings.query.clear_limits()

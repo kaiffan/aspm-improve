@@ -42,6 +42,23 @@ def get_authorized_findings_for_queryset(permission, queryset, user=None):
     return Finding.objects.all().order_by("id") if queryset is None else queryset
 
 
+def can_annotate_findings_after_paging(findings):
+    """Whether pagination before endpoint annotations preserves row cardinality."""
+    query = findings.query
+    ordering = query.order_by or (findings.model._meta.ordering if query.default_ordering else ()) or ()
+    return (
+        findings._result_cache is None
+        and findings._fields is None
+        and all(isinstance(field, str) and field != "?" and "__" not in field for field in ordering)
+        and not query.extra_order_by
+        and not query.extra
+        and not query.combinator
+        and not query.distinct_fields
+        and query.group_by is None
+        and not query_has_multivalued_join(query)
+    )
+
+
 def prefetch_for_findings(findings, prefetch_type="all", *, exclude_untouched=True):
     """
     Unified prefetch function for findings across the application.
@@ -56,20 +73,7 @@ def prefetch_for_findings(findings, prefetch_type="all", *, exclude_untouched=Tr
         logger.debug("unable to prefetch because query was already executed")
         return findings
 
-    ordering = findings.query.order_by or (findings.model._meta.ordering if findings.query.default_ordering else ()) or ()
-    page_ordering = all(isinstance(field, str) and field != "?" and "__" not in field for field in ordering)
-    if (
-        findings.query.is_sliced
-        and findings._result_cache is None
-        and findings._fields is None
-        and page_ordering
-        and not findings.query.extra_order_by
-        and not findings.query.extra
-        and not findings.query.combinator
-        and not findings.query.distinct_fields
-        and findings.query.group_by is None
-        and not query_has_multivalued_join(findings.query)
-    ):
+    if findings.query.is_sliced and can_annotate_findings_after_paging(findings):
         # Endpoint annotations add GROUP BY. Apply them to the selected page,
         # rather than grouping every matching Finding before the page's LIMIT.
         # Retain the original filters, annotations and ordering on both sides;

@@ -70,6 +70,15 @@ class TestRC3FindingPage(DojoTestCase):
         actual = list(prefetch_for_findings(ordered[1:2]))
         self.assertEqual([finding.pk for finding in actual], [finding.pk for finding in expected])
 
+    def test_test_page_preserves_counts_for_expired_acceptance_filter(self):
+        for index in range(2):
+            acceptance = Risk_Acceptance.objects.create(name=f"RC3 expired {index}", owner=self.admin, expiration_date_handled=timezone.now())
+            acceptance.accepted_findings.add(*self.findings[:2] if index == 0 else self.findings[:1])
+        self.client.force_login(self.reader)
+        response = self.client.get(reverse("view_test", args=[self.findings[0].test_id]), {"risk_acceptance": 3, "findingspage_size": 1})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["findings"].paginator.count, 2)
+
     @override_settings(MAX_AUTOCOMPLETE_WORDS=1)
     def test_capped_autocomplete_projects_only_authorized_values(self):
         self.scope.update(title="rc3visible needle")

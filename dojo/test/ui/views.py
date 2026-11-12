@@ -25,7 +25,7 @@ import dojo.finding.helper as finding_helper
 from dojo.authorization.authorization import user_has_global_permission_or_403, user_has_permission_or_403
 from dojo.endpoint.queries import get_import_form_endpoints
 from dojo.engagement.queries import get_authorized_engagements
-from dojo.finding.queries import prefetch_for_findings
+from dojo.finding.queries import can_annotate_findings_after_paging, prefetch_for_findings
 from dojo.finding.ui.filters import FindingFilter, FindingFilterWithoutObjectLookups, TemplateFindingFilter
 from dojo.finding.ui.views import find_available_notetypes
 from dojo.forms import (
@@ -113,8 +113,13 @@ class ViewTest(View):
         filter_string_matching = get_system_setting("filter_string_matching", False)
         finding_filter_class = FindingFilterWithoutObjectLookups if filter_string_matching else FindingFilter
         findings = finding_filter_class(request.GET, pid=test.engagement.product.id, eid=test.engagement.id, tid=test.id, queryset=findings)
-        paged_findings = get_page_items_and_count(request, findings.qs, 25, prefix="findings")
-        paged_findings.object_list = prefetch_for_findings(paged_findings.object_list)
+        if can_annotate_findings_after_paging(findings.qs):
+            paged_findings = get_page_items_and_count(request, findings.qs, 25, prefix="findings")
+            paged_findings.object_list = prefetch_for_findings(paged_findings.object_list)
+        else:
+            # Endpoint annotations group multiplying joins before counting and
+            # slicing. Keep that sequence for filters such as expired acceptance.
+            paged_findings = get_page_items_and_count(request, prefetch_for_findings(findings.qs), 25, prefix="findings")
         fix_available_count = findings.qs.filter(fix_available=True).count()
 
         return {

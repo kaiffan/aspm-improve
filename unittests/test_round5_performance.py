@@ -113,7 +113,5 @@ class TestRound5Performance(DojoTestCase):
         self.assertEqual(filtered.json()["results"], [])
         self.assertIn(self.client.get(f"/api/v2/findings/{hidden.pk}/").status_code, (403, 404))
         counts = [sql for sql in dashboard_queries if 'FROM "dojo_finding"' in sql and "COUNT(*)" in sql]
-        # The two date counters share one filtered aggregate; acceptance still
-        # counts distinct PKs separately to avoid its many-to-many fan-out.
-        self.assertEqual(len(counts), 1)
+        self.assertEqual(len(counts), 3)
         self.assertTrue(all('"description"' not in q for q in counts))

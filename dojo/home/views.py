@@ -33,10 +33,14 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     today = timezone.now().date()
 
     date_range = [today - timedelta(days=7), today]  # 7 days plus today, identical to last 7 days filter in other places
-    weekly_counts = findings.aggregate(
-        finding_count=Count("pk", distinct=True, filter=Q(date__range=date_range)),
-        mitigated_count=Count("pk", distinct=True, filter=Q(mitigated__date__range=date_range)),
-    )
+    finding_count = findings\
+        .filter(date__range=date_range)\
+        .values("pk").distinct()\
+        .count()
+    mitigated_count = findings\
+        .filter(mitigated__date__range=date_range)\
+        .values("pk").distinct()\
+        .count()
     accepted_count = findings\
         .filter(risk_acceptance__created__date__range=date_range)\
         .values("pk").distinct()\
@@ -54,8 +58,8 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     add_breadcrumb(request=request, clear=True)
     return render(request, "dojo/dashboard.html", {
         "engagement_count": engagement_count,
-        "finding_count": weekly_counts["finding_count"],
-        "mitigated_count": weekly_counts["mitigated_count"],
+        "finding_count": finding_count,
+        "mitigated_count": mitigated_count,
         "accepted_count": accepted_count,
         "critical": severity_count_all["Critical"],
         "high": severity_count_all["High"],

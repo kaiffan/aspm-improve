@@ -40,7 +40,7 @@ from dojo.models import (
     Test_Import,
     Tool_Product_Settings,
 )
-from dojo.query_utils import TestIdInArray
+from dojo.query_utils import FINDING_PRODUCT_JOIN_HINT, TestIdInArray
 from dojo.request_cache import cache_for_request_or_task
 from dojo.vulnerability.models import FindingVulnerabilityReference, Vulnerability
 
@@ -420,6 +420,11 @@ def _get_authorized_findings(permission, queryset=None, user=None):
         return qs
     if _requires_staff(action):
         return qs.none()
+    if getattr(qs.query.annotations.get(FINDING_PRODUCT_JOIN_HINT), "value", None) is True:
+        # Similar-Finding views already join their Product. An unknown-size Test
+        # array badly underestimates a dense Product and sorts its entire Finding
+        # set before LIMIT. Keep the same membership predicate on that join.
+        return qs.filter(test__engagement__product_id__in=_authorized_product_ids(user))
     # Keep membership resolution on the small Test relation. Joining Finding to
     # each authorized Test can revisit the same heap pages many times on large
     # products. An InitPlan resolves the same scope once, without Python lists

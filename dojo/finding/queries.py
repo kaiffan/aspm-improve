@@ -19,7 +19,7 @@ from dojo.models import (
     Finding,
     Test_Import_Finding_Action,
 )
-from dojo.query_utils import query_has_multivalued_join
+from dojo.query_utils import FINDING_PRODUCT_JOIN_HINT, query_has_multivalued_join
 from dojo.request_cache import cache_for_request_or_task
 from dojo.vulnerability.queries import vulnerability_id_prefetch
 
@@ -35,7 +35,12 @@ def get_authorized_findings(permission, user=None):
     return Finding.objects.all().order_by("id")
 
 
-def get_authorized_findings_for_queryset(permission, queryset, user=None):
+def get_authorized_findings_for_queryset(permission, queryset, user=None, *, prefer_product_join=False):
+    if prefer_product_join and queryset is not None:
+        # A non-selected planner hint survives FilterSet clones and its repeated
+        # authorization. The registered permission hook still applies normally,
+        # including plugin overrides; no permission result is cached or assumed.
+        queryset = queryset.alias(**{FINDING_PRODUCT_JOIN_HINT: Value(value=True)})
     impl = get_auth_filter("finding.get_authorized_findings_for_queryset")
     if impl:
         return impl(permission, queryset, user=user)

@@ -2,6 +2,8 @@ from django.db.models import Count, IntegerField, Lookup, Subquery
 from django.db.models.fields.reverse_related import ForeignObjectRel
 from django.db.models.query import QuerySet
 
+FINDING_PRODUCT_JOIN_HINT = "_dojo_finding_product_join"
+
 
 class TestIdInArray(Lookup):
     lookup_name = "test_id_in_array"

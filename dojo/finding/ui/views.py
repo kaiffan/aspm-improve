@@ -539,9 +539,12 @@ class ViewFinding(View):
         finding_filter_class = SimilarFindingFilterWithoutObjectLookups if filter_string_matching else SimilarFindingFilter
         similar_findings_filter = finding_filter_class(
             request.GET,
-            queryset=get_authorized_findings("view")
-            .filter(test__engagement__product=finding.test.engagement.product)
-            .exclude(id=finding.id),
+            queryset=get_authorized_findings_for_queryset(
+                "view",
+                Finding.objects.filter(test__engagement__product=finding.test.engagement.product).exclude(id=finding.id),
+                user=request.user,
+                prefer_product_join=True,
+            ),
             user=request.user,
             finding=finding,
         )

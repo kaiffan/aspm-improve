@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Product + severity filter applies and survives next page",
+    "pass": true
+  },
+  {
+    "name": "Clear removes applied Product and severity from URL/results",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ '?test__engagement__product=2&severity=High'\n- ''"
+  },
+  {
+    "name": "Default severity order has no overlap between first and next page",
+    "pass": false,
+    "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   '10'\n+ ]\n- []"
+  },
+  {
+    "name": "Malformed page_size returns a usable page",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n500 !== 200\n"
+  }
+]

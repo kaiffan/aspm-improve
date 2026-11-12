@@ -1,0 +1,19 @@
+{
+  "access_free_filtered_and_fast": [
+    {
+      "path": "/api/v2/findings/?test__engagement__product=2&limit=100",
+      "status": 200,
+      "count": 0
+    },
+    {
+      "path": "/api/v2/findings/?test__engagement__product=2&offset=500000&fast_offset=1",
+      "status": 200,
+      "count": 0
+    },
+    {
+      "path": "/api/v2/findings/?test__engagement__product=2&o=-title",
+      "status": 200,
+      "count": 0
+    }
+  ]
+}

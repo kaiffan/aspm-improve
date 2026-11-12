@@ -1,3 +1,11 @@
+# ASPM 1.0.1 RC2 — release hardening candidate
+
+Preserves the RC1 OTP palette, Light/Dark/System, SVG branding and all Round1–5 performance work. Fixes applied-filter reset navigation, unstable/unbounded UI pagination, collection pagination in delete previews and late Select2 accessible labels. Adds behavioral regression tests and verified source/build metadata.
+
+**Not Release Ready:** two inherited full-discovery import errors remain; no RC2 release alias or Stable promoted. See [report](RC2_REPORT.md), [tests](RC2_TEST_RESULTS.md), [controlled performance](RC2_PERFORMANCE.md), [Git/Docker provenance](RC2_GIT_PROVENANCE.md), [known issues](RC2_KNOWN_ISSUES.md) and [gates](RC2_RELEASE_CHECKLIST.md). No migrations, auth/API-contract changes or new integrations.
+
+The RC1 notes below are historical.
+
 # ASPM 1.0.1 Release Candidate 1
 
 Корпоративный форк **DefectDojo OSS 3.5.100**, не независимая с нуля реализация. Product version **1.0.1**, channel **rc1**. Application source `5cdbc77fc9d4b8d0899069f5d44cd5241b2acae6`; image IDs и локальные теги — [release-images.json](measurements/release-images.json). Базовая performance-ветка `codex/performance-round5`, SHA021e751f3f95349698d502384c9df951fab331b6.

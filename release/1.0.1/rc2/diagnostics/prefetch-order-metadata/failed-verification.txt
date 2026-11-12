@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/nightmare/Documents/ChatGPT/defect_dojo_fork/.cache/aspm-1.0.1-rc2/release/1.0.1/rc2/scripts/verify.py", line 33, in <module>
+    assert a[prefix+'_sort_fields']==b.get(prefix+'_sort_fields') and a[prefix+'_sort_values']==b.get(prefix+'_sort_values'), 'Primary UI order changed'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Primary UI order changed
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Library/Frameworks/Python.framework/Versions/3.14/bin/python3', 'release/1.0.1/rc2/scripts/verify.py']' returned non-zero exit status 1.

@@ -1,0 +1,97 @@
+{
+  "pairs": 18,
+  "database": "aspm_rc2_validation",
+  "comparisons": [
+    {
+      "actor": 0,
+      "path": "/api/v2/findings/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/findings/?limit=100&offset=500000&fast_offset=1",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/findings/1/",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/findings/?test__engagement__product=2&severity=High&active=true&limit=100",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/products/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/products/?findings=count",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/products/?findings=none",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/tests/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 0,
+      "path": "/api/v2/engagements/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/findings/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/findings/?limit=100&offset=500000&fast_offset=1",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/findings/1/",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/findings/?test__engagement__product=2&severity=High&active=true&limit=100",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/products/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/products/?findings=count",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/products/?findings=none",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/tests/?limit=100",
+      "equal": true
+    },
+    {
+      "actor": 1,
+      "path": "/api/v2/engagements/?limit=100",
+      "equal": true
+    }
+  ],
+  "restored_source_sha": "25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb"
+}

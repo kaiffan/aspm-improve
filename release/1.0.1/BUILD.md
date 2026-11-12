@@ -1,3 +1,11 @@
+# ASPM 1.0.1 RC2 — candidate build
+
+Frozen source: `25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb` (upstream3.5.100; ASPM1.0.1, channelrc2). Build from this exact SHA with `scripts/build_images.py`, digest-pinned `build-lock.json`, empty context and GNU msgfmt. See [reproduction](rc2/REPRODUCE.md) and [provenance](RC2_GIT_PROVENANCE.md). Repeated app/nginx content IDs match the retained images.
+
+Candidate tags: `aspm-build:25fb63ae7b48`, `aspm-nginx-build:25fb63ae7b48`. No registry digest is available. Full suite has two inherited import errors, so **do not promote** `aspm:1.0.1-rc2` or Stable1.0.1 yet. Later docs/QA commits do not change embedded source; check the runtime diff against the frozen SHA.
+
+The RC1 procedure below is historical.
+
 # Сборка ASPM 1.0.1 RC1
 
 Версия продукта хранится в `dojo/aspm/release.json`: ASPM **1.0.1**, канал **rc1**, upstream **DefectDojo OSS 3.5.100**. Не заменяет upstream `dojo.__version__`. Точный SHA и image IDs находятся в `measurements/build-rc.json`.

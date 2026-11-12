@@ -1,0 +1,61 @@
+{
+  "tests_run": 11,
+  "passed": 6,
+  "assertion_failures": 2,
+  "errors": 7,
+  "skipped": 0,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "failure_details": [
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_page_size_is_bounded_without_materializing_queryset",
+      "last_line": "AssertionError: 1000000 != 250"
+    },
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_tied_order_gets_unique_final_key_before_slice",
+      "last_line": "?                +++++"
+    }
+  ],
+  "error_details": [
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_invalid_page_sizes_fall_back (size='bad')",
+      "last_line": "ValueError: invalid literal for int() with base 10: 'bad'"
+    },
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_invalid_page_sizes_fall_back (size='')",
+      "last_line": "ValueError: invalid literal for int() with base 10: ''"
+    },
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_invalid_page_sizes_fall_back (size='0')",
+      "last_line": "ZeroDivisionError: division by zero"
+    },
+    {
+      "test": "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_invalid_page_sizes_fall_back (size='-1')",
+      "last_line": "django.core.paginator.EmptyPage: That page number is less than 1"
+    },
+    {
+      "test": "unittests.test_finding_pagination_collections.FindingPaginationCollectionsTests.test_collection_deep_offset_does_not_enter_orm_fast_path",
+      "last_line": "AttributeError: 'list' object has no attribute 'query'"
+    },
+    {
+      "test": "unittests.test_finding_pagination_collections.FindingPaginationCollectionsTests.test_delete_preview_list_uses_standard_pagination (fast='0')",
+      "last_line": "AttributeError: 'list' object has no attribute 'query'"
+    },
+    {
+      "test": "unittests.test_finding_pagination_collections.FindingPaginationCollectionsTests.test_delete_preview_list_uses_standard_pagination (fast='1')",
+      "last_line": "AttributeError: 'list' object has no attribute 'query'"
+    }
+  ],
+  "skip_details": [],
+  "passed_ids": [
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_explicit_unique_order_is_preserved",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_lists_and_already_evaluated_queryset_keep_objects",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_page_number_edge_cases",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_paging_links_preserve_multivalued_filters_and_sort",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_prefix_and_total_count",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_values_and_random_order_are_not_rewritten"
+  ],
+  "wrapper_exit_code": 1,
+  "image": "aspm-rc2-test-baseline:rc1",
+  "old_fixture": false
+}

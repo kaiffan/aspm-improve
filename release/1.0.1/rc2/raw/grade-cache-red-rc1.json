@@ -1,0 +1,76 @@
+{
+  "tests_run": 45,
+  "passed": 41,
+  "assertion_failures": 2,
+  "errors": 0,
+  "skipped": 2,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "failure_details": [
+    {
+      "test": "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_import_v2",
+      "last_line": "272. SELECT set_config('pghistory.context_id', 'e72c8782-edad-47fe-ace3-b584af8cf018', true), set_config('pghistory.context_metadata', '{\"user\": 1, \"url\": \"/api/v2/import-scan/\", \"remote_addr\": \"127.0.0.1\", \"source\": \"import_api\", \"scan_type\": \"ZAP Scan\", \"test_id\": 92}', true); INSERT INTO \"watson_searchentry\" (\"engine_slug\", \"content_type_id\", \"object_id\", \"object_id_int\", \"title\", \"description\", \"content\", \"url\", \"meta_encoded\") VALUES ('default', 26, '92', 92, 'ZAP Scan', '', 'ZAP Scan None None 1.0.1    92 Tag Perf Import Product', '/test/92', '{\"engagement__product__name\": \"Tag Perf Import Product\"}') RETURNING \"watson_searchentry\".\"id\""
+    },
+    {
+      "test": "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_import_v3",
+      "last_line": "295. SELECT set_config('pghistory.context_id', '08a00a49-2dd8-44d6-b877-3afce975e74b', true), set_config('pghistory.context_metadata', '{\"user\": 1, \"url\": \"/api/v2/import-scan/\", \"remote_addr\": \"127.0.0.1\", \"source\": \"import_api\", \"scan_type\": \"ZAP Scan\", \"test_id\": 93}', true); INSERT INTO \"watson_searchentry\" (\"engine_slug\", \"content_type_id\", \"object_id\", \"object_id_int\", \"title\", \"description\", \"content\", \"url\", \"meta_encoded\") VALUES ('default', 26, '93', 93, 'ZAP Scan', '', 'ZAP Scan None None 1.0.1    93 Tag Perf Import Product', '/test/93', '{\"engagement__product__name\": \"Tag Perf Import Product\"}') RETURNING \"watson_searchentry\".\"id\""
+    }
+  ],
+  "error_details": [],
+  "skip_details": [
+    {
+      "test": "unittests.test_tag_inheritance.TestEndpointTagInheritance.test_inherited_tag_cannot_be_removed_from_endpoint",
+      "reason": "Skipping because V3_FEATURE_LOCATIONS is enabled."
+    },
+    {
+      "test": "unittests.test_tag_inheritance.TestEndpointTagInheritance.test_new_endpoint_inherits_product_tags",
+      "reason": "Skipping because V3_FEATURE_LOCATIONS is enabled."
+    }
+  ],
+  "passed_ids": [
+    "unittests.test_tag_inheritance.InheritedTagsImportTestAPI.test_import_with_tags_then_reimport_with_different_tag",
+    "unittests.test_tag_inheritance.InheritedTagsImportTestAPI.test_import_without_tags",
+    "unittests.test_tag_inheritance.InheritedTagsImportTestAPI.test_remove_tag_from_product_then_add_tag_to_product",
+    "unittests.test_tag_inheritance.InheritedTagsImportTestUI.test_import_with_tags_then_reimport_with_different_tag",
+    "unittests.test_tag_inheritance.InheritedTagsImportTestUI.test_import_without_tags",
+    "unittests.test_tag_inheritance.InheritedTagsImportTestUI.test_remove_tag_from_product_then_add_tag_to_product",
+    "unittests.test_tag_inheritance.InheritedTagsTests.test_new_engagement_then_add_tag_to_engagement_then_remove_tag_to_engagement",
+    "unittests.test_tag_inheritance.InheritedTagsTests.test_new_engagement_then_remove_inherited_tag",
+    "unittests.test_tag_inheritance.TestInheritanceDisabled.test_own_tags_on_child_not_overwritten",
+    "unittests.test_tag_inheritance.TestInheritanceDisabled.test_product_tags_do_not_reach_engagement_or_test",
+    "unittests.test_tag_inheritance.TestLocationMultipleProductInheritance.test_location_inherits_from_multiple_products",
+    "unittests.test_tag_inheritance.TestLocationMultipleProductInheritance.test_location_inherits_only_from_flagged_product_when_system_off",
+    "unittests.test_tag_inheritance.TestPerProductTagInheritance.test_finding_created_with_own_tag_keeps_it_and_inherits",
+    "unittests.test_tag_inheritance.TestPerProductTagInheritance.test_finding_created_without_own_tag_still_inherits",
+    "unittests.test_tag_inheritance.TestPerProductTagInheritance.test_mixed_products_only_flagged_product_propagates",
+    "unittests.test_tag_inheritance.TestPerProductTagInheritance.test_per_product_flag_off_no_propagation",
+    "unittests.test_tag_inheritance.TestPerProductTagInheritance.test_per_product_flag_on_propagates_tags",
+    "unittests.test_tag_inheritance.TestTagInheritanceOnPersist.test_bulk_inherit_already_synced_is_constant_time",
+    "unittests.test_tag_inheritance.TestTagInheritanceOnPersist.test_bulk_inherit_is_no_op_when_already_in_sync",
+    "unittests.test_tag_inheritance.TestTagInheritanceOnPersist.test_locations_inherit_product_tags",
+    "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_reimport_no_change_v2",
+    "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_reimport_no_change_v3",
+    "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_reimport_with_new_findings_v2",
+    "unittests.test_tag_inheritance_perf.TagInheritanceImportPerfBaselines.test_baseline_zap_scan_reimport_with_new_findings_v3",
+    "unittests.test_tag_inheritance.TestGetProducts.test_endpoint_returns_product",
+    "unittests.test_tag_inheritance.TestGetProducts.test_engagement_returns_product",
+    "unittests.test_tag_inheritance.TestGetProducts.test_finding_returns_product_via_test_engagement",
+    "unittests.test_tag_inheritance.TestGetProducts.test_location_delegates_to_all_related_products",
+    "unittests.test_tag_inheritance.TestGetProducts.test_product_returns_self",
+    "unittests.test_tag_inheritance.TestGetProducts.test_test_returns_product_via_engagement",
+    "unittests.test_tag_inheritance.TestGetProducts.test_unknown_type_returns_empty",
+    "unittests.test_tag_inheritance.TestInheritInstanceTagsEarlyExit.test_no_products_skips_write",
+    "unittests.test_tag_inheritance.TestInheritProductTags.test_both_off_returns_false",
+    "unittests.test_tag_inheritance.TestInheritProductTags.test_no_products_returns_false",
+    "unittests.test_tag_inheritance.TestInheritProductTags.test_none_entries_in_product_list_are_skipped",
+    "unittests.test_tag_inheritance.TestInheritProductTags.test_per_product_flag_on_system_off_returns_true",
+    "unittests.test_tag_inheritance.TestInheritProductTags.test_system_setting_on_returns_true",
+    "unittests.test_tag_inheritance.TestManageInheritedTagsDiff.test_already_in_sync_no_writes",
+    "unittests.test_tag_inheritance.TestManageInheritedTagsDiff.test_sticky_readds_missing_inherited",
+    "unittests.test_tag_inheritance.TestManageInheritedTagsDiff.test_target_adds_new_inherited",
+    "unittests.test_tag_inheritance.TestManageInheritedTagsDiff.test_target_removes_dropped_inherited"
+  ],
+  "wrapper_exit_code": 1,
+  "image": "aspm-rc2-test-baseline:rc1",
+  "old_fixture": true
+}

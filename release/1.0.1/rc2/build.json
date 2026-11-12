@@ -1,0 +1,116 @@
+{
+  "source_sha": "25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb",
+  "variants": {
+    "round5": {
+      "source_sha": "c6a6144ed93b83adb1fd4ea9daa2c5e417ecea37",
+      "app": {
+        "tag": "dd-r5-final:3.5.100",
+        "id": "sha256:b06ecb25fd6fa04308e585b54334a057963e366d066222441c622229a75b7499",
+        "repo_digests": [
+          "dd-r5-final@sha256:b06ecb25fd6fa04308e585b54334a057963e366d066222441c622229a75b7499"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "uwsgi",
+          "com.docker.compose.version": "5.5.0"
+        }
+      },
+      "nginx": {
+        "tag": "aspm-rc2-r5-static:3.5.100",
+        "id": "sha256:ff576ccae3595858347f21bce8cb17588d50a29c26645e9056780fb4590b72e8",
+        "repo_digests": [
+          "aspm-rc2-r5-static@sha256:ff576ccae3595858347f21bce8cb17588d50a29c26645e9056780fb4590b72e8"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "nginx",
+          "com.docker.compose.version": "5.5.0",
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+        }
+      }
+    },
+    "rc1": {
+      "source_sha": "5cdbc77fc9d4b8d0899069f5d44cd5241b2acae6",
+      "app": {
+        "tag": "aspm-build:5cdbc77fc9d4",
+        "id": "sha256:81eac7baeeb48d5f0fe725f586c9cbcf1e461286c00f39e2f9c8d3cf39f745c7",
+        "repo_digests": [
+          "aspm-build@sha256:81eac7baeeb48d5f0fe725f586c9cbcf1e461286c00f39e2f9c8d3cf39f745c7",
+          "aspm@sha256:81eac7baeeb48d5f0fe725f586c9cbcf1e461286c00f39e2f9c8d3cf39f745c7"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "uwsgi",
+          "com.docker.compose.version": "5.5.0",
+          "org.aspm.upstream.version": "3.5.100",
+          "org.opencontainers.image.licenses": "BSD-3-Clause",
+          "org.opencontainers.image.revision": "5cdbc77fc9d4b8d0899069f5d44cd5241b2acae6",
+          "org.opencontainers.image.source": "https://github.com/kaiffan/aspm-improve",
+          "org.opencontainers.image.title": "ASPM",
+          "org.opencontainers.image.version": "1.0.1-rc1"
+        }
+      },
+      "nginx": {
+        "tag": "aspm-nginx-build:5cdbc77fc9d4",
+        "id": "sha256:912110ae1ba8e1cb21cdb0b4599b5010cfa5e030975f378530dbd551d76dfb27",
+        "repo_digests": [
+          "aspm-nginx-build@sha256:912110ae1ba8e1cb21cdb0b4599b5010cfa5e030975f378530dbd551d76dfb27",
+          "aspm-nginx@sha256:912110ae1ba8e1cb21cdb0b4599b5010cfa5e030975f378530dbd551d76dfb27"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "nginx",
+          "com.docker.compose.version": "5.5.0",
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.aspm.upstream.version": "3.5.100",
+          "org.opencontainers.image.revision": "5cdbc77fc9d4b8d0899069f5d44cd5241b2acae6",
+          "org.opencontainers.image.source": "https://github.com/kaiffan/aspm-improve",
+          "org.opencontainers.image.title": "ASPM static gateway",
+          "org.opencontainers.image.version": "1.0.1-rc1"
+        }
+      }
+    },
+    "rc2": {
+      "source_sha": "25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb",
+      "app": {
+        "tag": "aspm-build:25fb63ae7b48",
+        "id": "sha256:40ccfda81142aa8482d0b05fb501684c3bc23df231169a069a02e1da51052f0c",
+        "repo_digests": [
+          "aspm-build@sha256:40ccfda81142aa8482d0b05fb501684c3bc23df231169a069a02e1da51052f0c"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "uwsgi",
+          "com.docker.compose.version": "5.5.0",
+          "org.aspm.upstream.version": "3.5.100",
+          "org.opencontainers.image.created": "2026-11-11T21:27:27Z",
+          "org.opencontainers.image.licenses": "BSD-3-Clause",
+          "org.opencontainers.image.revision": "25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb",
+          "org.opencontainers.image.source": "https://github.com/kaiffan/aspm-improve",
+          "org.opencontainers.image.title": "ASPM",
+          "org.opencontainers.image.version": "1.0.1-rc2"
+        }
+      },
+      "nginx": {
+        "tag": "aspm-nginx-build:25fb63ae7b48",
+        "id": "sha256:82851226dc47f5756dc7d56fea0f43c851bc9e86df63682a549802875f06c411",
+        "repo_digests": [
+          "aspm-nginx-build@sha256:82851226dc47f5756dc7d56fea0f43c851bc9e86df63682a549802875f06c411"
+        ],
+        "labels": {
+          "com.docker.compose.project": "django-defectdojo",
+          "com.docker.compose.service": "nginx",
+          "com.docker.compose.version": "5.5.0",
+          "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>",
+          "org.aspm.upstream.version": "3.5.100",
+          "org.opencontainers.image.created": "2026-11-11T21:27:27Z",
+          "org.opencontainers.image.revision": "25fb63ae7b48b7eb87d39d0ee0f4c43d42d434fb",
+          "org.opencontainers.image.source": "https://github.com/kaiffan/aspm-improve",
+          "org.opencontainers.image.title": "ASPM static gateway",
+          "org.opencontainers.image.version": "1.0.1-rc2"
+        }
+      }
+    }
+  },
+  "recovered_retained_images": true
+}

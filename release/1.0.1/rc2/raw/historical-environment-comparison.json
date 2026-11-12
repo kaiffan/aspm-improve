@@ -1,0 +1,76 @@
+{
+  "round5": {
+    "capture": "2026-11-11T11:15:20.431377+00:00",
+    "docker": {
+      "cpus": 10,
+      "memory_bytes": 8392671232,
+      "version": "29.8.2"
+    },
+    "swap_at_capture": "total = 3072.00M  used = 1982.25M  free = 1089.75M  (encrypted)",
+    "versions": {
+      "python": "3.14.8",
+      "django": "5.2.17",
+      "drf": "3.18.3",
+      "debug": false,
+      "conn_max_age": 0
+    },
+    "limits": {
+      "dd-r5-web-1": {
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "PidsLimit": null
+      },
+      "django-defectdojo-postgres-1": {
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "PidsLimit": null
+      }
+    }
+  },
+  "rc1": {
+    "capture": "2026-11-11T16:04:53.559729+00:00",
+    "docker": {
+      "cpus": 10,
+      "memory_bytes": 8392671232,
+      "version": "29.8.2"
+    },
+    "swap_at_capture": "total = 3072.00M  used = 2174.75M  free = 897.25M  (encrypted)",
+    "versions": {
+      "python": "3.14.8",
+      "django": "5.2.17",
+      "drf": "3.18.3",
+      "debug": false,
+      "conn_max_age": 0,
+      "database": "aspm_rc1_validation"
+    },
+    "limits": {
+      "aspm-rc1-aspm-1": {
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CpuQuota": 0,
+        "PidsLimit": null,
+        "oom_killed": false,
+        "image_id": "sha256:81eac7baeeb48d5f0fe725f586c9cbcf1e461286c00f39e2f9c8d3cf39f745c7"
+      },
+      "django-defectdojo-postgres-1": {
+        "Memory": 0,
+        "NanoCpus": 0,
+        "CpuQuota": 0,
+        "PidsLimit": null,
+        "oom_killed": false,
+        "image_id": "sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873"
+      }
+    }
+  },
+  "new_series": {
+    "swap_mib_min": 0.0,
+    "swap_mib_max": 0.0,
+    "same_hardware_and_docker_limits": true,
+    "causal_attribution_from_historical_captures": false,
+    "note": "Snapshots may describe final demo state after writes; they do not replace per-run DB-scope evidence."
+  }
+}

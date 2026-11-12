@@ -1,5 +1,9 @@
 # ASPM changelog
 
+## 1.0.1-rc2
+
+Release hardening: filter reset, deterministic bounded UI pagination, collection fallback, Select2 labels, regression/isolation guards and exact build provenance. See [RC2 results](release/1.0.1/RC2_REPORT.md). Candidate remains gated by two inherited discovery errors.
+
 ## 1.0.1-rc1
 
 Corporate light/dark/system UI, original replaceable ASPM branding, accessible mobile navigation and locally served assets. Preserves the DefectDojo OSS 3.5.100 API and all Round 1–5 performance changes.

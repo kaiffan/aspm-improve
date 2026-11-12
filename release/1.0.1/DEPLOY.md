@@ -1,3 +1,11 @@
+# ASPM 1.0.1 RC2 — isolated candidate only
+
+Release gates are **blocked**, see [checklist](RC2_RELEASE_CHECKLIST.md). Candidate application/static images are `aspm-build:25fb63ae7b48` / `aspm-nginx-build:25fb63ae7b48`; set both explicitly when using the public Compose, because its historical defaults remain RC1. Use a private runtime env and an explicit database/media volume. Never point the test runner at the main million-row database.
+
+The checked local demo is on48091, validation copy only; no initializer/beat, worker1 with its own broker/cache. Source/seed findings fingerprints are unchanged. Preserve volumes and a rollback image pair. Do not auto-publish Stable or treat the local candidate as production acceptance. See [reproduce](rc2/REPRODUCE.md), [performance](RC2_PERFORMANCE.md), [known issues](RC2_KNOWN_ISSUES.md).
+
+The RC1 procedure below is historical.
+
 # Запуск кандидата
 
 Локальный RC проверяется на **48086**, на БД **aspm_rc1_validation**. Старое приложение на 8080 и исходная БД не заменяются. Приватный стендовый Compose/env хранятся вне Git. Публичный `compose.yaml` — воспроизводимый рецепт для уже настроенных внешних PostgreSQL и broker/cache; он не создаёт и не удаляет БД.

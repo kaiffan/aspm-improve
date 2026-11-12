@@ -1,3 +1,5 @@
+> RC2: см. [RC2_TEST_RESULTS.md](RC2_TEST_RESULTS.md). Ниже сохранён исторический отчёт RC1; его цифры/открытые дефекты не подменяют новую проверку.
+
 # Release validation — ASPM 1.0.1 RC1
 
 Application `5cdbc77fc9d4b8d0899069f5d44cd5241b2acae6`; source/image/dependency evidence in measurements. Tests ran on a separate PostgreSQL test stack or the named validation copy, never against the original million with a test runner.

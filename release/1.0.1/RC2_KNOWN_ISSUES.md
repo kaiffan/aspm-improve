@@ -1,0 +1,10 @@
+# ASPM 1.0.1 RC2 — оставшиеся ограничения
+
+1. **Release blocker:** два унаследованных discovery import errors (ticket_comments / TruffleHog helper), воспроизводятся также R5/RC1. Требуется отдельное согласованное выравнивание test/runtime version; нельзя добавлять новую notification/dedup логику или отключать тесты для получения зелёного suite.
+2. Унаследованный HTML unauthorized handler возвращает400 с403 Forbidden body; API403/404 и отсутствие чужих findings подтверждены. Статус не менялся в этом hardening scope.
+3. 553 conditional/legacy skips перечислены поимённо; среди них один известный legacy UI Engagement move-to-authorized-Product case (API path покрыт, UI business workflow здесь не менялся). Legacy Selenium suite недоступна в image. Playwright-проверки выполнены реально; это не заявление о запуске Selenium.
+4. Exact COUNT, OFFSET и полный Product findings ID list сохраняют стоимость, растущую с данными/response size. Opt-in count/none и FAST сохранены, не включены глобально. PK tie-break делает порядок стабильным при неизменной БД; OFFSET не создаёт snapshot между запросами при concurrent writes.
+5. RC2 относительно Round 5: p95 +0.08%, RPS +1.88%. Это описательное сравнение трёх повторов, а не доказательство статистической значимости. Оба отклонения укладываются в ориентир ±10%; доказанной существенной регрессии в этой серии не установлено. Ускорение RC2 не заявляется. Измерения ограничены M5/16GiB и1млн преимущественно синтетических findings; генератор пропускал часть signals/dedup/relations. Небольшой реальный scan smoke не делает датасет полноценным production. Production15–25 людей, HA PostgreSQL и16vCPU/32GiB node не сертифицированы этим тестом.
+6. Локальный stand не заменяет production security/TLS/secret management. Stable/RC2 alias не опубликованы. Четыре будущих acceptance-теста400 findings/10VU, create/open/export не запускались как отдельная сертификационная матрица.
+
+Ранее утраченные временные raw не восстановлены из памяти: итог использует только новую сохранённую серию. Все остановленные/исключённые подготовительные наблюдения сохранены с причиной в rc2/excluded.

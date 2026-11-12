@@ -1,3 +1,11 @@
+# ASPM 1.0.1 RC2 — safe rollback
+
+No schema/data migrations were added. Stop the candidate worker after its own queue drains; do not purge queues. Switch both app and nginx to the verified RC1 pair `aspm-build:5cdbc77fc9d4` / `aspm-nginx-build:5cdbc77fc9d4`, keep the same env and all database/media volumes, restart nginx so its upstream resolves again, verify readiness/permissions. Never run initializer or `down -v`.
+
+An actual RC1↔RC2 switch on the write copy compared18 full JSON pairs including default/FAST and Product count/none; all equal, final RC2 restored. See [evidence](rc2/raw/rollback-check.json). For code rollback use independent commits, not a destructive reset over user changes: dd3b6b3401 pagination,0073a4055b filter reset,ca7446d469 collection guard,25fb63ae7b Select2 labels;33f2a81fda metadata. a6dfa216d1 and1dad681d12 are test-only isolation/portable DNS guards. Image rollback is preferred for release operations. Never remove findings or restore a stale DB to roll back these patches.
+
+The RC1 procedure below is historical.
+
 # Безопасный откат
 
 Изменений схемы/индексов в RC нет. Откат — переключение app/nginx и background workers на сохранённую согласованную пару образов Round 5 с той же схемой 3.5.100 и теми же media. Данные не удаляются и не восстанавливаются поверх живой БД ради отката UI.

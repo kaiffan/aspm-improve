@@ -19,6 +19,7 @@ from dojo.models import (
     Finding,
     Test_Import_Finding_Action,
 )
+from dojo.query_utils import query_has_multivalued_join
 from dojo.request_cache import cache_for_request_or_task
 from dojo.vulnerability.queries import vulnerability_id_prefetch
 
@@ -57,14 +58,27 @@ def prefetch_for_findings(findings, prefetch_type="all", *, exclude_untouched=Tr
 
     ordering = findings.query.order_by or (findings.model._meta.ordering if findings.query.default_ordering else ()) or ()
     page_ordering = all(isinstance(field, str) and field != "?" and "__" not in field for field in ordering)
-    if findings.query.is_sliced and findings._result_cache is None and page_ordering and not findings.query.extra_order_by:
+    if (
+        findings.query.is_sliced
+        and findings._result_cache is None
+        and findings._fields is None
+        and page_ordering
+        and not findings.query.extra_order_by
+        and not findings.query.extra
+        and not findings.query.combinator
+        and not findings.query.distinct_fields
+        and findings.query.group_by is None
+        and not query_has_multivalued_join(findings.query)
+    ):
         # Endpoint annotations add GROUP BY. Apply them to the selected page,
         # rather than grouping every matching Finding before the page's LIMIT.
         # Retain the original filters, annotations and ordering on both sides;
         # only the clone has its limits removed. The authorized PK subquery and
         # hydration run in one statement and one database snapshot. Related
         # orderings can produce several groups for one PK (risk acceptances),
-        # so leave their original LIMIT after annotation instead.
+        # so leave their original LIMIT after annotation instead. The same is
+        # true of a to-many filter without DISTINCT: page PKs can repeat before
+        # the annotations group them. Preserve that original grouping first.
         page_ids = findings.values("pk")
         findings = findings.all()
         findings.query.clear_limits()

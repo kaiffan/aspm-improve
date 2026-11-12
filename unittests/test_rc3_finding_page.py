@@ -61,6 +61,15 @@ class TestRC3FindingPage(DojoTestCase):
         actual = list(prefetch_for_findings(ordered[:1]))
         self.assertEqual([finding.pk for finding in actual], [finding.pk for finding in expected])
 
+    def test_multivalued_filter_retains_page_boundary(self):
+        acceptances = [Risk_Acceptance.objects.create(name=f"RC3 filter {index}", owner=self.admin) for index in range(2)]
+        acceptances[0].accepted_findings.add(*self.findings[:2])
+        acceptances[1].accepted_findings.add(self.findings[0])
+        ordered = self.scope.filter(risk_acceptance__in=acceptances).order_by("pk")
+        expected = list(prefetch_for_findings(ordered)[1:2])
+        actual = list(prefetch_for_findings(ordered[1:2]))
+        self.assertEqual([finding.pk for finding in actual], [finding.pk for finding in expected])
+
     @override_settings(MAX_AUTOCOMPLETE_WORDS=1)
     def test_capped_autocomplete_projects_only_authorized_values(self):
         self.scope.update(title="rc3visible needle")

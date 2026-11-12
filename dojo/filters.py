@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import django_tagulous as tagulous
 import six
 from django.apps import apps
-from django.db.models import Count, Exists, ForeignObjectRel, Min, OuterRef, Q
+from django.db.models import Count, Exists, Min, OuterRef, Q
 from django.utils.timezone import now, tzinfo
 from django.utils.translation import gettext_lazy as _
 from django_filters import (
@@ -56,6 +56,7 @@ from dojo.models import (
     Test,
 )
 from dojo.product_type.queries import get_authorized_product_types
+from dojo.query_utils import query_has_multivalued_join
 from dojo.utils import get_system_setting, is_finding_groups_enabled, truncate_timezone_aware
 from dojo.vulnerability.queries import finding_ids_with_vulnerability_ids
 
@@ -412,25 +413,6 @@ def cwe_options(queryset):
                 if isinstance(cwe, int) and cwe is not None and cwe > 0)
     cwe = collections.OrderedDict(sorted(cwe.items()))
     return list(cwe.items())
-
-
-def query_has_multivalued_join(query):
-    """
-    Whether the outer query joins a to-many relation, so one base row can come back several times.
-
-    A reverse foreign key or a many-to-many hop is a Join whose ``join_field`` is the reverse
-    side of a non-unique field (Django's PathInfo marks the same hop ``m2m``). Subqueries such as
-    Exists() keep their joins in their own query, and a GROUP BY already returns one row per group.
-    """
-    if query.distinct or query.group_by is not None:
-        return False
-    for alias, join in query.alias_map.items():
-        join_field = getattr(join, "join_field", None)
-        if not query.alias_refcount.get(alias) or not isinstance(join_field, ForeignObjectRel):
-            continue
-        if not join_field.field.unique:
-            return True
-    return False
 
 
 def order_with_pk_tiebreak(queryset):

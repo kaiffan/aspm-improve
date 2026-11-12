@@ -8,7 +8,8 @@ rollback are in `perf-report/rc3/FIXES.md`.
 * Fixed: missing TruffleHog v3 identity helper and default-off folding option.
 * Fixed: timing race in the concurrent-index test fixture.
 * Performance: authorize Findings through one Test-ID SQL scope.
-* Performance: batch exact Dashboard weekly counts.
 * Performance: hydrate Finding UI pages after selecting their PKs.
 * Performance: avoid global title-index walks for scoped autocomplete.
 * Release metadata: 1.0.1 remains unchanged; candidate channel advances to rc3.
+* Rejected experiment: Dashboard counter batching, reverted after three adverse
+  mixed-workload pairs. Its raw observations remain in the report archive.

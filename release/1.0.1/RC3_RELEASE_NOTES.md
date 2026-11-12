@@ -9,8 +9,6 @@ Exact runtime source and local Docker image identities are recorded in
 * Resolve scoped Finding access through authorized Test PKs inside each SQL
   statement, avoiding repeated Finding heap scans. Permission gates and custom
   authorization registry overrides remain in place.
-* Combine the exact weekly Finding/mitigation counts in one Dashboard aggregate.
-  Risk acceptance still counts unique Findings separately.
 * Select ordered Finding page PKs before endpoint annotations, including Test UI.
   Filtering, counts, sorting, evidence and pagination contracts are preserved.
 * Keep capped autocomplete DISTINCT over its authorized projection to avoid
@@ -22,6 +20,9 @@ The Product full REST payload remains the default. No runtime worker increase,
 new index, migration, dependency update, palette/branding/navigation/theme change
 is included. Performance claims and remaining limitations belong to the new
 paired campaign in `perf-report/rc3/RESULTS.md`, not historical Round 5 numbers.
+Batching the weekly Dashboard counters was tested and rejected: all three
+incremental mixed pairs worsened p95 without a throughput benefit. Original exact
+counter queries are retained; the authorization change reduces their heap cost.
 
 TruffleHog: the default Hash Code algorithm and existing hash fields do not
 change. v3 findings now have the upstream stable unique ID. Sites explicitly

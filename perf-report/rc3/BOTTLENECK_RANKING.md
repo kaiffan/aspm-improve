@@ -26,3 +26,14 @@ No new index or runtime change is authorized by this ranking. Sequential scans a
 not inherently defects. PostgreSQL shared_preload_libraries is empty on the retained
 server; pg_stat_statements is available but not loaded. Global settings and source
 statistics are not changed to install it.
+
+## Decision after incremental measurements
+
+The Dashboard batch-count experiment at `df254707e70a0dfe467b1a7bc1389efa48d4ca54`
+was **rejected** and reverted by `e00435fb1e5b2f27e2d793f5a6396c33845cd9a7`.
+Compared with authorization-only, mixed p95 worsened in all three paired repeats:
+2.084→2.167 s, 1.638→1.845 s, 1.687→1.982 s. RPS was essentially unchanged.
+`raw/rejected-dashboard/` preserves all observations and the deliberately stopped
+partial main cohort. These do not enter final A/B results. Original exact counters
+and Round 5 guards remain. No original test was removed; the experimental guard
+for the discarded batch query is reverted with that feature.

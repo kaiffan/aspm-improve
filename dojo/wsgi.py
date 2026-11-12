@@ -30,3 +30,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dojo.settings.settings")
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
 application = get_wsgi_application()
+
+# Bind lazy tasks before WSGI threads can publish and call the same task at once.
+# Celery publishes a task in its registry before Task.bind initializes its stack.
+from dojo.celery import app  # noqa: E402 -- Django must be initialized first
+
+app.loader.import_default_modules()
+app.finalize()

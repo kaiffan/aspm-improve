@@ -1,0 +1,47 @@
+{
+  "image_id": "sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873",
+  "isolated_database": true,
+  "streamed_copy_of": "dd_round4_seed",
+  "integrity": {
+    "count": 1000168,
+    "sum_ids": "500168514196",
+    "full_row_xor": "-4349787209074328363"
+  },
+  "pg_settings": [
+    {
+      "name": "default_statistics_target",
+      "setting": "100",
+      "unit": null
+    },
+    {
+      "name": "jit",
+      "setting": "on",
+      "unit": null
+    },
+    {
+      "name": "max_parallel_workers_per_gather",
+      "setting": "2",
+      "unit": null
+    },
+    {
+      "name": "shared_buffers",
+      "setting": "16384",
+      "unit": "8kB"
+    },
+    {
+      "name": "shared_preload_libraries",
+      "setting": "pg_stat_statements",
+      "unit": null
+    },
+    {
+      "name": "work_mem",
+      "setting": "4096",
+      "unit": "kB"
+    }
+  ],
+  "statistics": "ANALYZE once on the isolated copy before either variant; no statistics changes between A and B",
+  "pgss_includes_warmup": true,
+  "http_measured_per_run": 300,
+  "http_warmup_per_run": 25,
+  "purpose": "Per-statement server execution totals; never pooled with the primary HTTP A/B series"
+}

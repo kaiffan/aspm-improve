@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: System is the default and applies before DOM ready
+ok 1 - System is the default and applies before DOM ready
+  ---
+  duration_ms: 1.057042
+  ...
+# Subtest: Explicit light preference overrides dark system and persists
+ok 2 - Explicit light preference overrides dark system and persists
+  ---
+  duration_ms: 0.234833
+  ...
+# Subtest: System preference reacts to OS changes
+ok 3 - System preference reacts to OS changes
+  ---
+  duration_ms: 0.177916
+  ...
+# Subtest: Explicit preference ignores OS changes
+ok 4 - Explicit preference ignores OS changes
+  ---
+  duration_ms: 0.220959
+  ...
+# Subtest: Disabled storage keeps theme controls functional
+ok 5 - Disabled storage keeps theme controls functional
+  ---
+  duration_ms: 0.97025
+  ...
+# Subtest: Invalid stored or cross-tab values fall back to System
+ok 6 - Invalid stored or cross-tab values fall back to System
+  ---
+  duration_ms: 0.236125
+  ...
+# Subtest: Chart theming preserves scale/data behavior and disabled plugins
+ok 7 - Chart theming preserves scale/data behavior and disabled plugins
+  ---
+  duration_ms: 0.267
+  ...
+# Subtest: Chart theming does not assign resolved proxies back into their parents
+ok 8 - Chart theming does not assign resolved proxies back into their parents
+  ---
+  duration_ms: 0.26425
+  ...
+# Subtest: Tagulous replacement retains the visible form label
+ok 9 - Tagulous replacement retains the visible form label
+  ---
+  duration_ms: 0.333291
+  ...
+# Subtest: Select2 inline search retains the native filter label
+ok 10 - Select2 inline search retains the native filter label
+  ---
+  duration_ms: 0.285875
+  ...
+# Subtest: Detached Select2 search gets a name without overwriting an explicit one
+ok 11 - Detached Select2 search gets a name without overwriting an explicit one
+  ---
+  duration_ms: 0.339041
+  ...
+# Subtest: Filters initialized after window load receive accessible names
+ok 12 - Filters initialized after window load receive accessible names
+  ---
+  duration_ms: 0.490125
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 47.00025

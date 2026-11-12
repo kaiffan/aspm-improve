@@ -1,0 +1,1 @@
+Source 6c2e69590c68879e12610f8dcb7c8eb3f700a348 full suite passed 8705/8152/553 skipped. Initial authorization-only run completed while final Test UI expired-acceptance count regression was being checked. Campaign stopped before RC3 comparison; excluded in full from final results. The subsequent shared guard preserves grouping before counting in Test UI.

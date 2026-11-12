@@ -1,0 +1,1 @@
+Dashboard batching was rejected after all three incremental pairs worsened mixed p95. The partially started main cohort was deliberately stopped through the stop-file. These observations are retained but excluded from the final A/B aggregation. No HTTP errors or resource failure prompted this stop. See planned-stop.json.

@@ -37,3 +37,13 @@ Compared with authorization-only, mixed p95 worsened in all three paired repeats
 partial main cohort. These do not enter final A/B results. Original exact counters
 and Round 5 guards remain. No original test was removed; the experimental guard
 for the discarded batch query is reverted with that feature.
+
+## Final retained decisions
+
+| Component | Measured final result | Decision |
+| --- | --- | --- |
+| Scoped authorization | Mixed c25 p95 5.514→2.080 s; RPS 17.140→28.246 | Retained; 3 paired repeats, unchanged mix |
+| Findings UI page/autocomplete | Standalone p95 2.302→0.633 s | Retained; n=160/build, guarded query shapes |
+| Test UI page/autocomplete | Standalone p95 1.996→1.145 s | Retained; exact count and complex-filter fallback |
+| Dashboard counter batching | All 3 incremental p95 pairs worsened | Rejected and reverted |
+| Indexes/runtime/Celery | No demonstrated need for configuration/index change | Unchanged; no speculative tuning |

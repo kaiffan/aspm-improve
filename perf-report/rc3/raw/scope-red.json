@@ -1,0 +1,28 @@
+{
+  "tests_run": 6,
+  "passed": 4,
+  "assertion_failures": 1,
+  "errors": 1,
+  "skipped": 0,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "failure_details": [
+    {
+      "test": "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_direct_membership_preserves_exact_count_and_caller_filter",
+      "last_line": "AssertionError: '\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\"' unexpectedly found in 'SELECT \"dojo_finding\".\"id\" AS \"pk\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = 8 OR U4.\"dojo_user_id\" = 8))) ORDER BY 1 DESC'"
+    }
+  ],
+  "error_details": [
+    {
+      "test": "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_foreign_product_filter_cannot_widen_scope",
+      "last_line": "django.core.exceptions.ValidationError: {'description': ['This field cannot be blank.']}"
+    }
+  ],
+  "skip_details": [],
+  "passed_ids": [
+    "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_membership_removal_takes_effect_on_new_query",
+    "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_missing_membership_and_privileged_action_stay_denied",
+    "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_product_type_and_overlapping_memberships_do_not_duplicate_findings",
+    "unittests.test_rc3_finding_scope.TestRC3FindingScope.test_staff_and_superuser_keep_supplied_queryset"
+  ]
+}

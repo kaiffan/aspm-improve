@@ -44,3 +44,10 @@ observed in-progress poll. It still builds a real concurrent index, asserts the
 same OID is retained and checks both wait messages. No migration code is edited.
 This independent test synchronization change is committed separately; the final
 full suite must still pass before promotion.
+
+## Final release-gate closure
+
+The accepted runtime `ccfd52d372695176485e65000b4270e01d7dfb1b` completed the
+entire sanctioned suite: **8,706 run, 8,153 passed, 0 errors/failures, 553 unchanged
+skips**. Both original import blockers are closed. See
+[final test results](TEST_RESULTS.md) and [full outcomes](raw/full-final-tests.json).

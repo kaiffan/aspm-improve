@@ -1,0 +1,180 @@
+[
+  {
+    "query_id": "9ae43fbe1c82",
+    "sql": "SELECT DISTINCT \"title\" FROM (SELECT \"dojo_finding\".\"title\" AS \"title\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT V0.\"id\" AS \"pk\" FROM \"dojo_test\" V0 INNER JOIN \"dojo_engagement\" V1 ON (V0.\"engagement_id\" = V1.\"id\") WHERE V1.\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))))) AND \"dojo_finding\".\"title\" IS NOT NULL) OFFSET 0) permitted LIMIT %s",
+    "calls": 9,
+    "total_execute_wall_ms": 1139.267540002038,
+    "routes": [
+      "reports",
+      "web_findings",
+      "web_test"
+    ],
+    "callers": [
+      "/app/dojo/finding/ui/views.py:316:get_initial_context",
+      "/app/dojo/finding/ui/views.py:380:get",
+      "/app/dojo/finding/ui/views.py:403:get",
+      "/app/dojo/reports/ui/views.py:128:get_available_widgets",
+      "/app/dojo/reports/ui/views.py:140:get_context",
+      "/app/dojo/reports/ui/views.py:94:get",
+      "/app/dojo/test/ui/views.py:171:get_initial_context",
+      "/app/dojo/test/ui/views.py:227:get",
+      "/app/dojo/utils.py:1636:get_words_for_field"
+    ],
+    "representative_server_execution_ms": 269.361,
+    "representative_root_buffers": "Buffers: shared hit=39 read=125642 written=4, temp written=7750",
+    "max_plan_loops": 2,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "d5e037877d50",
+    "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"pk\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") INNER JOIN \"dojo_product\" ON (\"dojo_engagement\".\"product_id\" = \"dojo_product\".\"id\") WHERE (NOT \"dojo_finding\".\"active\" AND NOT \"dojo_finding\".\"duplicate\" AND NOT \"dojo_finding\".\"false_p\" AND \"dojo_finding\".\"is_mitigated\" AND \"dojo_finding\".\"mitigated\" IS NOT NULL AND EXTRACT(MONTH FROM \"dojo_finding\".\"mitigated\" AT TIME ZONE %s) = %s AND \"dojo_finding\".\"mitigated\" BETWEEN %s AND %s AND NOT \"dojo_finding\".\"out_of_scope\" AND \"dojo_product\".\"prod_type_id\" = %s AND \"dojo_finding\".\"verified\")) subquery",
+    "calls": 6,
+    "total_execute_wall_ms": 1075.5275720002828,
+    "routes": [
+      "simple_metrics",
+      "simple_metrics_cold"
+    ],
+    "callers": [
+      "/app/dojo/metrics/views.py:224:simple_metrics"
+    ],
+    "representative_server_execution_ms": null,
+    "representative_root_buffers": "N/A",
+    "max_plan_loops": null,
+    "plan_actor": null
+  },
+  {
+    "query_id": "f31e5954643b",
+    "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND NOT \"dojo_finding\".\"duplicate\" AND NOT \"dojo_finding\".\"false_p\" AND \"dojo_finding\".\"mitigated\" IS NULL AND NOT \"dojo_finding\".\"out_of_scope\" AND \"dojo_engagement\".\"product_id\" = %s)",
+    "calls": 4,
+    "total_execute_wall_ms": 911.00882200044,
+    "routes": [
+      "web_test"
+    ],
+    "callers": [
+      "/app/dojo/test/ui/views.py:229:get",
+      "/app/dojo/utils.py:1413:open_findings_count",
+      "/app/dojo/utils.py:1476:findings"
+    ],
+    "representative_server_execution_ms": 413.007,
+    "representative_root_buffers": "Buffers: shared hit=14 read=422827",
+    "max_plan_loops": 100,
+    "plan_actor": "admin"
+  },
+  {
+    "query_id": "1bcf069a654f",
+    "sql": "SELECT %s AS \"_product_id\", ARRAY_AGG(\"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"id\") AS \"finding_ids\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s))))",
+    "calls": 7,
+    "total_execute_wall_ms": 843.0110489971412,
+    "routes": [
+      "product_detail",
+      "products"
+    ],
+    "callers": [
+      "/app/dojo/product/api/views.py:149:get_object",
+      "/app/dojo/product/api/views.py:155:paginate_queryset",
+      "/app/dojo/product/api/views.py:172:_load_findings_fields"
+    ],
+    "representative_server_execution_ms": 233.307,
+    "representative_root_buffers": "Buffers: shared hit=13 read=125274, temp read=784 written=787",
+    "max_plan_loops": 1,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "d40e23d6d60e",
+    "sql": "SELECT \"dojo_engagement\".\"product_id\" AS \"_product_id\", ARRAY_AGG(\"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"id\") AS \"finding_ids\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND \"dojo_engagement\".\"product_id\" IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)) GROUP BY 1",
+    "calls": 1,
+    "total_execute_wall_ms": 457.0617690005747,
+    "routes": [
+      "products"
+    ],
+    "callers": [
+      "/app/dojo/product/api/views.py:155:paginate_queryset",
+      "/app/dojo/product/api/views.py:172:_load_findings_fields"
+    ],
+    "representative_server_execution_ms": 464.047,
+    "representative_root_buffers": "Buffers: shared hit=15876 read=109359, temp read=1859 written=1869",
+    "max_plan_loops": 1,
+    "plan_actor": "admin"
+  },
+  {
+    "query_id": "56534bd034bc",
+    "sql": "SELECT (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date AS \"created__date\", \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\", COUNT(\"dojo_finding\".\"id\") AS \"total\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT V0.\"id\" AS \"pk\" FROM \"dojo_test\" V0 INNER JOIN \"dojo_engagement\" V1 ON (V0.\"engagement_id\" = V1.\"id\") WHERE V1.\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))))) AND NOT \"dojo_finding\".\"duplicate\") GROUP BY 2, 1",
+    "calls": 3,
+    "total_execute_wall_ms": 412.036686004285,
+    "routes": [
+      "dashboard"
+    ],
+    "callers": [
+      "/app/dojo/home/views.py:49:dashboard",
+      "/app/dojo/home/views.py:88:get_dashboard_chart_data"
+    ],
+    "representative_server_execution_ms": 308.146,
+    "representative_root_buffers": "Buffers: shared hit=5 read=125676 written=4",
+    "max_plan_loops": 2,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "36b6a69aa1aa",
+    "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" WHERE \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT V0.\"id\" AS \"pk\" FROM \"dojo_test\" V0 INNER JOIN \"dojo_engagement\" V1 ON (V0.\"engagement_id\" = V1.\"id\") WHERE V1.\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))))) ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100 OFFSET 500000",
+    "calls": 1,
+    "total_execute_wall_ms": 302.33992300054524,
+    "routes": [
+      "offset"
+    ],
+    "callers": [],
+    "representative_server_execution_ms": null,
+    "representative_root_buffers": "N/A",
+    "max_plan_loops": null,
+    "plan_actor": null
+  },
+  {
+    "query_id": "9239befca1a5",
+    "sql": "SELECT (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date AS \"created__date\", \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\", COUNT(\"dojo_finding\".\"id\") AS \"total\" FROM \"dojo_finding\" WHERE NOT \"dojo_finding\".\"duplicate\" GROUP BY 2, 1",
+    "calls": 1,
+    "total_execute_wall_ms": 283.76749599920004,
+    "routes": [
+      "dashboard"
+    ],
+    "callers": [
+      "/app/dojo/home/views.py:49:dashboard",
+      "/app/dojo/home/views.py:88:get_dashboard_chart_data"
+    ],
+    "representative_server_execution_ms": 298.256,
+    "representative_root_buffers": "Buffers: shared hit=15841 read=109391",
+    "max_plan_loops": 1,
+    "plan_actor": "admin"
+  },
+  {
+    "query_id": "93bdb24cf53e",
+    "sql": "SELECT %s AS \"_product_id\", COUNT(\"dojo_finding\".\"id\") AS \"active\", COUNT(\"dojo_finding\".\"id\") FILTER (WHERE \"dojo_finding\".\"verified\") AS \"verified\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s))))",
+    "calls": 3,
+    "total_execute_wall_ms": 271.98121499532135,
+    "routes": [
+      "web_products"
+    ],
+    "callers": [
+      "/app/dojo/product/queries.py:101:get_active_finding_counts_by_product",
+      "/app/dojo/product/ui/views.py:186:product"
+    ],
+    "representative_server_execution_ms": 200.617,
+    "representative_root_buffers": "Buffers: shared hit=13 read=125274 written=4",
+    "max_plan_loops": 1,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "c7ca5e0f152b",
+    "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"pk\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT V0.\"id\" AS \"pk\" FROM \"dojo_test\" V0 INNER JOIN \"dojo_engagement\" V1 ON (V0.\"engagement_id\" = V1.\"id\") WHERE V1.\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s))))) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"mitigated\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+    "calls": 3,
+    "total_execute_wall_ms": 255.31762600076036,
+    "routes": [
+      "dashboard"
+    ],
+    "callers": [
+      "/app/dojo/home/views.py:43:dashboard"
+    ],
+    "representative_server_execution_ms": 150.586,
+    "representative_root_buffers": "Buffers: shared hit=58 read=125679",
+    "max_plan_loops": 3,
+    "plan_actor": "restricted"
+  }
+]

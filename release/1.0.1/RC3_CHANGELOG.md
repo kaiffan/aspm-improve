@@ -9,6 +9,8 @@ rollback are in `perf-report/rc3/FIXES.md`.
 * Fixed: timing race in the concurrent-index test fixture.
 * Performance: authorize Findings through one Test-ID SQL scope.
 * Performance: hydrate Finding UI pages after selecting their PKs.
+* Compatibility: preserve grouping before pagination for related ordering and
+  multiplying filters, with regression tests for both page-boundary cases.
 * Performance: avoid global title-index walks for scoped autocomplete.
 * Release metadata: 1.0.1 remains unchanged; candidate channel advances to rc3.
 * Rejected experiment: Dashboard counter batching, reverted after three adverse

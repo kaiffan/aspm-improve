@@ -1,0 +1,53 @@
+ERROR: test_build_still_running_is_waited_for_and_kept (unittests.test_migration_0305_archive_batch_indexes.TestMigration0305Rerun.test_build_still_running_is_waited_for_and_kept)
+A build left running on the server by a killed process is waited for, not dropped.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/utils.py", line 103, in _execute
+    return self.cursor.execute(sql)
+           ~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/local/lib/python3.14/site-packages/psycopg/cursor.py", line 117, in execute
+    raise ex.with_traceback(None)
+psycopg.errors.InternalError_: tuple concurrently updated
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/app/unittests/test_migration_0305_archive_batch_indexes.py", line 147, in test_build_still_running_is_waited_for_and_kept
+    self._run_operation()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "/app/unittests/test_migration_0305_archive_batch_indexes.py", line 69, in _run_operation
+    self.operation.database_forwards("dojo", editor, self.state, self.state)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/dojo/db_migrations/0305_archive_batch_indexes.py", line 50, in database_forwards
+    schema_editor.execute(f"DROP INDEX CONCURRENTLY IF EXISTS {quoted_name}")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/pgtrigger/migrations.py", line 483, in execute
+    return super().execute(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/postgresql/schema.py", line 48, in execute
+    return super().execute(sql, None)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/base/schema.py", line 204, in execute
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.14/site-packages/django/db/backends/utils.py", line 103, in _execute
+    return self.cursor.execute(sql)
+           ~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/local/lib/python3.14/site-packages/psycopg/cursor.py", line 117, in execute
+    raise ex.with_traceback(None)
+django.db.utils.InternalError: tuple concurrently updated
+

@@ -1,0 +1,55 @@
+{
+  "tests_run": 27,
+  "passed": 23,
+  "assertion_failures": 0,
+  "errors": 2,
+  "skipped": 2,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "failure_details": [],
+  "error_details": [
+    {
+      "test": "unittests.test_rc3_finding_page.TestRC3FindingPage.test_capped_autocomplete_projects_only_authorized_values",
+      "last_line": "AttributeError: 'WhereNode' object has no attribute 'flatten'"
+    },
+    {
+      "test": "unittests.test_rc3_finding_page.TestRC3FindingPage.test_test_page_retains_count_filters_and_denial",
+      "last_line": "AttributeError: 'WhereNode' object has no attribute 'flatten'"
+    }
+  ],
+  "skip_details": [
+    {
+      "test": "unittests.test_dashboard.TestDashboard.test_charts_as_user",
+      "reason": "Legacy auth re-baseline pending; same reason as test_counters_as_user."
+    },
+    {
+      "test": "unittests.test_dashboard.TestDashboard.test_counters_as_user",
+      "reason": "Legacy authorization: dashboard counters use a per-user authorized queryset that under legacy gates on authorized_users membership. user1 is fixture-defined without authorized_users entries, and the _request helper's is_staff promotion isn't enough to make every dashboard counter match the original RBAC-tuned numbers (some of those numbers reflect role-specific filtering that legacy collapses). Re-baseline this test against legacy semantics in a follow-up."
+    }
+  ],
+  "passed_ids": [
+    "unittests.test_rc3_dashboard.TestRC3Dashboard.test_weekly_counters_keep_timezone_boundaries_in_one_narrow_aggregate",
+    "unittests.test_rc3_finding_page.TestRC3FindingPage.test_annotations_hydrate_only_the_selected_ordered_page",
+    "unittests.test_rc3_finding_page.TestRC3FindingPage.test_evaluated_and_unsliced_collections_keep_existing_behavior",
+    "unittests.test_round4_performance.TestRound4Performance.test_dashboard_months_preserve_cutoff_unknown_severity_and_timezone",
+    "unittests.test_round4_performance.TestRound4Performance.test_product_page_batches_exact_scoped_counts",
+    "unittests.test_round4_performance.TestRound4Performance.test_product_page_preserves_count_order_and_page_boundaries",
+    "unittests.test_round4_performance.TestRound4Performance.test_punchcard_reads_daily_aggregate_once",
+    "unittests.test_round4_performance.TestRound4Performance.test_simple_metrics_aggregates_without_loading_finding_text",
+    "unittests.test_round5_performance.TestRound5Performance.test_dashboard_charts_share_one_aggregate_and_preserve_boundaries",
+    "unittests.test_round5_performance.TestRound5Performance.test_dashboard_exact_counters_exclude_duplicates_and_hidden_findings",
+    "unittests.test_round5_performance.TestRound5Performance.test_full_product_response_keeps_order_count_and_visibility",
+    "unittests.test_round5_performance.TestRound5Performance.test_single_product_counts_do_not_join_each_finding_to_test",
+    "unittests.test_dashboard.TestDashboard.test_charts_as_staff",
+    "unittests.test_dashboard.TestDashboard.test_counters_as_staff",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_explicit_unique_order_is_preserved",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_invalid_page_sizes_fall_back",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_lists_and_already_evaluated_queryset_keep_objects",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_page_number_edge_cases",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_page_size_is_bounded_without_materializing_queryset",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_paging_links_preserve_multivalued_filters_and_sort",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_prefix_and_total_count",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_tied_order_gets_unique_final_key_before_slice",
+    "unittests.test_ui_pagination_hardening.UIPaginationHardeningTests.test_values_and_random_order_are_not_rewritten"
+  ]
+}

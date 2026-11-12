@@ -1,0 +1,11 @@
+# Layer over compose.yaml. Existing private env and media-volume selection remain required.
+name: aspm-rc3
+services:
+  aspm:
+    image: ${ASPM_APP_IMAGE:-aspm:1.0.1-rc3}
+  nginx:
+    image: ${ASPM_NGINX_IMAGE:-aspm-nginx:1.0.1-rc3}
+  worker:
+    image: ${ASPM_APP_IMAGE:-aspm:1.0.1-rc3}
+  beat:
+    image: ${ASPM_APP_IMAGE:-aspm:1.0.1-rc3}

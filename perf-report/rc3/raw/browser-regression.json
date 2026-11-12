@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Product + severity filter applies and survives next page",
+    "pass": true
+  },
+  {
+    "name": "Clear removes applied Product and severity from URL/results",
+    "pass": true
+  },
+  {
+    "name": "Default severity order has no overlap between first and next page",
+    "pass": true,
+    "first_count": 25,
+    "next_count": 25
+  },
+  {
+    "name": "Malformed page_size returns a usable page",
+    "pass": true
+  }
+]

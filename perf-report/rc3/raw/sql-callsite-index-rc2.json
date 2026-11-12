@@ -1,0 +1,179 @@
+[
+  {
+    "query_id": "808345551f29",
+    "sql": "SELECT DISTINCT \"dojo_finding\".\"title\" AS \"title\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_finding\".\"title\" IS NOT NULL) LIMIT 20000",
+    "calls": 9,
+    "total_execute_wall_ms": 2038.9557850030542,
+    "routes": [
+      "reports",
+      "web_findings",
+      "web_test"
+    ],
+    "callers": [
+      "/app/dojo/finding/ui/views.py:316:get_initial_context",
+      "/app/dojo/finding/ui/views.py:380:get",
+      "/app/dojo/finding/ui/views.py:403:get",
+      "/app/dojo/reports/ui/views.py:128:get_available_widgets",
+      "/app/dojo/reports/ui/views.py:140:get_context",
+      "/app/dojo/reports/ui/views.py:94:get",
+      "/app/dojo/test/ui/views.py:165:get_initial_context",
+      "/app/dojo/test/ui/views.py:221:get",
+      "/app/dojo/utils.py:1617:get_words_for_field"
+    ],
+    "representative_server_execution_ms": 643.032,
+    "representative_root_buffers": "Buffers: shared hit=6 read=482300, temp written=7751",
+    "max_plan_loops": 36,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "869e594fc830",
+    "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\", COALESCE(EXTRACT(DAY FROM (interval '?' * (\"dojo_finding\".\"sla_expiration_date\" - COALESCE(\"dojo_finding\".\"sla_start_date\", (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date)))), %s) AS \"sla_age_days\", EXISTS(SELECT %s AS \"a\" FROM \"dojo_locationfindingreference\" LIMIT 1) AS \"has_endpoints\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE \"dojo_locationfindingreference\".\"status\" = %s) AS \"active_endpoint_count\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE NOT (\"dojo_locationfindingreference\".\"status\" = %s AND \"dojo_locationfindingreference\".\"status\" IS NOT NULL)) AS \"mitigated_endpoint_count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") LEFT OUTER JOIN \"dojo_locationfindingreference\" ON (\"dojo_finding\".\"id\" = \"dojo_locationfindingreference\".\"finding_id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND \"dojo_finding\".\"active\") GROUP BY \"dojo_finding\".\"id\", 75 ORDER BY \"dojo_finding\".\"numerical_severity\" ASC, \"dojo_finding\".\"id\" ASC LIMIT 25",
+    "calls": 3,
+    "total_execute_wall_ms": 1483.4695080062374,
+    "routes": [
+      "web_findings"
+    ],
+    "callers": [
+      "/app/dojo/finding/ui/views.py:397:get",
+      "/app/dojo/finding/ui/views.py:403:get"
+    ],
+    "representative_server_execution_ms": 967.961,
+    "representative_root_buffers": "Buffers: shared hit=32239 read=128080 written=4",
+    "max_plan_loops": 840362,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "8ac83e28e6be",
+    "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\", COALESCE(EXTRACT(DAY FROM (interval '?' * (\"dojo_finding\".\"sla_expiration_date\" - COALESCE(\"dojo_finding\".\"sla_start_date\", (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date)))), %s) AS \"sla_age_days\", EXISTS(SELECT %s AS \"a\" FROM \"dojo_locationfindingreference\" LIMIT 1) AS \"has_endpoints\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE \"dojo_locationfindingreference\".\"status\" = %s) AS \"active_endpoint_count\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE NOT (\"dojo_locationfindingreference\".\"status\" = %s AND \"dojo_locationfindingreference\".\"status\" IS NOT NULL)) AS \"mitigated_endpoint_count\" FROM \"dojo_finding\" LEFT OUTER JOIN \"dojo_locationfindingreference\" ON (\"dojo_finding\".\"id\" = \"dojo_locationfindingreference\".\"finding_id\") WHERE \"dojo_finding\".\"active\" GROUP BY \"dojo_finding\".\"id\", 75 ORDER BY \"dojo_finding\".\"numerical_severity\" ASC, \"dojo_finding\".\"id\" ASC LIMIT 25",
+    "calls": 1,
+    "total_execute_wall_ms": 1451.5494250008487,
+    "routes": [
+      "web_findings"
+    ],
+    "callers": [
+      "/app/dojo/finding/ui/views.py:397:get",
+      "/app/dojo/finding/ui/views.py:403:get"
+    ],
+    "representative_server_execution_ms": 1484.884,
+    "representative_root_buffers": "Buffers: shared hit=29207 read=128070",
+    "max_plan_loops": 1,
+    "plan_actor": "admin"
+  },
+  {
+    "query_id": "d5e037877d50",
+    "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"pk\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") INNER JOIN \"dojo_product\" ON (\"dojo_engagement\".\"product_id\" = \"dojo_product\".\"id\") WHERE (NOT \"dojo_finding\".\"active\" AND NOT \"dojo_finding\".\"duplicate\" AND NOT \"dojo_finding\".\"false_p\" AND \"dojo_finding\".\"is_mitigated\" AND \"dojo_finding\".\"mitigated\" IS NOT NULL AND EXTRACT(MONTH FROM \"dojo_finding\".\"mitigated\" AT TIME ZONE %s) = %s AND \"dojo_finding\".\"mitigated\" BETWEEN %s AND %s AND NOT \"dojo_finding\".\"out_of_scope\" AND \"dojo_product\".\"prod_type_id\" = %s AND \"dojo_finding\".\"verified\")) subquery",
+    "calls": 6,
+    "total_execute_wall_ms": 1071.3869389983302,
+    "routes": [
+      "simple_metrics",
+      "simple_metrics_cold"
+    ],
+    "callers": [
+      "/app/dojo/metrics/views.py:224:simple_metrics"
+    ],
+    "representative_server_execution_ms": null,
+    "representative_root_buffers": "N/A",
+    "max_plan_loops": null,
+    "plan_actor": null
+  },
+  {
+    "query_id": "f31e5954643b",
+    "sql": "SELECT COUNT(*) AS \"__count\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_finding\".\"active\" AND NOT \"dojo_finding\".\"duplicate\" AND NOT \"dojo_finding\".\"false_p\" AND \"dojo_finding\".\"mitigated\" IS NULL AND NOT \"dojo_finding\".\"out_of_scope\" AND \"dojo_engagement\".\"product_id\" = %s)",
+    "calls": 4,
+    "total_execute_wall_ms": 873.0835640017176,
+    "routes": [
+      "web_test"
+    ],
+    "callers": [
+      "/app/dojo/test/ui/views.py:223:get",
+      "/app/dojo/utils.py:1412:open_findings_count",
+      "/app/dojo/utils.py:1475:findings"
+    ],
+    "representative_server_execution_ms": 405.651,
+    "representative_root_buffers": "Buffers: shared hit=3 read=422838",
+    "max_plan_loops": 100,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "a358facc6c16",
+    "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\", EXISTS(SELECT %s AS \"a\" FROM \"dojo_locationfindingreference\" LIMIT 1) AS \"has_endpoints\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE \"dojo_locationfindingreference\".\"status\" = %s) AS \"active_endpoint_count\", COUNT(DISTINCT \"dojo_locationfindingreference\".\"id\") FILTER (WHERE NOT (\"dojo_locationfindingreference\".\"status\" = %s AND \"dojo_locationfindingreference\".\"status\" IS NOT NULL)) AS \"mitigated_endpoint_count\" FROM \"dojo_finding\" LEFT OUTER JOIN \"dojo_locationfindingreference\" ON (\"dojo_finding\".\"id\" = \"dojo_locationfindingreference\".\"finding_id\") WHERE \"dojo_finding\".\"test_id\" = %s GROUP BY \"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"numerical_severity\" ASC, \"dojo_finding\".\"id\" ASC LIMIT 25",
+    "calls": 4,
+    "total_execute_wall_ms": 867.5932950027345,
+    "routes": [
+      "web_test"
+    ],
+    "callers": [
+      "/app/dojo/test/ui/views.py:223:get"
+    ],
+    "representative_server_execution_ms": 437.049,
+    "representative_root_buffers": "Buffers: shared hit=29201 read=128069",
+    "max_plan_loops": 1,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "1bcf069a654f",
+    "sql": "SELECT %s AS \"_product_id\", ARRAY_AGG(\"dojo_finding\".\"id\" ORDER BY \"dojo_finding\".\"id\") AS \"finding_ids\" FROM \"dojo_finding\" WHERE (\"dojo_finding\".\"active\" AND \"dojo_finding\".\"test_id\" = ANY((ARRAY(SELECT U0.\"id\" AS \"pk\" FROM \"dojo_test\" U0 INNER JOIN \"dojo_engagement\" U1 ON (U0.\"engagement_id\" = U1.\"id\") WHERE U1.\"product_id\" = %s))))",
+    "calls": 7,
+    "total_execute_wall_ms": 839.34082099222,
+    "routes": [
+      "product_detail",
+      "products"
+    ],
+    "callers": [
+      "/app/dojo/product/api/views.py:149:get_object",
+      "/app/dojo/product/api/views.py:155:paginate_queryset",
+      "/app/dojo/product/api/views.py:172:_load_findings_fields"
+    ],
+    "representative_server_execution_ms": 224.798,
+    "representative_root_buffers": "Buffers: shared hit=13 read=125274, temp read=784 written=787",
+    "max_plan_loops": 1,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "db96b7ff31a7",
+    "sql": "SELECT (\"dojo_finding\".\"created\" AT TIME ZONE %s)::date AS \"created__date\", \"dojo_finding\".\"severity\" AS \"severity\", COUNT(\"dojo_finding\".\"severity\") AS \"count\", COUNT(\"dojo_finding\".\"id\") AS \"total\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\") GROUP BY 2, 1",
+    "calls": 3,
+    "total_execute_wall_ms": 744.8221880003985,
+    "routes": [
+      "dashboard"
+    ],
+    "callers": [
+      "/app/dojo/home/views.py:49:dashboard",
+      "/app/dojo/home/views.py:88:get_dashboard_chart_data"
+    ],
+    "representative_server_execution_ms": 631.017,
+    "representative_root_buffers": "Buffers: shared hit=5 read=482300 written=4",
+    "max_plan_loops": 8,
+    "plan_actor": "restricted"
+  },
+  {
+    "query_id": "5ce98caed224",
+    "sql": "SELECT \"dojo_finding\".\"id\", \"dojo_finding\".\"created\", \"dojo_finding\".\"updated\", \"dojo_finding\".\"title\", \"dojo_finding\".\"date\", \"dojo_finding\".\"sla_start_date\", \"dojo_finding\".\"sla_expiration_date\", \"dojo_finding\".\"cwe\", \"dojo_finding\".\"cve\", \"dojo_finding\".\"epss_score\", \"dojo_finding\".\"epss_percentile\", \"dojo_finding\".\"known_exploited\", \"dojo_finding\".\"ransomware_used\", \"dojo_finding\".\"kev_date\", \"dojo_finding\".\"cvssv3\", \"dojo_finding\".\"cvssv3_score\", \"dojo_finding\".\"cvssv4\", \"dojo_finding\".\"cvssv4_score\", \"dojo_finding\".\"url\", \"dojo_finding\".\"severity\", \"dojo_finding\".\"description\", \"dojo_finding\".\"mitigation\", \"dojo_finding\".\"fix_available\", \"dojo_finding\".\"fix_version\", \"dojo_finding\".\"impact\", \"dojo_finding\".\"steps_to_reproduce\", \"dojo_finding\".\"severity_justification\", \"dojo_finding\".\"refs\", \"dojo_finding\".\"test_id\", \"dojo_finding\".\"active\", \"dojo_finding\".\"verified\", \"dojo_finding\".\"false_p\", \"dojo_finding\".\"duplicate\", \"dojo_finding\".\"duplicate_finding_id\", \"dojo_finding\".\"out_of_scope\", \"dojo_finding\".\"risk_accepted\", \"dojo_finding\".\"under_review\", \"dojo_finding\".\"last_status_update\", \"dojo_finding\".\"review_requested_by_id\", \"dojo_finding\".\"under_defect_review\", \"dojo_finding\".\"defect_review_requested_by_id\", \"dojo_finding\".\"is_mitigated\", \"dojo_finding\".\"thread_id\", \"dojo_finding\".\"mitigated\", \"dojo_finding\".\"mitigated_by_id\", \"dojo_finding\".\"reporter_id\", \"dojo_finding\".\"numerical_severity\", \"dojo_finding\".\"last_reviewed\", \"dojo_finding\".\"last_reviewed_by_id\", \"dojo_finding\".\"param\", \"dojo_finding\".\"payload\", \"dojo_finding\".\"hash_code\", \"dojo_finding\".\"line\", \"dojo_finding\".\"file_path\", \"dojo_finding\".\"component_name\", \"dojo_finding\".\"component_version\", \"dojo_finding\".\"static_finding\", \"dojo_finding\".\"dynamic_finding\", \"dojo_finding\".\"scanner_confidence\", \"dojo_finding\".\"sonarqube_issue_id\", \"dojo_finding\".\"unique_id_from_tool\", \"dojo_finding\".\"vuln_id_from_tool\", \"dojo_finding\".\"sast_source_object\", \"dojo_finding\".\"sast_sink_object\", \"dojo_finding\".\"sast_source_line\", \"dojo_finding\".\"sast_source_file_path\", \"dojo_finding\".\"nb_occurences\", \"dojo_finding\".\"publish_date\", \"dojo_finding\".\"service\", \"dojo_finding\".\"planned_remediation_date\", \"dojo_finding\".\"planned_remediation_version\", \"dojo_finding\".\"effort_for_fixing\", \"dojo_finding\".\"archived_at\", \"dojo_finding\".\"archive_batch\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE \"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) ORDER BY \"dojo_finding\".\"id\" ASC LIMIT 100 OFFSET 500000",
+    "calls": 1,
+    "total_execute_wall_ms": 562.027769999986,
+    "routes": [
+      "offset"
+    ],
+    "callers": [],
+    "representative_server_execution_ms": null,
+    "representative_root_buffers": "N/A",
+    "max_plan_loops": null,
+    "plan_actor": null
+  },
+  {
+    "query_id": "e8e44f5b57f3",
+    "sql": "SELECT COUNT(*) FROM (SELECT DISTINCT \"dojo_finding\".\"id\" AS \"pk\" FROM \"dojo_finding\" INNER JOIN \"dojo_test\" ON (\"dojo_finding\".\"test_id\" = \"dojo_test\".\"id\") INNER JOIN \"dojo_engagement\" ON (\"dojo_test\".\"engagement_id\" = \"dojo_engagement\".\"id\") WHERE (\"dojo_engagement\".\"product_id\" IN (SELECT U0.\"id\" AS \"id\" FROM \"dojo_product\" U0 LEFT OUTER JOIN \"dojo_product_authorized_users\" U1 ON (U0.\"id\" = U1.\"product_id\") INNER JOIN \"dojo_product_type\" U3 ON (U0.\"prod_type_id\" = U3.\"id\") LEFT OUTER JOIN \"dojo_product_type_authorized_users\" U4 ON (U3.\"id\" = U4.\"product_type_id\") WHERE (U1.\"dojo_user_id\" = %s OR U4.\"dojo_user_id\" = %s)) AND NOT \"dojo_finding\".\"duplicate\" AND (\"dojo_finding\".\"mitigated\" AT TIME ZONE %s)::date BETWEEN %s AND %s)) subquery",
+    "calls": 3,
+    "total_execute_wall_ms": 538.4116709974478,
+    "routes": [
+      "dashboard"
+    ],
+    "callers": [
+      "/app/dojo/home/views.py:43:dashboard"
+    ],
+    "representative_server_execution_ms": 479.805,
+    "representative_root_buffers": "Buffers: shared hit=5 read=482300",
+    "max_plan_loops": 8,
+    "plan_actor": "restricted"
+  }
+]

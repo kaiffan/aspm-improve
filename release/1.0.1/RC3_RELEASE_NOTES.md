@@ -11,6 +11,8 @@ Exact runtime source and local Docker image identities are recorded in
   authorization registry overrides remain in place.
 * Select ordered Finding page PKs before endpoint annotations, including Test UI.
   Filtering, counts, sorting, evidence and pagination contracts are preserved.
+  Related/custom ordering and multiplying filters retain their original query
+  path; two behavioral regressions guard their page boundaries.
 * Keep capped autocomplete DISTINCT over its authorized projection to avoid
   walking the global title index for a small scope. No shared permission cache.
 * Synchronize the existing concurrent-index migration test with observed polling
@@ -34,3 +36,10 @@ part of this upgrade.
 Rollback: deploy the exact recorded RC2 app and gateway images, stop the RC3
 worker first, and retain all databases/volumes. There is no schema downgrade.
 See `perf-report/rc3/ROLLBACK.md` for validation and data-integrity checks.
+
+Final validation: 8,706 Django tests (8,153 passed, 553 unchanged skips, zero
+errors/failures), 12 JavaScript tests, real browser/import/dedup/evidence checks
+and isolated image rollback. Fresh paired c25: p95 5.514→2.080 s,
+p99 10.302→2.708 s, throughput 17.140→28.246 RPS. PostgreSQL sampled CPU and app
+container peak increased; full measurements and repeat spread remain in the
+report. Runtime source: `ccfd52d372695176485e65000b4270e01d7dfb1b`.

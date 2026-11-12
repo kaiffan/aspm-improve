@@ -138,14 +138,28 @@ class TestMigration0305Rerun(SimpleTestCase):
             in_flight_oid, valid, _ = _index()
             self.assertFalse(valid, "the build should still be running")
 
-            release = threading.Timer(1, snapshot_holder.commit)
-            release.start()
+            # Release only once the operation has observed the running build and
+            # entered its polling loop. A wall-clock timer can fire before that
+            # on a busy host, racing DROP INDEX against the builder's catalog update.
+            in_progress = self.operation._build_in_progress
+            polls = 0
+
+            def release_when_polled(cursor, quoted_name):
+                nonlocal polls
+                running = in_progress(cursor, quoted_name)
+                if running:
+                    polls += 1
+                    if polls == 2:
+                        snapshot_holder.commit()
+                return running
+
             with (
                 patch.object(self.operation, "poll_seconds", 0.1),
+                patch.object(self.operation, "_build_in_progress", side_effect=release_when_polled),
                 self.assertLogs(f"dojo.db_migrations.{NAME[1]}", "WARNING") as logs,
             ):
                 self._run_operation()
-            release.join()
+            self.assertGreaterEqual(polls, 2)
             # Once when the wait starts and once when it ends, however many polls it took.
             self.assertEqual(2, len(logs.records))
 

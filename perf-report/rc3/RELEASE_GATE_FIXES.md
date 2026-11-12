@@ -32,3 +32,15 @@ changed production files. Full-suite execution is recorded separately in
 Rollback is an ordinary revert of the standalone release-gate commit. It restores
 both loader failures and must block promotion again. There is no schema migration
 or dependency change.
+
+The first post-blocker full suite actually ran 8,693 methods: 8,139 passed,
+553 skipped, zero assertion failures and **one separate error** in the existing
+concurrent-index migration test (`raw/full-blocker-tests.json`). The two import
+errors are gone. The additional traceback is retained in the private full log:
+the test's one-second Timer could release its snapshot before the operation
+observed/polled the builder, allowing a catalog DDL race (`tuple concurrently
+updated`). The test now releases its real snapshot on the operation's second
+observed in-progress poll. It still builds a real concurrent index, asserts the
+same OID is retained and checks both wait messages. No migration code is edited.
+This independent test synchronization change is committed separately; the final
+full suite must still pass before promotion.

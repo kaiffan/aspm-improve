@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import Case, CharField, Count, Exists, F, Q, Value, When
+from django.db.models import Case, CharField, Count, Exists, F, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch, QuerySet
 
@@ -54,6 +54,17 @@ def prefetch_for_findings(findings, prefetch_type="all", *, exclude_untouched=Tr
     if not isinstance(findings, QuerySet):
         logger.debug("unable to prefetch because query was already executed")
         return findings
+
+    if findings.query.is_sliced and findings._result_cache is None and "?" not in findings.query.order_by:
+        # Endpoint annotations add GROUP BY. Apply them to the selected page,
+        # rather than grouping every matching Finding before the page's LIMIT.
+        # Retain the original filters, annotations and ordering on both sides;
+        # only the clone has its limits removed. The authorized PK subquery and
+        # hydration run in one statement and one database snapshot.
+        page_ids = findings.values("pk")
+        findings = findings.all()
+        findings.query.clear_limits()
+        findings = findings.filter(pk__in=Subquery(page_ids))
 
     # Base prefetches - always needed
     prefetched_findings = findings.prefetch_related(

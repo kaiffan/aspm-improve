@@ -43,7 +43,7 @@ from django.contrib import messages
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.db import IntegrityError, OperationalError, transaction
+from django.db import IntegrityError, OperationalError, connections, transaction
 from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_save
@@ -90,6 +90,7 @@ from dojo.models import (
     Test_Type,
     User,
 )
+from dojo.query_utils import TestIdInArray
 from dojo.site_url import absolute_url, site_url
 
 logger = logging.getLogger(__name__)
@@ -1613,8 +1614,34 @@ def get_words_for_field(model, fieldname):
         models = Finding_Template.objects.all()
 
     if models is not None:
+        values = models.order_by().filter(**{f"{fieldname}__isnull": False}).values_list(fieldname, flat=True)
+        database = connections[values.db]
+        pending = [values.query.where]
+        uses_test_array = False
+        while pending:
+            node = pending.pop()
+            if isinstance(node, TestIdInArray):
+                uses_test_array = True
+                break
+            pending.extend(getattr(node, "children", ()))
+        if database.vendor == "postgresql" and uses_test_array:
+            # A capped DISTINCT can otherwise scan the global title index until
+            # it finds 20,000 values in a small authorized scope. OFFSET 0 keeps
+            # the authorized projection below DISTINCT, allowing one bitmap
+            # heap scan. Preserve the same unordered DISTINCT/LIMIT semantics;
+            # all permission predicates and their bound parameters stay inside.
+            sql, params = values.query.get_compiler(using=values.db).as_sql()
+            column = database.ops.quote_name(models.model._meta.get_field(fieldname).column)
+            with database.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT DISTINCT {column} FROM ({sql} OFFSET 0) permitted LIMIT %s",
+                    (*params, max_results),
+                )
+                values = [row[0] for row in cursor.fetchall()]
+        else:
+            values = values.distinct()[:max_results]
         words = [
-            word for field_value in models.order_by().filter(**{f"{fieldname}__isnull": False}).values_list(fieldname, flat=True).distinct()[:max_results] for word in (field_value.split() if field_value else []) if len(word) > 2
+            word for field_value in values for word in (field_value.split() if field_value else []) if len(word) > 2
         ]
     else:
         words = []

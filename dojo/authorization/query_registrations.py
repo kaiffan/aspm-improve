@@ -13,7 +13,8 @@ the API filter classes that look them up via ``get_auth_filter()`` keep
 working without code changes.
 """
 from crum import get_current_user
-from django.db.models import Q
+from django.contrib.postgres.expressions import ArraySubquery
+from django.db.models import F, Q
 
 from dojo.authorization.query_filters import register_auth_filter
 from dojo.authorization.roles_permissions import Action, permission_to_action
@@ -39,6 +40,7 @@ from dojo.models import (
     Test_Import,
     Tool_Product_Settings,
 )
+from dojo.query_utils import TestIdInArray
 from dojo.request_cache import cache_for_request_or_task
 from dojo.vulnerability.models import FindingVulnerabilityReference, Vulnerability
 
@@ -418,7 +420,15 @@ def _get_authorized_findings(permission, queryset=None, user=None):
         return qs
     if _requires_staff(action):
         return qs.none()
-    return qs.filter(test__engagement__product__id__in=_authorized_product_ids(user))
+    # Keep membership resolution on the small Test relation. Joining Finding to
+    # each authorized Test can revisit the same heap pages many times on large
+    # products. An InitPlan resolves the same scope once, without Python lists
+    # or a cross-request permission cache. Use the unfiltered manager so this
+    # continues to match the original FK joins, including archived Tests.
+    tests = Test.unfiltered.filter(
+        engagement__product_id__in=_authorized_product_ids(user),
+    ).order_by().values("pk")
+    return qs.filter(TestIdInArray(F("test_id"), ArraySubquery(tests)))
 
 
 register_auth_filter("finding.get_authorized_findings", _get_authorized_findings)

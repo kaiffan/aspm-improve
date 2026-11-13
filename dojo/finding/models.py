@@ -466,6 +466,15 @@ class Finding(BaseModel):
     class Meta:
         ordering = ("numerical_severity", "-date", "title", "epss_score", "epss_percentile")
         indexes = [
+            # Similar Findings excludes the current id while selecting CWE only.
+            # Cover that predicate without fetching every matching heap row.
+            models.Index(fields=["test", "cwe"], include=["id"], name="idx_finding_test_cwe_cover"),
+            # Exact Product-tab open count; the predicate mirrors its filters.
+            models.Index(
+                fields=["test"],
+                condition=models.Q(active=True, false_p=False, duplicate=False, out_of_scope=False, mitigated__isnull=True),
+                name="idx_finding_open_test",
+            ),
             models.Index(fields=["archive_batch"], condition=models.Q(archive_batch__isnull=False), name="dojo_finding_archive_batch"),
             # Global search (pro/search/): weighted tsvector FTS + trigram fuzzy match.
             GinIndex(

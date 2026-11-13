@@ -1404,12 +1404,15 @@ class Product_Tab:
 
     @cached_property
     def open_findings_count(self):
-        return Finding.objects.filter(
-            test__engagement__product=self._product,
+        from dojo.product.queries import get_active_findings_by_product  # noqa: PLC0415 -- avoids model/query import cycle
+
+        # Scope the known Product through its Test IDs once. Concurrent broad
+        # FK-join counts repeatedly stream the whole Finding heap. Keep every
+        # original open-state predicate and the request-local cached property.
+        return get_active_findings_by_product([self._product.pk]).filter(
             false_p=False,
             duplicate=False,
             out_of_scope=False,
-            active=True,
             mitigated__isnull=True).count()
 
     @cached_property

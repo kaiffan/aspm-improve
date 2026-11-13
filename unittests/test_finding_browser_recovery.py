@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from dojo.finding.queries import get_authorized_findings_for_queryset
 from dojo.models import BurpRawRequestResponse, Dojo_User, Finding, Notes
+from dojo.utils import Product_Tab
 from dojo.vulnerability.models import FindingVulnerabilityReference, Vulnerability
 from unittests import test_round4_performance as round4
 from unittests.dojo_test_case import DojoTestCase, versioned_fixtures
@@ -119,3 +120,26 @@ class TestFindingBrowserRecovery(DojoTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTemplateUsed(response, "403.html")
         self.assertNotIn(finding.title, response.content.decode())
+
+    def test_product_tab_count_keeps_all_open_flags_and_single_request_cache(self):
+        with CaptureQueriesContext(connection) as queries:
+            tab = Product_Tab(self.product)
+            self.assertEqual(tab.open_findings_count, 2)
+            self.assertEqual(tab.open_findings_count, 2)
+        self.assertEqual(len(queries), 1)
+        self.assertIn("= ANY(", queries[0]["sql"])
+        self.assertNotIn('"dojo_finding"."test_id" = "dojo_test"."id"', queries[0]["sql"])
+        finding = self.findings[0]
+        for field, value in (("false_p", True), ("duplicate", True), ("out_of_scope", True),
+                             ("active", False), ("mitigated", timezone.now())):
+            with self.subTest(field=field):
+                self.scope.filter(pk=finding.pk).update(**{field: value})
+                self.assertEqual(Product_Tab(self.product).open_findings_count, 1)
+                self.scope.filter(pk=finding.pk).update(**{field: True if field == "active" else None if field == "mitigated" else False})
+        self.assertEqual(Product_Tab(self.product).open_findings_count, 2)
+        self.assertEqual(Product_Tab(self.other).open_findings_count, 0)
+
+    def test_product_tab_count_includes_findings_of_archived_tests(self):
+        test = self.findings[0].test
+        type(test).unfiltered.filter(pk=test.pk).update(archived_at=timezone.now())
+        self.assertEqual(Product_Tab(self.product).open_findings_count, 2)

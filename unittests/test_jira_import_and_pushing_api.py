@@ -20,6 +20,7 @@ from unittests.dojo_test_case import (
     versioned_fixtures,
     with_system_setting,
 )
+from unittests.finding_commit_effects import eager_finding_commit_effects
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 @versioned_fixtures
+@eager_finding_commit_effects
 class JIRAImportAndPushTestApi(DojoVCRAPITestCase):
     fixtures = ["dojo_testdata.json"]
 

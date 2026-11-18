@@ -47,6 +47,111 @@ def stale_model_writer(pk, directory, **kwargs):
 
 
 class ExtendedRaces(original.PatchRaces):
+    def assert_external_write_boundary(self, expected_service):
+        self.assertFalse(connection.in_atomic_block)
+
+        def other_connection():
+            with transaction.atomic():
+                row = Finding.objects.select_for_update(nowait=True).get(pk=self.finding.pk)
+                self.assertEqual(row.service, expected_service)
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            pool.submit(self.thread, other_connection).result(timeout=10)
+
+    def test_jira_push_runs_after_patch_commit(self):
+        observed = []
+
+        def push(finding, **kwargs):
+            self.assert_external_write_boundary("committed-before-jira")
+            observed.append(finding.pk)
+            return True, "ok"
+
+        with (
+            patch("dojo.finding.api.serializer.jira_services.is_keep_in_sync", return_value=True),
+            patch("dojo.finding.api.serializer.jira_services.push", side_effect=push),
+        ):
+            self.assertEqual(self.request({"service": "committed-before-jira"})[0], 200)
+        self.assertEqual(observed, [self.finding.pk])
+
+    def test_jira_failure_preserves_existing_committed_write_contract(self):
+        def push(finding, **kwargs):
+            self.assert_external_write_boundary("committed-with-jira-error")
+            return False, "JIRA unavailable"
+
+        with (
+            patch("dojo.finding.api.serializer.jira_services.is_keep_in_sync", return_value=True),
+            patch("dojo.finding.api.serializer.jira_services.push", side_effect=push),
+        ):
+            status, _ = self.request({"service": "committed-with-jira-error"})
+        self.assertEqual(status, 400)
+        self.assertEqual(Finding.objects.get(pk=self.finding.pk).service, "committed-with-jira-error")
+
+    def test_tool_integration_runs_after_patch_commit(self):
+        observed = []
+
+        def update(finding):
+            self.assert_external_write_boundary("committed-before-tool")
+            observed.append(finding.pk)
+
+        with (
+            patch("dojo.finding.helper.tool_issue_updater.is_tool_issue_updater_needed", return_value=True),
+            patch("dojo.finding.helper.tool_issue_updater.async_tool_issue_update", side_effect=update),
+        ):
+            self.assertEqual(self.request({"service": "committed-before-tool"})[0], 200)
+        self.assertEqual(observed, [self.finding.pk])
+
+    def test_v3_integrations_respect_callers_outer_transaction(self):
+        from dojo.finding.services import update_finding  # noqa: PLC0415 -- exercise public service
+
+        observed = []
+
+        def update(finding):
+            self.assert_external_write_boundary("outer-transaction")
+            observed.append(finding.pk)
+
+        with (
+            patch("dojo.finding.helper.tool_issue_updater.is_tool_issue_updater_needed", return_value=True),
+            patch("dojo.finding.helper.tool_issue_updater.async_tool_issue_update", side_effect=update),
+            transaction.atomic(),
+        ):
+            update_finding(self.finding, changes={"service": "outer-transaction"}, user=self.user)
+            self.assertEqual(observed, [])
+        self.assertEqual(observed, [self.finding.pk])
+
+    def test_model_external_effect_is_discarded_on_outer_rollback(self):
+        observed = []
+        with (
+            patch("dojo.finding.helper.tool_issue_updater.is_tool_issue_updater_needed", return_value=True),
+            patch("dojo.finding.helper.tool_issue_updater.async_tool_issue_update", side_effect=lambda f: observed.append(f.pk)),
+        ):
+            with self.assertRaisesMessage(RuntimeError, "rollback integration"), transaction.atomic():
+                self.finding.service = "never-committed"
+                self.finding.save(dedupe_option=False)
+                self.assertEqual(observed, [])
+                message = "rollback integration"
+                raise RuntimeError(message)
+            self.assertEqual(observed, [])
+        self.assertNotEqual(Finding.objects.get(pk=self.finding.pk).service, "never-committed")
+
+    def test_v3_jira_push_respects_callers_outer_transaction(self):
+        from dojo.finding.services import update_finding  # noqa: PLC0415 -- exercise public service
+
+        observed = []
+
+        def push(finding, **kwargs):
+            self.assert_external_write_boundary("v3-jira-commit")
+            observed.append(finding.pk)
+            return True, "ok"
+
+        with (
+            patch("dojo.finding.services.jira_services.is_keep_in_sync", return_value=True),
+            patch("dojo.finding.services.jira_services.push", side_effect=push),
+            transaction.atomic(),
+        ):
+            update_finding(self.finding, changes={"service": "v3-jira-commit"}, user=self.user)
+            self.assertEqual(observed, [])
+        self.assertEqual(observed, [self.finding.pk])
+
     def thread(self, func):
         close_old_connections()
         try:

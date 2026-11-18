@@ -15,6 +15,7 @@ from django.test import override_settings
 
 from dojo.models import Dojo_User, Finding, Finding_CWE, Test, User
 from dojo.vulnerability.models import FindingVulnerabilityReference
+from unittests.finding_commit_effects import eager_finding_commit_effects
 
 from .base import ApiV3TestCase
 
@@ -120,6 +121,7 @@ class TestApiV3FindingCreate(ApiV3TestCase):
         push.assert_called_once()
 
 
+@eager_finding_commit_effects
 class TestApiV3FindingUpdate(ApiV3TestCase):
 
     def setUp(self):
@@ -286,6 +288,7 @@ class TestApiV3FindingUpdate(ApiV3TestCase):
         self.assertEqual(400, response.status_code)
 
 
+@eager_finding_commit_effects
 class TestApiV3FindingReplace(ApiV3TestCase):
 
     """PUT full-replace: validates FindingReplace, resets omitted optionals, flows through the service."""

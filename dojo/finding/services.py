@@ -40,6 +40,7 @@ from dojo.finding.helper import (
     save_cwes,
     save_vulnerability_ids,
 )
+from dojo.finding.write_effects import after_finding_write, finding_write_effects
 from dojo.jira import services as jira_services
 from dojo.models import SEVERITIES, Dojo_User, Finding, Test_Type
 from dojo.notifications.helper import (
@@ -236,7 +237,7 @@ def update_finding(finding: Finding, *, changes: dict, user, push_to_jira: bool 
     ``vulnerability_ids``/``reporter``); an explicit ``cwes: []`` clears the extra rows, resyncing to
     just the scalar-derived primary.
     """
-    with transaction.atomic():
+    with finding_write_effects(), transaction.atomic():
         finding.refresh_from_db(from_queryset=Finding.unfiltered.select_for_update(no_key=True))
         changes = dict(changes)
 
@@ -302,10 +303,13 @@ def update_finding(finding: Finding, *, changes: dict, user, push_to_jira: bool 
             finding.tags = tags if tags is not None else []
             finding.save()
 
-    if push_to_jira or jira_services.is_keep_in_sync(finding):
-        success, message = jira_services.push(finding, force_sync=True)
-        if not success:
-            raise ValidationError(message)
+        if push_to_jira or jira_services.is_keep_in_sync(finding):
+            def push():
+                success, message = jira_services.push(finding, force_sync=True)
+                if not success:
+                    raise ValidationError(message)
+
+            after_finding_write(push)
     return finding
 
 

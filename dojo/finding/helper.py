@@ -32,6 +32,7 @@ from dojo.finding.deduplication import (
     get_finding_models_for_deduplication,
 )
 from dojo.finding.write_control import save_base_fields
+from dojo.finding.write_effects import after_finding_write
 from dojo.importers.import_lock import (
     lock_tests_of_findings_under_import,
     unlock_tests_under_import,
@@ -514,8 +515,8 @@ def post_process_finding_save_internal(finding, dedupe_option=True, rules_option
             do_false_positive_history(finding, *args, **kwargs)
 
     # STEP 2 run all non-status changing tasks as celery tasks in the background
-    if issue_updater_option:
-        tool_issue_updater.async_tool_issue_update(finding)
+    if issue_updater_option and tool_issue_updater.is_tool_issue_updater_needed(finding):
+        after_finding_write(lambda: tool_issue_updater.async_tool_issue_update(finding))
 
     if product_grading_option:
         if system_settings.enable_product_grade:
@@ -531,9 +532,9 @@ def post_process_finding_save_internal(finding, dedupe_option=True, rules_option
         # based on feedback we could introduct another push_group_to_jira boolean everywhere
         # but what about the push_all boolean? Let's see how this works for now and get some feedback.
         if finding.has_jira_issue or not finding.finding_group:
-            jira_services.push(finding)
+            after_finding_write(lambda: jira_services.push(finding))
         elif finding.finding_group:
-            jira_services.push(finding.finding_group)
+            after_finding_write(lambda: jira_services.push(finding.finding_group))
 
 
 # post_process_findings_batch runs the status-changing dedup / false-positive-history

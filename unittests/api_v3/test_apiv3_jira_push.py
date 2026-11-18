@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 from dojo.models import Finding, JIRA_Instance, JIRA_Project, UserContactInfo
 from unittests.dojo_test_case import get_unit_tests_scans_path
+from unittests.finding_commit_effects import eager_finding_commit_effects
 
 from .base import ApiV3TestCase
 
@@ -147,6 +148,7 @@ class TestApiV3ImportJiraPush(_JiraV3Base):
         self.assertIn("test", body)
 
 
+@eager_finding_commit_effects
 class TestApiV3FindingWriteJiraProjectSetting(_JiraV3Base):
 
     """

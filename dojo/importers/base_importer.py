@@ -1565,7 +1565,9 @@ class BaseImporter(ImporterOptions):
         if not findings:
             return
         db = router.db_for_write(Finding)
-        with transaction.atomic(using=db):
+        from dojo.finding.write_effects import finding_write_effects  # noqa: PLC0415 -- local write phase boundary
+
+        with finding_write_effects(using=db), transaction.atomic(using=db):
             # Match/close candidates may have been loaded before a PATCH. Lock in
             # ascending PK order and hydrate the current state before deciding what
             # to close and before deriving columns or emitting any signal/note.

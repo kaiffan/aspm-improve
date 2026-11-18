@@ -589,9 +589,14 @@ class FindingSerializer(serializers.ModelSerializer):
 
         if push_to_jira or jira_services.is_keep_in_sync(instance):
             # Push synchronously so that we can see jira errors in real time
-            success, message = jira_services.push(instance, force_sync=True)
-            if not success:
-                raise serializers.ValidationError(message)
+            from dojo.finding.write_effects import after_finding_write  # noqa: PLC0415 -- write phase boundary
+
+            def push():
+                success, message = jira_services.push(instance, force_sync=True)
+                if not success:
+                    raise serializers.ValidationError(message)
+
+            after_finding_write(push)
 
         return instance
 

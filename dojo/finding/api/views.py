@@ -66,6 +66,7 @@ from dojo.finding.ui.views import (
     reset_finding_duplicate_status_internal,
     set_finding_as_original_with_reason,
 )
+from dojo.finding.write_effects import finding_write_effects
 from dojo.jira import services as jira_services
 from dojo.location.feature import locations_enabled
 from dojo.models import (
@@ -176,14 +177,22 @@ class FindingViewSet(
     pagination_class = FindingLargeOffsetPagination
 
     def update(self, request, *args, **kwargs):
-        # Authorize before taking a lock. This first instance can become stale;
-        # super().update() deliberately reloads it after the narrow row lock.
-        with transaction.atomic():
+        partial = kwargs.pop("partial", False)
+        # Authorize before locking, then reload and reauthorize current state.
+        # Only validation and database mutation need the lock. External effects
+        # and response serialization run after the transaction has released it.
+        with finding_write_effects(), transaction.atomic():
             finding = self.get_object()
             get_object_or_404(
                 Finding.unfiltered.only("pk").select_for_update(no_key=True), pk=finding.pk,
             )
-            return super().update(request, *args, **kwargs)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            if getattr(instance, "_prefetched_objects_cache", None):
+                instance._prefetched_objects_cache = {}
+        return Response(serializer.data)
 
     # Overriding mixins.UpdateModeMixin perform_update() method to grab push_to_jira
     # data and add that as a parameter to .save()

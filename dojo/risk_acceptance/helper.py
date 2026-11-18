@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from dojo.celery import app
+from dojo.finding.write_effects import after_finding_write, external_finding_effect
 from dojo.jira import services as jira_services
 from dojo.models import Dojo_User, Engagement, Finding, Notes, Risk_Acceptance, System_Settings
 from dojo.notifications import ticket_comments
@@ -455,6 +456,7 @@ def post_ticket_comments(risk_acceptance, findings, message_factory, heads_up_da
     ticket_comments.dispatch_ticket_comments(event, findings, text, risk_acceptance=risk_acceptance)
 
 
+@external_finding_effect
 def post_jira_comment(finding, message_factory, heads_up_days=0):
     if not finding:
         return
@@ -477,6 +479,7 @@ def post_jira_comment(finding, message_factory, heads_up_days=0):
             jira_services.add_simple_comment(jira_instance, jira_issue, jira_comment)
 
 
+@external_finding_effect
 def post_jira_comments(risk_acceptance, findings, message_factory, heads_up_days=0):
     if not risk_acceptance:
         return
@@ -538,7 +541,7 @@ def simple_risk_accept(user: Dojo_User, finding: Finding, *, perform_save=True) 
     # post_jira_comment might reload from database so see unaccepted finding. but the comment
     # only contains some text so that's ok
     if jira_services.is_push_all_issues(finding) or jira_services.is_keep_in_sync(finding):
-        jira_services.push(finding)
+        after_finding_write(lambda: jira_services.push(finding))
 
     post_jira_comment(finding, accepted_message_creator)
     # Add a note to reflect that the finding was removed from the risk acceptance
@@ -578,7 +581,7 @@ def risk_unaccept(user: Dojo_User, finding: Finding, *, perform_save=True, post_
 
         # Update the JIRA obect for this finding
         if jira_services.is_push_all_issues(finding) or jira_services.is_keep_in_sync(finding):
-            jira_services.push(finding)
+            after_finding_write(lambda: jira_services.push(finding))
 
         # Add a note to reflect that the finding was removed from the risk acceptance
         if user is not None:

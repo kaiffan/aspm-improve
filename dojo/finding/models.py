@@ -32,6 +32,7 @@ from dojo.finding.write_control import (
     remember_loaded_values,
     remember_saved_values,
 )
+from dojo.finding.write_effects import finding_write_effects
 
 # get_current_date/tomorrow/copy_model_util are defined early in dojo.models, before the
 # re-export that loads this module — so this resolves despite the partial circular load, and
@@ -733,6 +734,7 @@ class Finding(BaseModel):
             elif (self.file_path is not None):
                 self.static_finding = True
 
+    @finding_write_effects()
     def save(self, dedupe_option=True, rules_option=True, product_grading_option=True,  # noqa: FBT002
              issue_updater_option=True, push_to_jira=False, user=None, *args, **kwargs):  # noqa: FBT002 - this is bit hard to fix nice have this universally fixed
         logger.debug("Start saving finding of id " + str(self.id) + " dedupe_option:" + str(dedupe_option) + " (self.pk is %s)", "None" if self.pk is None else "not None")

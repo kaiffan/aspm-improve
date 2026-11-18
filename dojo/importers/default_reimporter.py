@@ -1111,7 +1111,9 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         )
         if not may_write:
             return self._process_current_matched_finding(unsaved_finding, existing_finding)
-        with transaction.atomic():
+        from dojo.finding.write_effects import finding_write_effects  # noqa: PLC0415 -- local write phase boundary
+
+        with finding_write_effects(), transaction.atomic():
             try:
                 existing_finding.refresh_from_db(
                     fields=[f.attname for f in Finding._meta.concrete_fields if f.attname in existing_finding.__dict__],

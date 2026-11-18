@@ -65,6 +65,38 @@ class ProductMetrics(closed_tests.ProductMetricsClosedCountTest):
             self.compare()
             self.compare({"date": "7", "severity": "High"})
 
+    def test_matching_multiple_tags_counts_each_finding_once(self):
+        self.system_settings(filter_string_matching=False)
+        self.fixture()
+        first = Finding.objects.get(test=self.test, severity="Critical")
+        second = Finding.objects.get(test=self.test, severity="High")
+        first.tags.add("metric-match-a", "metric-match-b")
+        second.tags.add("metric-match-a")
+        actual = self.context(params={"date": "7", "tag": "metric-match"})
+        self.assertEqual(actual["all_objs"], 2)
+        self.assertEqual(actual["open_objs"], 2)
+        self.assertEqual(actual["verified_objs"], 2)
+        self.assertEqual(actual["open_objs_by_severity"]["Critical"], 1)
+        self.assertEqual(actual["open_objs_by_severity"]["High"], 1)
+        self.assertEqual(sum(row["open"] for row in actual["open_close_weekly"].values()), 2)
+        self.assertEqual(sum(row["Critical"] for row in actual["severity_weekly"].values()), 1)
+        self.assertEqual(actual["open_vulnerabilities"], [["CWE-79", 2]])
+        self.assertEqual(actual["all_vulnerabilities"], [["CWE-79", 2]])
+
+    def test_tag_filter_closed_and_accepted_buckets_count_identities(self):
+        self.system_settings(filter_string_matching=False)
+        self.fixture()
+        for severity in ["Low", "Medium"]:
+            Finding.objects.get(test=self.test, severity=severity).tags.add("metric-state-a", "metric-state-b")
+        actual = self.context(params={"date": "7", "tag": "metric-state"})
+        self.assertEqual(actual["all_objs"], 2)
+        self.assertEqual(actual["open_objs"], 0)
+        self.assertEqual(actual["closed_objs"], 1)
+        self.assertEqual(actual["accepted_objs"], 1)
+        self.assertEqual(sum(row["closed"] for row in actual["open_close_weekly"].values()), 1)
+        self.assertEqual(sum(row["accepted"] for row in actual["open_close_weekly"].values()), 1)
+        self.assertEqual(actual["all_vulnerabilities"], [["CWE-79", 2]])
+
     def test_no_finding_materialization(self):
         Finding.objects.bulk_create([Finding(title="Bounded", test=self.test, severity="High", date=date(2024, 1, 1), active=True, reporter=self.user) for _ in range(2000)], batch_size=500)
         created = []

@@ -11,10 +11,19 @@ from dojo.query_utils import build_count_subquery
 from dojo.utils import get_zero_severity_level
 
 
+def _buckets(queryset, *fields):
+    # A tag/other to-many filter can require DISTINCT model rows. Counting join
+    # rows after values()/GROUP BY loses that cardinality even if SELECT DISTINCT
+    # remains on the outer aggregate. Count identities in that case.
+    return queryset.order_by().values(*fields).annotate(
+        n=Count("pk", distinct=queryset.query.distinct),
+    ).iterator(chunk_size=1000)
+
+
 def _counts(queryset):
     counts = get_zero_severity_level()
     total = 0
-    for row in queryset.order_by().values("severity").annotate(n=Count("pk")).iterator(chunk_size=1000):
+    for row in _buckets(queryset, "severity"):
         total += row["n"]
         if row["severity"] in counts:
             counts[row["severity"]] += row["n"]
@@ -45,7 +54,7 @@ def product_metric_context(filters, product):
         return stamp, label
 
     today = timezone.now().date()
-    for row in filters["open"].order_by().values("date", "severity").annotate(n=Count("pk")).iterator(chunk_size=1000):
+    for row in _buckets(filters["open"], "date", "severity"):
         stamp, label = add(row["date"], "open", row["n"])
         bucket = severity_weekly.setdefault(stamp, {**get_zero_severity_level(), "week": label})
         bucket[row["severity"]] = bucket.get(row["severity"], 0) + row["n"]
@@ -70,9 +79,9 @@ def product_metric_context(filters, product):
     else:
         # Endpoint_Status.mitigated is boolean; its discovery date is the fallback.
         closed = closed.annotate(metric_day=Coalesce(TruncDate("mitigated_time", tzinfo=UTC), "date"))
-    for row in closed.order_by().values("metric_day").annotate(n=Count("pk")).iterator(chunk_size=1000):
+    for row in _buckets(closed, "metric_day"):
         add(row["metric_day"], "closed", row["n"])
-    for row in filters["accepted"].order_by().values("date").annotate(n=Count("pk")).iterator(chunk_size=1000):
+    for row in _buckets(filters["accepted"], "date"):
         add(row["date"], "accepted", row["n"])
 
     context.update({
@@ -82,7 +91,10 @@ def product_metric_context(filters, product):
         **{severity.lower() + "_weekly": dict(sorted(series.items())) for severity, series in by_severity.items()},
     })
     for source, target in (("open_vulns", "open_vulnerabilities"), ("all_vulns", "all_vulnerabilities")):
-        rows = [["CWE-" + str(row["cwe"]), row["count"]] for row in filters[source].values("cwe", "count").iterator(chunk_size=1000)]
+        vulnerabilities = filters[source]
+        if vulnerabilities.query.distinct:
+            vulnerabilities = vulnerabilities.annotate(count=Count("pk", distinct=True))
+        rows = [["CWE-" + str(row["cwe"]), row["count"]] for row in vulnerabilities.values("cwe", "count").iterator(chunk_size=1000)]
         context[target] = rows
         context[target + "_count"] = len(rows)
 

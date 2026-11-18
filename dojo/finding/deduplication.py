@@ -11,6 +11,7 @@ from django.db.models import Prefetch
 from django.db.models.query_utils import Q
 
 from dojo.celery import app
+from dojo.finding.write_control import save_base_fields
 from dojo.location.feature import locations_enabled
 from dojo.location.queries import location_prefetch_lookups
 from dojo.models import Endpoint_Status, Finding, System_Settings
@@ -208,9 +209,9 @@ def set_duplicate(new_finding, existing_finding, *, save=True):
     if save:
         for f in all_modified:
             logger.debug("saving new finding: %d", f.id)
-            super(Finding, f).save(skip_validation=True)
+            save_base_fields(f)
         logger.debug("saving existing finding: %d", existing_finding.id)
-        super(Finding, existing_finding).save(skip_validation=True)
+        # found_by is already persisted through its M2M manager; no scalar write is needed.
 
     return all_modified
 

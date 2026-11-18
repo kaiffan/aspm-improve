@@ -1,10 +1,11 @@
 import base64
 import logging
+from contextlib import nullcontext
 
 import django_tagulous as tagulous
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, connection, transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -43,6 +44,9 @@ from dojo.authorization import api_permissions as permissions
 from dojo.db_utils import is_foreign_key_conflict
 from dojo.filters import order_with_pk_tiebreak
 from dojo.finding.api.filters import ApiFindingFilter, ApiTemplateFindingFilter
+from dojo.finding.api.large_offset_pagination import (
+    FindingLargeOffsetPagination,
+)
 from dojo.finding.api.serializer import (
     BurpRawRequestResponseMultiSerializer,
     BurpRawRequestResponseSerializer,
@@ -81,9 +85,6 @@ from dojo.utils import (
     process_tag_notifications,
 )
 from dojo.vulnerability.queries import vulnerability_id_prefetch
-from dojo.finding.api.large_offset_pagination import (
-    FindingLargeOffsetPagination,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +175,16 @@ class FindingViewSet(
     )
     pagination_class = FindingLargeOffsetPagination
 
+    def update(self, request, *args, **kwargs):
+        # Authorize before taking a lock. This first instance can become stale;
+        # super().update() deliberately reloads it after the narrow row lock.
+        with transaction.atomic():
+            finding = self.get_object()
+            get_object_or_404(
+                Finding.unfiltered.only("pk").select_for_update(no_key=True), pk=finding.pk,
+            )
+            return super().update(request, *args, **kwargs)
+
     # Overriding mixins.UpdateModeMixin perform_update() method to grab push_to_jira
     # data and add that as a parameter to .save()
     def perform_update(self, serializer):
@@ -185,10 +196,13 @@ class FindingViewSet(
 
         finding_pk = serializer.instance.pk
         try:
-            serializer.save(push_to_jira=push_to_jira)
+            # Roll back child-write errors before the existing concurrent-delete
+            # guard queries the parent; direct calls retain their autocommit path.
+            with transaction.atomic() if connection.in_atomic_block else nullcontext():
+                serializer.save(push_to_jira=push_to_jira)
         except IntegrityError as exc:
-            # A finding PATCH is not wrapped in a single transaction
-            # (ATOMIC_REQUESTS is False), so a concurrent delete of this finding --
+            # Direct callers may still run outside the row-locking update path.
+            # A concurrent delete of this finding --
             # a reimport close_old_findings, a bulk delete, or another pipeline step --
             # can remove the parent dojo_finding row mid-update. The child writes then
             # reference a finding_id that is already gone and raise a foreign-key

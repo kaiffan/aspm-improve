@@ -1680,7 +1680,7 @@ class TestReimportRacesMatchedFindingDelete(_DupeDeleteDuringWriteMixin, SimpleT
         self._reimport(target)
         finding = Finding.objects.get(test=target)
         Finding.objects.filter(id=finding.id).update(active=False, is_mitigated=True, mitigated=timezone.now())
-        real = DefaultReImporter.process_matched_mitigated_finding
+        real = DefaultReImporter.process_matched_finding
         deleted = []
 
         def delete_then_reactivate(importer, unsaved_finding, existing_finding, *args, **kwargs):
@@ -1691,7 +1691,7 @@ class TestReimportRacesMatchedFindingDelete(_DupeDeleteDuringWriteMixin, SimpleT
                 deleter.join_or_fail(self)
             return real(importer, unsaved_finding, existing_finding, *args, **kwargs)
 
-        with patch.object(DefaultReImporter, "process_matched_mitigated_finding", delete_then_reactivate):
+        with patch.object(DefaultReImporter, "process_matched_finding", delete_then_reactivate):
             try:
                 self._reimport(target)
             except Exception as exc:

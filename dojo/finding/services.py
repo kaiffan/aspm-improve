@@ -29,6 +29,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from crum import get_current_request
+from django.db import transaction
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
@@ -41,7 +42,10 @@ from dojo.finding.helper import (
 )
 from dojo.jira import services as jira_services
 from dojo.models import SEVERITIES, Dojo_User, Finding, Test_Type
-from dojo.notifications.helper import async_create_notification, process_tag_notifications
+from dojo.notifications.helper import (
+    async_create_notification,
+    process_tag_notifications,
+)
 from dojo.utils import get_object_or_none
 
 if TYPE_CHECKING:
@@ -232,69 +236,71 @@ def update_finding(finding: Finding, *, changes: dict, user, push_to_jira: bool 
     ``vulnerability_ids``/``reporter``); an explicit ``cwes: []`` clears the extra rows, resyncing to
     just the scalar-derived primary.
     """
-    changes = dict(changes)
+    with transaction.atomic():
+        finding.refresh_from_db(from_queryset=Finding.unfiltered.select_for_update(no_key=True))
+        changes = dict(changes)
 
-    if "severity" in changes:
-        _validate_severity(changes["severity"])
-    _validate_mitigated_editable(changes, user)
-    _validate_status_invariants(
-        is_active=changes.get("active", finding.active),
-        is_verified=changes.get("verified", finding.verified),
-        is_duplicate=changes.get("duplicate", finding.duplicate),
-        is_false_p=changes.get("false_p", finding.false_p),
-        is_risk_accepted=changes.get("risk_accepted", finding.risk_accepted),
-        product=finding.test.engagement.product,
-        was_risk_accepted=finding.risk_accepted,
-    )
-    # Runs before the field updates (mirrors validate() -> process_risk_acceptance ordering).
-    _process_risk_acceptance(finding, changes, user)
+        if "severity" in changes:
+            _validate_severity(changes["severity"])
+        _validate_mitigated_editable(changes, user)
+        _validate_status_invariants(
+            is_active=changes.get("active", finding.active),
+            is_verified=changes.get("verified", finding.verified),
+            is_duplicate=changes.get("duplicate", finding.duplicate),
+            is_false_p=changes.get("false_p", finding.false_p),
+            is_risk_accepted=changes.get("risk_accepted", finding.risk_accepted),
+            product=finding.test.engagement.product,
+            was_risk_accepted=finding.risk_accepted,
+        )
+        # Runs before the field updates (mirrors validate() -> process_risk_acceptance ordering).
+        _process_risk_acceptance(finding, changes, user)
 
-    reporter_id = changes.pop("reporter", None)
-    if reporter_id is not None:
-        finding.reporter = _resolve_user(reporter_id)
-    mitigated_by = changes.pop("mitigated_by", _UNSET)
-    if mitigated_by is not _UNSET:
-        finding.mitigated_by = _resolve_user(mitigated_by) if mitigated_by is not None else None
-    found_by_ids = changes.pop("found_by", _UNSET)
-    tags = changes.pop("tags", _UNSET)
-    cwe_provided = "cwe" in changes
-    # Only a non-None scalar `cwe` counts as "explicitly supplied" for the list-vs-scalar precedence.
-    # A `None` (including PUT's reset-to-default, where `cwe` is always present in the full-replace
-    # change set) is not an explicit primary, so a `cwes` list still mirrors its first entry.
-    cwe_explicit = cwe_provided and changes.get("cwe") is not None
+        reporter_id = changes.pop("reporter", None)
+        if reporter_id is not None:
+            finding.reporter = _resolve_user(reporter_id)
+        mitigated_by = changes.pop("mitigated_by", _UNSET)
+        if mitigated_by is not _UNSET:
+            finding.mitigated_by = _resolve_user(mitigated_by) if mitigated_by is not None else None
+        found_by_ids = changes.pop("found_by", _UNSET)
+        tags = changes.pop("tags", _UNSET)
+        cwe_provided = "cwe" in changes
+        # Only a non-None scalar `cwe` counts as "explicitly supplied" for the list-vs-scalar precedence.
+        # A `None` (including PUT's reset-to-default, where `cwe` is always present in the full-replace
+        # change set) is not an explicit primary, so a `cwes` list still mirrors its first entry.
+        cwe_explicit = cwe_provided and changes.get("cwe") is not None
 
-    # Persist vuln ids first so model save computes the hash including them (mirror serializer).
-    if vulnerability_ids:
-        save_vulnerability_ids(finding, vulnerability_ids)
+        # Persist vuln ids first so model save computes the hash including them (mirror serializer).
+        if vulnerability_ids:
+            save_vulnerability_ids(finding, vulnerability_ids)
 
-    if found_by_ids is not _UNSET:
-        if found_by_ids:
-            finding.found_by.set(_resolve_test_types(found_by_ids))
-        else:
-            finding.found_by.clear()
+        if found_by_ids is not _UNSET:
+            if found_by_ids:
+                finding.found_by.set(_resolve_test_types(found_by_ids))
+            else:
+                finding.found_by.clear()
 
-    for key, value in changes.items():
-        setattr(finding, key, value)
-    # CWE list precedence (mirror vulnerability_ids -> cve): mirror the first list entry into the
-    # scalar `cwe` before save so the primary persists, unless an explicit non-None scalar was
-    # supplied in this request (in which case that scalar stays the primary).
-    if cwes and not cwe_explicit:
-        finding.cwe = cwes[0]
-    finding.save()
-
-    # Resync the Finding_CWE rows (§12). An explicit `cwes` list wins: it drives the rows (primary
-    # first, then the rest); an explicit empty list clears the extras and resyncs to the primary.
-    # Otherwise a scalar-only `cwe` change resyncs the rows to just the scalar-derived primary
-    # (existing behavior); omitting both leaves the rows untouched.
-    if cwes is not None:
-        finding.unsaved_cwes = cwes
-        save_cwes(finding)
-    elif cwe_provided:
-        save_cwes(finding)
-
-    if tags is not _UNSET:
-        finding.tags = tags if tags is not None else []
+        for key, value in changes.items():
+            setattr(finding, key, value)
+        # CWE list precedence (mirror vulnerability_ids -> cve): mirror the first list entry into the
+        # scalar `cwe` before save so the primary persists, unless an explicit non-None scalar was
+        # supplied in this request (in which case that scalar stays the primary).
+        if cwes and not cwe_explicit:
+            finding.cwe = cwes[0]
         finding.save()
+
+        # Resync the Finding_CWE rows (§12). An explicit `cwes` list wins: it drives the rows (primary
+        # first, then the rest); an explicit empty list clears the extras and resyncs to the primary.
+        # Otherwise a scalar-only `cwe` change resyncs the rows to just the scalar-derived primary
+        # (existing behavior); omitting both leaves the rows untouched.
+        if cwes is not None:
+            finding.unsaved_cwes = cwes
+            save_cwes(finding)
+        elif cwe_provided:
+            save_cwes(finding)
+
+        if tags is not _UNSET:
+            finding.tags = tags if tags is not None else []
+            finding.save()
 
     if push_to_jira or jira_services.is_keep_in_sync(finding):
         success, message = jira_services.push(finding, force_sync=True)

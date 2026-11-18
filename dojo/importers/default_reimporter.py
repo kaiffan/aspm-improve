@@ -5,6 +5,7 @@ from itertools import batched
 from django.conf import settings
 from django.core.exceptions import EmptyResultSet
 from django.core.files.uploadedfile import TemporaryUploadedFile
+from django.db import transaction
 from django.db.models.query_utils import Q
 
 import dojo.finding.helper as finding_helper
@@ -1096,6 +1097,31 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         Determine how to handle the an existing finding based on the status
         that is possesses at the time of reimport
         """
+        # A genuinely read-only match has no scalar write to serialize. Treat it
+        # as preceding a concurrent PATCH, avoiding a transaction and PK reload for
+        # every unchanged row in a large no-change reimport. Every branch capable
+        # of a scalar/status mutation still refreshes under its own row lock.
+        may_write = (
+            existing_finding.false_p or existing_finding.out_of_scope or existing_finding.risk_accepted
+            or existing_finding.is_mitigated or unsaved_finding.is_mitigated
+            or unsaved_finding.false_p or unsaved_finding.out_of_scope or unsaved_finding.risk_accepted
+            or existing_finding.fix_available != unsaved_finding.fix_available
+            or (unsaved_finding.component_name is not None and not existing_finding.component_name)
+            or (unsaved_finding.component_version is not None and not existing_finding.component_version)
+        )
+        if not may_write:
+            return self._process_current_matched_finding(unsaved_finding, existing_finding)
+        with transaction.atomic():
+            try:
+                existing_finding.refresh_from_db(
+                    fields=[f.attname for f in Finding._meta.concrete_fields if f.attname in existing_finding.__dict__],
+                    from_queryset=Finding.unfiltered.select_for_update(no_key=True),
+                )
+            except Finding.DoesNotExist:
+                return existing_finding, True
+            return self._process_current_matched_finding(unsaved_finding, existing_finding)
+
+    def _process_current_matched_finding(self, unsaved_finding, existing_finding):
         if existing_finding.false_p or existing_finding.out_of_scope or existing_finding.risk_accepted:
             return self.process_matched_special_status_finding(
                 unsaved_finding,

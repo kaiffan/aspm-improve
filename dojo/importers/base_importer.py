@@ -32,7 +32,10 @@ import dojo.risk_acceptance.helper as ra_helper
 from dojo.celery_dispatch import dojo_dispatch_task
 from dojo.db_utils import is_foreign_key_conflict, is_transient_db_conflict
 from dojo.finding.cwe import finding_cwe_labels
-from dojo.importers.import_lock import lock_tests_under_import, unlock_tests_under_import
+from dojo.importers.import_lock import (
+    lock_tests_under_import,
+    unlock_tests_under_import,
+)
 from dojo.importers.options import ImporterOptions
 from dojo.jira import services as jira_services
 from dojo.jira.services import is_keep_in_sync
@@ -1562,30 +1565,45 @@ class BaseImporter(ImporterOptions):
         if not findings:
             return
         db = router.db_for_write(Finding)
-        written = [f for f in Finding._meta.concrete_fields if not f.primary_key]
-        loaded = [
-            {f.attname: finding.__dict__[f.attname] for f in written if f.attname in finding.__dict__}
-            for finding in findings
-        ]
-        # mitigate_finding() decides the JIRA push before it saves, so decide it here too
-        push_to_jira = []
-        for finding in findings:
-            finding.active = False
-            finding.is_mitigated = True
-            if not finding.mitigated:
-                finding.mitigated = self.scan_date
-            finding.mitigated_by = self.user
-            in_pushed_group = finding_groups_enabled and finding.finding_group
-            push_to_jira.append(
-                not in_pushed_group
-                and (self.push_to_jira or is_keep_in_sync(finding, prefetched_jira_instance=self.jira_instance)),
-            )
-        # One transaction from the first write to the last post_save: if anything raises part way
-        # (a receiver, a write), nothing is left closed without its post-processing. The old
-        # per-finding path saved and post-processed each finding together, so a later run
-        # retried whatever it had not reached; a half-written batch would instead be skipped as
-        # already mitigated.
-        with transaction.atomic():
+        with transaction.atomic(using=db):
+            # Match/close candidates may have been loaded before a PATCH. Lock in
+            # ascending PK order and hydrate the current state before deciding what
+            # to close and before deriving columns or emitting any signal/note.
+            current = {f.pk: f for f in Finding.unfiltered.using(db).filter(
+                pk__in=[finding.pk for finding in findings],
+            ).select_related("jira_issue").prefetch_related("finding_group_set__jira_issue")
+                .order_by("pk").select_for_update(of=("self",), no_key=True)}
+            for previous in findings:
+                fresh = current.get(previous.pk)
+                if fresh is not None and fresh.test_id == previous.test_id and "test" in previous._state.fields_cache:
+                    Finding._meta.get_field("test").set_cached_value(fresh, previous._state.fields_cache["test"])
+            # A concurrent mitigation may have completed before the locks. Keep the
+            # caller's result/count list aligned with the actual surviving writes.
+            findings[:] = [current[f.pk] for f in findings if f.pk in current
+                           and not (current[f.pk].mitigated and current[f.pk].is_mitigated)]
+            written = [f for f in Finding._meta.concrete_fields if not f.primary_key]
+            loaded = [
+                {f.attname: finding.__dict__[f.attname] for f in written if f.attname in finding.__dict__}
+                for finding in findings
+            ]
+            # mitigate_finding() decides the JIRA push before it saves, so decide it here too
+            push_to_jira = []
+            for finding in findings:
+                finding.active = False
+                finding.is_mitigated = True
+                if not finding.mitigated:
+                    finding.mitigated = self.scan_date
+                finding.mitigated_by = self.user
+                in_pushed_group = finding_groups_enabled and finding.finding_group
+                push_to_jira.append(
+                    not in_pushed_group
+                    and (self.push_to_jira or is_keep_in_sync(finding, prefetched_jira_instance=self.jira_instance)),
+                )
+            # One transaction from the first write to the last post_save: if anything raises part way
+            # (a receiver, a write), nothing is left closed without its post-processing. The old
+            # per-finding path saved and post-processed each finding together, so a later run
+            # retried whatever it had not reached; a half-written batch would instead be skipped as
+            # already mitigated.
             self._add_note_to_findings(findings, note_message, db)
             for finding in findings:
                 # Remove risk acceptance if present (vulnerability is now fixed)

@@ -27,6 +27,11 @@ from titlecase import titlecase
 from dojo.base_models.base import BaseManager, BaseModel
 from dojo.finding.cwe import cwe_label, finding_cwe_labels
 from dojo.finding.vulnerability_id import resolve_vulnerability_id_type
+from dojo.finding.write_control import (
+    merge_finding_write,
+    remember_loaded_values,
+    remember_saved_values,
+)
 
 # get_current_date/tomorrow/copy_model_util are defined early in dojo.models, before the
 # re-export that loads this module — so this resolves despite the partial circular load, and
@@ -589,6 +594,37 @@ class Finding(BaseModel):
         # Persisted as Finding_CWE rows (multiple CWEs per finding). None = none supplied.
         self.unsaved_cwes = None
 
+    def __setattr__(self, name, value):
+        if ("_loaded_finding_values" in self.__dict__
+                and not self.__dict__.get("_finding_rebasing", False)
+                and name in self._meta._non_pk_concrete_field_names):
+            version = self.__dict__.get("_finding_assignment_version", 0) + 1
+            self.__dict__["_finding_assignment_version"] = version
+            self.__dict__.setdefault("_finding_assignments", {})[name] = version
+        super().__setattr__(name, value)
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        remember_loaded_values(instance)
+        return instance
+
+    def refresh_from_db(self, using=None, fields=None, from_queryset=None):
+        was_rebasing = self.__dict__.get("_finding_rebasing", False)
+        self._finding_rebasing = True
+        try:
+            super().refresh_from_db(using=using, fields=fields, from_queryset=from_queryset)
+        finally:
+            self._finding_rebasing = was_rebasing
+        # A deferred-field fetch must not reset the baseline of other local edits.
+        baseline = getattr(self, "_loaded_finding_values", {}).copy()
+        for field in self._meta.concrete_fields:
+            if field.attname in self.__dict__ and (fields is None or field.name in fields or field.attname in fields):
+                baseline[field.attname] = self.__dict__[field.attname]
+                self.__dict__.get("_finding_assignments", {}).pop(field.attname, None)
+                self.__dict__.get("_finding_assignments", {}).pop(field.name, None)
+        self._loaded_finding_values = baseline
+
     def __str__(self):
         return self.title
 
@@ -710,35 +746,47 @@ class Finding(BaseModel):
         if not user:
             from dojo.utils import get_current_user  # noqa: PLC0415 -- lazy import, avoids circular dependency
             user = get_current_user()
-        self.derive_persisted_fields(dedupe_option=dedupe_option, is_new_finding=is_new_finding)
+        selected_fields = kwargs.pop("update_fields", None)
+        if selected_fields is not None and not selected_fields:
+            return
+        if selected_fields is not None:
+            invalid = set(selected_fields) - self._meta._non_pk_concrete_field_names
+            if invalid:
+                msg = "Invalid Finding update_fields: " + ", ".join(sorted(invalid))
+                raise ValueError(msg)
+            if is_new_finding:
+                kwargs["update_fields"] = selected_fields
+        with merge_finding_write(self, using=kwargs.get("using"), update_fields=selected_fields):
+            self.derive_persisted_fields(dedupe_option=dedupe_option, is_new_finding=is_new_finding)
 
-        if is_new_finding:
-            # because we have reduced the number of (super()).save() calls, the helper is no longer called for new findings
-            # so we call it manually
-            finding_helper.update_finding_status(self, user, changed_fields={"id": (None, None)})
+            if is_new_finding:
+                # because we have reduced the number of (super()).save() calls, the helper is no longer called for new findings
+                # so we call it manually
+                finding_helper.update_finding_status(self, user, changed_fields={"id": (None, None)})
 
-        # logger.debug('setting static / dynamic in save')
-        # need to have an id/pk before we can access locations/endpoints
-        elif self.file_path is not None:
-            if locations_enabled():
-                if not self.locations.exists():
+            # logger.debug('setting static / dynamic in save')
+            # need to have an id/pk before we can access locations/endpoints
+            elif self.file_path is not None:
+                if locations_enabled():
+                    if not self.locations.exists():
+                        self.static_finding = True
+                        self.dynamic_finding = False
+                    else:
+                        self.static_finding = True
+                # TODO: Delete this after the move to Locations
+                elif not self.endpoints.exists():
                     self.static_finding = True
                     self.dynamic_finding = False
                 else:
                     self.static_finding = True
-            # TODO: Delete this after the move to Locations
-            elif not self.endpoints.exists():
-                self.static_finding = True
-                self.dynamic_finding = False
-            else:
-                self.static_finding = True
 
-        # update the SLA expiration date last, after all other finding fields have been updated
-        self.set_sla_expiration_date()
+            # update the SLA expiration date last, after all other finding fields have been updated
+            self.set_sla_expiration_date()
 
-        logger.debug("Saving finding of id " + str(self.id) + " dedupe_option:" + str(dedupe_option) + " (self.pk is %s)", "None" if self.pk is None else "not None")
-        # We cannot run the full_clean method here without issue, so we specify skip_validation
-        super().save(*args, **kwargs, skip_validation=True)
+            logger.debug("Saving finding of id " + str(self.id) + " dedupe_option:" + str(dedupe_option) + " (self.pk is %s)", "None" if self.pk is None else "not None")
+            # We cannot run the full_clean method here without issue, so we specify skip_validation
+            super().save(*args, **kwargs, skip_validation=True)
+            remember_saved_values(self)
 
         # Only add to found_by for newly-created findings (avoid doing this on every update)
         if is_new_finding:

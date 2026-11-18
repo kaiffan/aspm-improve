@@ -31,7 +31,11 @@ from dojo.finding.deduplication import (
     do_false_positive_history_batch,
     get_finding_models_for_deduplication,
 )
-from dojo.importers.import_lock import lock_tests_of_findings_under_import, unlock_tests_under_import
+from dojo.finding.write_control import save_base_fields
+from dojo.importers.import_lock import (
+    lock_tests_of_findings_under_import,
+    unlock_tests_under_import,
+)
 from dojo.jira import services as jira_services
 from dojo.location.feature import locations_enabled
 from dojo.location.models import Location
@@ -1387,7 +1391,7 @@ def fix_loop_duplicates(scope_qs=None):
         for f in new_originals_qs:
             deduplicationLogger.info(f"New Original: {f.id}")
             f.duplicate = False
-            super(Finding, f).save(skip_validation=True)
+            save_base_fields(f)
 
         recheck_qs = Finding.objects.filter(duplicate_finding__isnull=False, original_finding__isnull=False)
         if scope_qs is not None:
@@ -1425,7 +1429,7 @@ def removeLoop(finding_id, counter):
         # loop fully removed
         finding.duplicate_finding = None
         # duplicate remains True, will be set to False in fix_loop_duplicates (and logged as New Original?).
-        super(Finding, finding).save(skip_validation=True)
+        save_base_fields(finding)
         return
 
     # Only modify the findings if the original ID is lower to get the oldest finding as original
@@ -1446,15 +1450,15 @@ def removeLoop(finding_id, counter):
     if real_original in finding.original_finding.all():
         # remove the original from the duplicate list if it is there
         finding.original_finding.remove(real_original)
-        super(Finding, finding).save(skip_validation=True)
+        save_base_fields(finding)
     if counter <= 0:
         # Maximum recursion depth as safety method to circumvent recursion here
         return
     for f in finding.original_finding.all():
         # for all duplicates set the original as their original, get rid of self in between
         f.duplicate_finding = real_original
-        super(Finding, f).save(skip_validation=True)
-        super(Finding, real_original).save(skip_validation=True)
+        save_base_fields(f)
+        save_base_fields(real_original)
         removeLoop(f.id, counter - 1)
 
 

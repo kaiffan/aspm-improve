@@ -1112,7 +1112,7 @@ class MetricsDateRangeFilter(ChoiceFilter):
             self.start_date = truncate_timezone_aware(start_date - timedelta(days=1))
             self.end_date = truncate_timezone_aware(now() + timedelta(days=1))
             return qs.all()
-        return None
+        return qs.none()
 
     def current_month(self, qs, name):
         self.start_date = datetime(now().year, now().month, 1, 0, 0, 0).replace(tzinfo=tzinfo())

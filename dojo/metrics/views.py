@@ -915,6 +915,7 @@ def _product_stats(products) -> tuple[list, list]:
     """
     counts = (
         Finding.objects.filter(test__engagement__product__in=products, mitigated__isnull=True, active=True)
+        .order_by()
         .values(pid=F("test__engagement__product"))
         .annotate(
             critical=Count("id", filter=Q(severity="Critical")),

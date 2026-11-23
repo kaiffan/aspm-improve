@@ -426,7 +426,12 @@ class BaseClass:
                 values = field_value if isinstance(field_value, list) else [field_value]
 
                 for value in values:
-                    self.assertIn(value, obj["prefetch"][field])
+                    if isinstance(value, dict):
+                        self.assertIn("id", value)
+                        self.assertIn(value["id"], obj["prefetch"][field])
+                        self.assertEqual(value, obj["prefetch"][field][value["id"]])
+                    else:
+                        self.assertIn(value, obj["prefetch"][field])
 
             # TODO: add schema check
 
@@ -2851,6 +2856,23 @@ class AssetTest(BaseClass.BaseClassTest):
 @versioned_fixtures
 class TestsTest(BaseClass.RelatedObjectsTest, BaseClass.BaseClassTest):
     fixtures = ["dojo_testdata.json"]
+
+    def test_detail_prefetch_with_nested_note(self):
+        response = self.client.get(self.url, format="json")
+        self.assertEqual(200, response.status_code)
+        target = Test.objects.get(pk=response.data["results"][0]["id"])
+        note = Notes.objects.create(
+            entry="Nested notes must match their prefetched representation",
+            author=Dojo_User.objects.get(username="admin"),
+        )
+        target.notes.add(note)
+
+        response = self.client.get(f"{self.url}{target.pk}/", data={"prefetch": "notes"})
+        self.assertEqual(200, response.status_code)
+        nested = next(value for value in response.data["notes"] if value["id"] == note.pk)
+        self.assertIn(note.pk, response.data["prefetch"]["notes"])
+        self.assertEqual(nested, response.data["prefetch"]["notes"][note.pk])
+        self.test_detail_prefetch()
 
     def __init__(self, *args, **kwargs):
         self.endpoint_model = Test

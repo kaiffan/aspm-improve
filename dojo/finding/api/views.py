@@ -235,6 +235,13 @@ class FindingViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
+        if getattr(self, "action", None) in {"update", "partial_update"}:
+            # Both authorized write reads need current scalars and ownership,
+            # not response collections that update() invalidates after saving.
+            # Avoid fetching those collections while holding the Finding lock.
+            return get_authorized_findings("view").select_related(
+                "test__engagement__product__prod_type", "test__test_type", "test__environment",
+            )
         if locations_enabled():
             findings = get_authorized_findings(
                 "view",

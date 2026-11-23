@@ -749,9 +749,10 @@ class Finding(BaseModel):
             from dojo.utils import get_current_user  # noqa: PLC0415 -- lazy import, avoids circular dependency
             user = get_current_user()
         selected_fields = kwargs.pop("update_fields", None)
-        if selected_fields is not None and not selected_fields:
-            return
         if selected_fields is not None:
+            selected_fields = frozenset(selected_fields)
+            if not selected_fields:
+                return
             invalid = set(selected_fields) - self._meta._non_pk_concrete_field_names
             if invalid:
                 msg = "Invalid Finding update_fields: " + ", ".join(sorted(invalid))

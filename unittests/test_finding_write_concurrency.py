@@ -210,6 +210,15 @@ class ExtendedRaces(original.PatchRaces):
         self.assertEqual((stale.service, stale.description), ("service", "current"))
         self.assertEqual(stale.last_reviewed_by_id, self.user.pk)
 
+    def test_iterator_update_fields_preserves_explicit_intent(self):
+        stale = Finding.objects.get(pk=self.finding.pk)
+        self.assertEqual(self.request({"service": "independent-api-service"})[0], 200)
+        stale.description = "iterator-description-must-survive"
+        stale.save_no_options(update_fields=(name for name in ["description"]))
+        stale.refresh_from_db()
+        self.assertEqual(stale.service, "independent-api-service")
+        self.assertEqual(stale.description, "iterator-description-must-survive")
+
     def test_patch_stale_before_reimport(self):
         target, finding = self.imported()
         ready, resume = threading.Event(), threading.Event()

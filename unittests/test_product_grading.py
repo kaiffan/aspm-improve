@@ -4,9 +4,11 @@ from crum import impersonate
 
 from dojo.models import Finding, User
 from unittests.dojo_test_case import DojoTestCase, toggle_system_setting_boolean, versioned_fixtures
+from unittests.finding_commit_effects import eager_finding_commit_effects
 
 
 @versioned_fixtures
+@eager_finding_commit_effects
 class ProductGradeTest(DojoTestCase):
     fixtures = ["dojo_testdata.json"]
 

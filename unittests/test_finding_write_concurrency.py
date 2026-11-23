@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -28,6 +29,19 @@ from dojo.importers.default_importer import DefaultImporter
 from dojo.importers.default_reimporter import DefaultReImporter
 from dojo.models import Finding, System_Settings, Test
 from unittests import finding_write_oracles as original
+
+
+@contextmanager
+def product_grading_enabled():
+    settings = System_Settings.objects.get(no_cache=True)
+    previous = settings.enable_product_grade
+    settings.enable_product_grade = True
+    settings.save()
+    try:
+        yield
+    finally:
+        settings.enable_product_grade = previous
+        settings.save()
 
 
 @app.task(name="rc5.stale_model_writer", ignore_result=False)
@@ -99,6 +113,53 @@ class ExtendedRaces(original.PatchRaces):
         ):
             self.assertEqual(self.request({"service": "committed-before-tool"})[0], 200)
         self.assertEqual(observed, [self.finding.pk])
+
+    def test_product_grade_dispatch_runs_after_patch_commit(self):
+        observed = []
+
+        def grade(product_id):
+            self.assert_external_write_boundary("grade-after-commit")
+            observed.append(product_id)
+
+        with (
+            product_grading_enabled(),
+            patch("dojo.finding.helper.schedule_product_grade", side_effect=grade),
+        ):
+            self.assertEqual(self.request({"service": "grade-after-commit"})[0], 200)
+        self.assertEqual(observed, [self.product.pk])
+
+    def test_product_grade_respects_callers_outer_transaction(self):
+        from dojo.finding.services import update_finding  # noqa: PLC0415 -- exercise public service
+
+        observed = []
+
+        def grade(product_id):
+            self.assert_external_write_boundary("outer-grade-commit")
+            observed.append(product_id)
+
+        with (
+            product_grading_enabled(),
+            patch("dojo.finding.helper.schedule_product_grade", side_effect=grade),
+            transaction.atomic(),
+        ):
+            update_finding(self.finding, changes={"service": "outer-grade-commit"}, user=self.user)
+            self.assertEqual(observed, [])
+        self.assertEqual(observed, [self.product.pk])
+
+    def test_product_grade_is_discarded_on_outer_rollback(self):
+        observed = []
+        with (
+            product_grading_enabled(),
+            patch("dojo.finding.helper.schedule_product_grade", side_effect=observed.append),
+        ):
+            with self.assertRaisesMessage(RuntimeError, "rollback grade"), transaction.atomic():
+                self.finding.service = "never-grade-committed"
+                self.finding.save(dedupe_option=False)
+                self.assertEqual(observed, [])
+                message = "rollback grade"
+                raise RuntimeError(message)
+            self.assertEqual(observed, [])
+        self.assertNotEqual(Finding.objects.get(pk=self.finding.pk).service, "never-grade-committed")
 
     def test_v3_integrations_respect_callers_outer_transaction(self):
         from dojo.finding.services import update_finding  # noqa: PLC0415 -- exercise public service

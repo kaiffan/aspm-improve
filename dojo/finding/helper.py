@@ -520,7 +520,8 @@ def post_process_finding_save_internal(finding, dedupe_option=True, rules_option
 
     if product_grading_option:
         if system_settings.enable_product_grade:
-            schedule_product_grade(finding.test.engagement.product.id)
+            product_id = finding.test.engagement.product.id
+            after_finding_write(lambda: schedule_product_grade(product_id))
         else:
             deduplicationLogger.debug("skipping product grading because it's disabled in system settings")
 
@@ -664,7 +665,8 @@ def _post_process_findings_batch(
             tool_issue_updater.async_tool_issue_update(finding)
 
     if product_grading_option and system_settings.enable_product_grade:
-        schedule_product_grade(findings[0].test.engagement.product.id, force_sync=force_sync)
+        product_id = findings[0].test.engagement.product.id
+        after_finding_write(lambda: schedule_product_grade(product_id, force_sync=force_sync))
 
     # If we received the ID of a jira instance, then we need to determine the keep in sync behavior
     jira_instance = None

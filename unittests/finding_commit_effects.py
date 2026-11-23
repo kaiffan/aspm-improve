@@ -1,7 +1,7 @@
 """
 Simulate request commit effects in rollback-only Django TestCase unit tests.
 
-These tests assert synchronous integration responses/VCR traffic. Their artificial
+These tests assert synchronous integration responses/VCR traffic or product grades. Their artificial
 outer transaction never commits. Mock only the Finding effect registration, leaving
 all persistence, model signals and other on_commit callbacks intact. The committed
 connection oracles in test_finding_write_concurrency validate actual row unlocks;

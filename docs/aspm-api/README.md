@@ -15,8 +15,8 @@ Project — существующий DefectDojo Product. API не создаёт
 | GET | `/api/aspm/v1/projects/{id}/repositories/` | Репозитории Product |
 | GET | `/api/aspm/v1/repositories/{id}/commits/` | Коммиты Repository |
 | GET | `/api/aspm/v1/commits/{id}/scans/` | Запуски Commit; CI видит свои запуски |
-| POST | `/api/aspm/v1/commits/{id}/finalize/` | Фиксация состава, обязательный `expected_scanners` |
-| POST | `/api/aspm/v1/commits/{id}/reports/` | Новая версия отчёта; optional `scan_set_id`, иначе последний finalize |
+| POST | `/api/aspm/v1/commits/{id}/finalize/` | Необязательная legacy-фиксация состава (`expected_scanners`) |
+| POST | `/api/aspm/v1/commits/{id}/reports/` | Новая версия отчёта; `{}` автоматически фиксирует актуальные COMPLETED ScanRuns |
 | GET | `/api/aspm/v1/commits/{id}/reports/` | История версий |
 | GET | `/api/aspm/v1/reports/{uuid}/download/?format=html` | Версия HTML; `format=json` — JSON |
 | GET | `/api/aspm/v1/openapi/` | OpenAPI ASPM v1 |
@@ -65,7 +65,7 @@ Celery beat каждые 30 секунд вызывает dispatcher. Повто
 
 Приватный `DD_ASPM_ARTIFACT_ROOT` (default `/app/aspm-private`) хранит файлы под серверными UUID; client filename — только очищенная display metadata. Оригинал сохраняется побайтно, SHA256/size проверяются worker. Файлы создаются с 0600, директории evidence — 0700. Хранилище не размещать под MEDIA_ROOT/STATIC_ROOT и не публиковать nginx. Скачивание идёт только через авторизованный FileResponse, attachment, no-store, nosniff и sandbox CSP. Backup должен согласованно сохранять БД и приватный том; требуется шифрование тома/backup по политике установки. Parser/SQL logs во время ASPM import фильтруются, безопасные operational messages не содержат token/report contents.
 
-Finalize фиксирует явно переданные `scan_ids` этого Commit (до 1000 IDs); если список опущен — IDs всех принятых запусков на момент вызова. Для CI передавайте именно IDs текущего pipeline/attempt: старый успешный scanner не должен маскировать пропуск в новом pipeline, а старый FAILED не должен автоматически включаться в новый состав. Чужой Commit/Product в списке отвергается. Он может включать PROCESSING/FAILED и не означает полного покрытия. POST reports фиксирует статусы и generation именно этого набора. Если не завершён хотя бы один ScanRun или отсутствует ожидаемый scanner, generated report явно INCOMPLETE. Поздний upload требует нового finalize для включения в следующую версию.
+Finalize фиксирует явно переданные `scan_ids` этого Commit (до 1000 IDs); если список опущен — IDs всех принятых запусков на момент вызова. Для CI передавайте именно IDs текущего pipeline/attempt: старый успешный scanner не должен маскировать пропуск в новом pipeline, а старый FAILED не должен автоматически включаться в новый состав. Чужой Commit/Product в списке отвергается. Он может включать PROCESSING/FAILED и не означает полного покрытия. POST reports фиксирует статусы и generation именно этого набора. Если не завершён хотя бы один ScanRun или отсутствует ожидаемый scanner, generated report явно INCOMPLETE. Поздний upload автоматически виден в live results. Новый export фиксируется отдельным POST reports без finalize.
 
 ASPM сама потоково формирует HTML и JSON из зафиксированных observations. Присланный scanner artifact никогда не становится generated report. Обе версии содержат Product, Repository, SHA, scanners, точный состав запусков, статусы, severity summary, CWE/CVE, historical observations, coverage и ссылки на оригиналы. У версии отдельные server UUID paths и checksums; новая доставка не меняет старую версию.
 
@@ -92,8 +92,21 @@ python manage.py spectacular --urlconf dojo.aspm_ingestion.schema_urls \
   --custom-settings dojo.aspm_ingestion.schema.ASPM_SCHEMA_SETTINGS --validate --fail-on-warn
 ```
 
-CI examples сохраняют JSON-ответы доставки, ждут terminal states, вызывают finalize и reports с зафиксированным scan_set_id, затем потоково скачивают HTML/JSON. Для scanner jobs достаточно `submit,status`; report job использует отдельный `ASPM_REPORT_TOKEN` того же service user с `status,read,finalize,reports`. Отчёт с неполным покрытием сохраняется, а CI job завершается с кодом 2. Severity summary считает исторические observations, включая независимые повторы и duplicate flags, а не уникальные активные риски.
+CI examples выполняют один POST uploads для каждого отчёта, не ожидая других scanners. Status polling опционален. Finalize и генерация файлов не требуются для видимости результатов. Optional helper `finalize.py` (legacy filename) запрашивает reports непосредственно с COMPLETED scan_ids, без вызова finalize. Для него нужны `status,read,reports`; `finalize` scope не нужен.
+
 
 `queue_wait_seconds` измеряется от серверной публикации Celery задачи до начала worker; `acceptance_to_start_seconds` отдельно включает outbox/публикацию и предыдущие retries. При автоматической повторной доставке после смерти worker чистое время очереди не объявляется измеренным.
 
 Примеры: [curl](../../examples/aspm-ci/upload.sh), [GitLab CI](../../examples/aspm-ci/gitlab-ci.yml), [GitHub Actions](../../examples/aspm-ci/github-actions.yml). Фактические результаты, ограничения измерений и release readiness — [validation.md](validation.md).
+
+## Zero-finalize live results
+
+После HTTP 202 ScanRun сразу виден во вкладке Scanner Reports (`ACCEPTED`, `PROCESSING`, `COMPLETED`, `FAILED`). После COMPLETED Overview, ASPM Report и Findings читают immutable observations автоматически. Overview складывает сохранённые severity_summary выбранных ScanRuns; observations выдаются по 50 с cursor. Polling читает только metadata ScanRun/GeneratedReport раз в 10 секунд, максимум пять минут (30 запросов).
+
+Pipeline context — `pipeline:<pipeline_id>`, fallback `build:<build_id>`, а для старых uploads без обоих полей — `legacy:<service_user_id>`. Несколько contexts требуют явного выбора в UI или `pipeline` / `scan_ids` в POST reports; API возвращает 409 при неоднозначности. В одном context на `(scanner_type, scan_scope)` выбирается последний успешный run по CI attempt_number, finished_at, created_at, UUID (descending). История всех запусков сохраняется. Более новый ACCEPTED/PROCESSING/FAILED даёт INCOMPLETE с видимыми предыдущими успешными результатами. При независимых job_id с одной scanner/scope/attempt требуется explicit scan_ids. CI должен задавать отдельные scan_scope для независимых областей одного scanner и стабильный pipeline_id для одной CI pipeline.
+
+Optional multipart `expected_scanners` — JSON array scan types. Без декларации coverage UNKNOWN, даже при успешном Semgrep. Противоречивые декларации дают INCOMPLETE. Exact legacy ScanSet может предоставить декларацию только когда его состав совпадает с актуальной выборкой.
+
+POST reports с `{}` выбирает live COMPLETED runs и в короткой транзакции создаёт immutable membership, manifest, version и outbox. Доступны `pipeline`, `scan_ids` (1–1000, один context, один scanner/scope) и `expected_scanners`. `scan_set_id` сохраняет legacy semantics и не совмещается с live options. HTML/JSON создаются асинхронно только по запросу. Ни upload, ни completion, ни чтение UI не создают экспорт.
+
+Commit Diff подавляет FIXED при UNKNOWN/INCOMPLETE, разных pipeline contexts, scopes или отсутствии scan_scope. Совпадение finding identity проверяется внутри scanner/scope. Для разных pipeline IDs вывод консервативный UNKNOWN; сравнение не изменяет Finding statuses.

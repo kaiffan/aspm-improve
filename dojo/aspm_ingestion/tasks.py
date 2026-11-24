@@ -90,7 +90,13 @@ def prepare_test(scan):
             target_start=today, target_end=today + timedelta(days=365), status="In Progress",
             commit_hash=scan.commit.sha, source_code_management_uri=scan.commit.repository.url,
         )
-        environment, _ = Development_Environment.objects.get_or_create(name="Development")
+        # The shared environment has no unique name constraint. Serialize only metadata
+        # creation, and tolerate pre-existing duplicate names without rewriting history.
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", ["aspm.ingestion.development-environment"])
+        environment = Development_Environment.objects.filter(name="Development").order_by("pk").first()
+        if environment is None:
+            environment = Development_Environment.objects.create(name="Development")
         importer = DefaultImporter(engagement=engagement, scan_type=scan.scanner, user=scan.submitted_by,
                                    environment=environment, test_title=f"ASPM {scan.pk}", scan_date=timezone.now(),
                                    commit_hash=scan.commit.sha, deduplication_execution_mode="sync", push_to_jira=False)
@@ -195,7 +201,7 @@ def generate_report(report):
             # Stream observations. Memory stays bounded even for million-row reports.
             json_output.write('{"report":' + json.dumps(manifest, ensure_ascii=True) + ',"observations":[')
             html_output.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;"><title>ASPM commit report</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:2em auto;padding:0 1em;color:#202124}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f4f4;padding:1em}article{border-bottom:1px solid #ddd;padding:1em 0}h1,h2,h3{line-height:1.25}a{overflow-wrap:anywhere}</style></head><body><h1>ASPM generated commit report</h1>')
-            html_output.write("<p>Coverage: " + ("complete" if manifest["complete"] else "INCOMPLETE") + "</p><pre>" + html.escape(json.dumps(manifest, indent=2)) + "</pre><h2>Original scanner artifacts</h2><ul>")
+            html_output.write("<p>Coverage: " + html.escape(manifest.get("selection", {}).get("coverage") or ("complete" if manifest["complete"] else "INCOMPLETE")) + "</p><pre>" + html.escape(json.dumps(manifest, indent=2)) + "</pre><h2>Original scanner artifacts</h2><ul>")
             for scan in manifest["scans"]:
                 html_output.write('<li><a href="' + html.escape(scan["original_url"], quote=True) + '">' + html.escape(scan["scanner"]) + "</a></li>")
             html_output.write("</ul><h2>Historical finding observations</h2>")

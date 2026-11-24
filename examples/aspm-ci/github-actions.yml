@@ -8,12 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        scanner: [semgrep, trivy]
+        include:
+          - key: semgrep
+            scanner: Semgrep JSON Report
+            file: semgrep.json
+          - key: trivy
+            scanner: Trivy Scan
+            file: trivy.json
     steps:
       - uses: actions/checkout@v4
       - name: Scan checked-out commit
         env:
-          SCANNER: ${{ matrix.scanner }}
+          SCANNER: ${{ matrix.key }}
           SEMGREP_IMAGE: ${{ vars.SEMGREP_IMAGE }}
           TRIVY_IMAGE: ${{ vars.TRIVY_IMAGE }}
         run: |
@@ -30,58 +36,20 @@ jobs:
           esac
       - uses: actions/upload-artifact@v4
         with:
-          name: scan-reports-${{ matrix.scanner }}
-          path: ${{ matrix.scanner }}.json
-  deliver:
-    needs: scan
-    if: always()
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - scanner: Semgrep JSON Report
-            file: semgrep.json
-            key: semgrep
-          - scanner: Trivy Scan
-            file: trivy.json
-            key: trivy
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
           name: scan-reports-${{ matrix.key }}
-      - name: Deliver immutable original
+          path: ${{ matrix.file }}
+      - name: Upload scanner report (results publish automatically)
         env:
           ASPM_URL: ${{ vars.ASPM_URL }}
           ASPM_PROJECT_ID: ${{ vars.ASPM_PROJECT_ID }}
           ASPM_TOKEN: ${{ secrets.ASPM_TOKEN }}
           REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
           COMMIT_SHA: ${{ github.sha }}
+          PIPELINE_ID: github/${{ github.repository_id }}/${{ github.run_id }}
+          JOB_ID: ${{ github.job }}/${{ matrix.key }}
+          ATTEMPT_NUMBER: ${{ github.run_attempt }}
+          SCAN_SCOPE: repository-rules-v1
           DELIVERY_KEY: github/${{ github.repository_id }}/${{ github.run_id }}/${{ github.run_attempt }}/${{ matrix.key }}
           SCANNER_TYPE: ${{ matrix.scanner }}
           REPORT_FILE: ${{ matrix.file }}
         run: sh examples/aspm-ci/upload.sh > delivery-${{ matrix.key }}.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: aspm-delivery-${{ matrix.key }}
-          path: delivery-${{ matrix.key }}.json
-  report:
-    needs: deliver
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: aspm-delivery-*
-          merge-multiple: true
-      - name: Finalize and generate platform report
-        env:
-          ASPM_URL: ${{ vars.ASPM_URL }}
-          ASPM_TOKEN: ${{ secrets.ASPM_REPORT_TOKEN }}
-        run: python3 examples/aspm-ci/finalize.py delivery-*.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: aspm-generated
-          path: aspm-generated/

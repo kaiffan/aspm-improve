@@ -1,4 +1,4 @@
-"""Wait for CI deliveries, freeze the commit set and download platform-generated HTML/JSON."""
+"""Optional fixed export helper (legacy filename): no public finalize call is required."""
 # ruff: noqa: INP001, T201
 import argparse
 import json
@@ -48,8 +48,11 @@ def main():
     else:
         msg = "Timed out waiting for scanner processing."
         raise TimeoutError(msg)
-    scan_set = api(f"/commits/{commit_id}/finalize/", {"expected_scanners": expected, "scan_ids": [row["id"] for row in deliveries]})
-    report = api(f"/commits/{commit_id}/reports/", {"scan_set_id": scan_set["id"]})
+    completed = [row["id"] for row in scans if row["status"] == "COMPLETED"]
+    if not completed:
+        msg = "No completed scans available for an export. Failed runs remain visible in commit history."
+        raise RuntimeError(msg)
+    report = api(f"/commits/{commit_id}/reports/", {"expected_scanners": expected, "scan_ids": completed})
     deadline = time.monotonic() + 900
     while time.monotonic() < deadline:
         # Report lists are bounded, with after=<version> continuation.

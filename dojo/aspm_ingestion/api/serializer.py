@@ -1,3 +1,4 @@
+import json
 import re
 from urllib.parse import urlsplit
 
@@ -25,6 +26,7 @@ class ScanUploadSerializer(serializers.Serializer):
     scanner_version = serializers.CharField(max_length=100, required=False)
     scan_started = serializers.DateTimeField(required=False)
     scan_finished = serializers.DateTimeField(required=False)
+    expected_scanners = serializers.JSONField(required=False, help_text="Optional JSON array of expected scanner types for this pipeline. Omission means unknown coverage.")
     scan_scope = serializers.CharField(max_length=200, required=False)
     pipeline_url = serializers.URLField(max_length=1000, required=False)
 
@@ -57,6 +59,18 @@ class ScanUploadSerializer(serializers.Serializer):
             msg = "This DefectDojo parser is disabled."
             raise serializers.ValidationError(msg) from error
         return value
+
+    def validate_expected_scanners(self, value):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except ValueError as error:
+                msg = "Use a JSON array of expected scanner types."
+                raise serializers.ValidationError(msg) from error
+        if not isinstance(value, list) or not 1 <= len(value) <= 100 or any(not isinstance(item, str) or item not in PARSERS for item in value):
+            msg = "Provide 1 to 100 installed scanner types."
+            raise serializers.ValidationError(msg)
+        return sorted(set(value))
 
     def validate_pipeline_url(self, value):
         parts = urlsplit(value)
@@ -109,7 +123,21 @@ class ScanSetSerializer(serializers.ModelSerializer):
 
 
 class ReportRequestSerializer(serializers.Serializer):
-    scan_set_id = serializers.UUIDField(required=False)
+    scan_set_id = serializers.UUIDField(required=False, help_text="Optional legacy immutable set. No finalize is required.")
+    pipeline = serializers.CharField(max_length=200, required=False, help_text="Context from the commit UI, e.g. pipeline:123.")
+    scan_ids = serializers.ListField(child=serializers.UUIDField(), min_length=1, max_length=1000, required=False)
+    expected_scanners = serializers.ListField(child=serializers.CharField(max_length=200), min_length=1, max_length=100, required=False)
+
+    validate_expected_scanners = FinalizeSerializer.validate_expected_scanners
+
+    def validate(self, attrs):
+        if "scan_set_id" in attrs and len(attrs) > 1:
+            msg = "scan_set_id cannot be combined with live selection options."
+            raise serializers.ValidationError(msg)
+        if "pipeline" in attrs and "scan_ids" in attrs:
+            msg = "Choose pipeline or scan_ids."
+            raise serializers.ValidationError(msg)
+        return attrs
 
 
 class ReportSerializer(serializers.ModelSerializer):

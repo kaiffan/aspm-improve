@@ -174,3 +174,9 @@ Please report Security issues via our [disclosure policy](readme-docs/SECURITY.m
 ## License
 
 DefectDojo is licensed under the [BSD 3-Clause License](LICENSE.md)
+
+### ASPM CI scanner ingestion
+
+Send each scanner report once with `POST /api/aspm/v1/scans/` (202 + ScanRun ID).
+The commit shows the accepted scan immediately and publishes historical results after asynchronous processing.
+No finalize request or generated export is required. [Workflow and API examples](docs/aspm-api/README.md).

@@ -8,6 +8,8 @@ paths:
   /api/aspm/v1/commits/{id}/finalize/:
     post:
       operationId: commits_finalize_create
+      description: Optional legacy operation to pin an explicit set; never required
+        for visibility or export.
       parameters:
       - in: path
         name: id
@@ -24,6 +26,7 @@ paths:
         required: true
       security:
       - aspmServiceToken: []
+      deprecated: true
       responses:
         '201':
           content:
@@ -506,6 +509,27 @@ components:
         scan_set_id:
           type: string
           format: uuid
+          description: Optional legacy immutable set. No finalize is required.
+        pipeline:
+          type: string
+          minLength: 1
+          description: Context from the commit UI, e.g. pipeline:123.
+          maxLength: 200
+        scan_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 1000
+          minItems: 1
+        expected_scanners:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+          maxItems: 100
+          minItems: 1
     Repository:
       type: object
       properties:
@@ -722,6 +746,9 @@ components:
         scan_finished:
           type: string
           format: date-time
+        expected_scanners:
+          description: Optional JSON array of expected scanner types for this pipeline.
+            Omission means unknown coverage.
         scan_scope:
           type: string
           minLength: 1

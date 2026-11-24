@@ -1,3 +1,5 @@
+> Historical ingestion qualification. For the current zero-finalize workflow, see [API README](README.md) and [candidate release gate](../../integration-report/zero-finalize-flow/RELEASE_GATE.md). The finalize commands below describe the earlier build, not a required current CI step. Historical measurements are not candidate A/B evidence.
+
 # ASPM API-only: реализация и проверка
 
 Дата: 24 ноября 2026. Ветка: `codex/aspm-api-only-ingestion`, содержит `origin/dev` и предназначена для следующего релиза из `dev`.

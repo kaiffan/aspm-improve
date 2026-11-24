@@ -1,7 +1,7 @@
 # Configure reviewed SEMGREP_IMAGE/TRIVY_IMAGE/CURL_IMAGE/PYTHON_IMAGE,
-# protected/masked ASPM_TOKEN (submit,status) and ASPM_REPORT_TOKEN (status,read,finalize,reports),
+# protected/masked ASPM_TOKEN (submit,status),
 # and non-secret ASPM_URL / ASPM_PROJECT_ID. Scanner images should use immutable digests.
-stages: [scan, deliver, report]
+stages: [scan, deliver]
 semgrep:
   stage: scan
   image:
@@ -28,6 +28,9 @@ trivy:
   variables:
     COMMIT_SHA: $CI_COMMIT_SHA
     REPOSITORY_URL: $CI_PROJECT_URL
+    PIPELINE_ID: gitlab/$CI_PROJECT_ID/$CI_PIPELINE_ID
+    JOB_ID: $CI_JOB_NAME
+    SCAN_SCOPE: repository-rules-v1
   script:
     # A retry of this script keeps its key; GitLab job retry gets a new CI_JOB_ID.
     - export DELIVERY_KEY="gitlab/${CI_PROJECT_ID}/${CI_PIPELINE_ID}/${CI_JOB_ID}"
@@ -46,19 +49,3 @@ deliver_trivy:
   variables:
     SCANNER_TYPE: Trivy Scan
     REPORT_FILE: trivy.json
-aspm_report:
-  stage: report
-  image:
-    name: $PYTHON_IMAGE
-    entrypoint: [""]
-  when: always
-  needs:
-    - {job: deliver_semgrep, artifacts: true}
-    - {job: deliver_trivy, artifacts: true}
-  script:
-    - ASPM_TOKEN="$ASPM_REPORT_TOKEN" python examples/aspm-ci/finalize.py delivery-*.json
-  artifacts:
-    when: always
-    paths: [aspm-generated/]
-# ASPM_TOKEN for this job requires read,finalize,reports plus status, and the same service user.
-# A missing expected scanner produces an explicitly incomplete generated report and a failing job.

@@ -65,6 +65,10 @@ def _commit_breadcrumbs(commit):
 
 
 def commit_detail(request, commit_id):
+    if api_only_scans_enabled():
+        from dojo.aspm_ingestion.ui.views import commit_evidence  # noqa: PLC0415 -- historical evidence surface
+
+        return commit_evidence(request, commit_id)
     commit = get_object_or_404(authorized_commits(request.user), pk=commit_id)
     product = commit.repository.product
     engagements = Engagement.objects.filter(commit=commit, product=product).order_by("-pk")

@@ -177,7 +177,7 @@ class CommitScansView(AspmView):
 
 
 class FinalizeView(AspmView):
-    @extend_schema(auth=[{"aspmServiceToken": []}], request=FinalizeSerializer, responses={201: ScanSetSerializer}, tags=["ASPM ingestion"])
+    @extend_schema(auth=[{"aspmServiceToken": []}], request=FinalizeSerializer, deprecated=True, description="Optional legacy operation to pin an explicit set; never required for visibility or export.", responses={201: ScanSetSerializer}, tags=["ASPM ingestion"])
     def post(self, request, pk):
         require_scope(request.auth, "finalize")
         serializer = FinalizeSerializer(data=request.data)
@@ -192,7 +192,7 @@ class CommitReportsView(AspmView):
         require_scope(request.auth, "reports")
         serializer = ReportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        report = request_report(self.commit(request, pk), serializer.validated_data.get("scan_set_id"))
+        report = request_report(self.commit(request, pk), **serializer.validated_data)
         return Response(ReportSerializer(report).data, status=202)
 
     @extend_schema(parameters=[OpenApiParameter("after", int, description="Last report version; at most 100 rows per page.")], responses=ReportSerializer(many=True), tags=["ASPM ingestion"])

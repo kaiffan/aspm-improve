@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, IngestionJob, IngestionToken, ScanRun
+from dojo.aspm_ingestion.selection import SCAN_FIELDS, live_selection
 from dojo.aspm_ingestion.storage import private_path, safe_name, save_original
 from dojo.scm.identity_v1 import repository_provider
 from dojo.scm.models import Commit, Repository
@@ -128,29 +129,58 @@ def finalize_commit(commit, expected_scanners, *, scan_ids=None):
         if scans.count() != len(selected):
             msg = "All selected ScanRuns must belong to this commit."
             raise ValidationError(msg)
+    identifiers = [str(pk) for pk in scans.values_list("pk", flat=True)[:1001]]
+    if len(identifiers) > 1000:
+        msg = "Select at most 1000 ScanRuns explicitly."
+        raise ValidationError(msg)
     return CommitScanSet.objects.create(
         commit=commit, expected_scanners=sorted(set(expected_scanners)),
-        scan_ids=[str(pk) for pk in scans.values_list("pk", flat=True)],
+        scan_ids=identifiers,
     )
 
 
 @transaction.atomic
-def request_report(commit, scan_set_id=None):
+def request_report(commit, scan_set_id=None, *, scan_ids=None, pipeline=None, expected_scanners=None):
     Commit.objects.select_for_update().get(pk=commit.pk)
-    scan_set = commit.scan_sets.filter(pk=scan_set_id).first() if scan_set_id else commit.scan_sets.order_by("-created_at").first()
-    if scan_set is None:
-        msg = "Finalize this commit with an explicit expected_scanners list first."
-        raise ValidationError(msg)
-    # One statement fixes statuses/generations; completed generations cannot change later.
-    scans = list(ScanRun.objects.filter(pk__in=scan_set.scan_ids).order_by("created_at", "pk").values(
-        "id", "scanner", "status", "observation_generation", "artifact_sha256", "artifact_size", "finding_count", "severity_summary", "error_code", "metadata",
-    ))
+    if scan_set_id is not None:
+        if scan_ids is not None or pipeline is not None or expected_scanners is not None:
+            msg = "scan_set_id cannot be combined with live selection options."
+            raise ValidationError(msg)
+        scan_set = commit.scan_sets.filter(pk=scan_set_id).first()
+        if scan_set is None:
+            msg = "Unknown scan_set_id for this commit."
+            raise ValidationError(msg)
+        scans = list(ScanRun.objects.filter(pk__in=scan_set.scan_ids).order_by("created_at", "pk").values(*SCAN_FIELDS))
+        coverage_known = bool(scan_set.expected_scanners)
+        selection_metadata = {"policy": "legacy-explicit-set", "coverage_known": coverage_known}
+    else:
+        selection = live_selection(commit, pipeline=pipeline, scan_ids=scan_ids, expected_scanners=expected_scanners)
+        if selection["ambiguous"]:
+            msg = "Multiple pipelines are available; choose pipeline or scan_ids."
+            raise Conflict(msg)
+        if not selection["scans"]:
+            msg = "No COMPLETED ScanRuns are available in this selection."
+            raise ValidationError(msg)
+        scans = [{key: row[key] for key in SCAN_FIELDS} for row in selection["scans"]]
+        scan_set = CommitScanSet.objects.create(
+            commit=commit, scan_ids=[str(row["id"]) for row in scans],
+            expected_scanners=selection["expected_scanners"],
+        )
+        coverage_known = selection["coverage_known"]
+        selection_metadata = {"policy": "live-v1", "mode": "explicit_ids" if scan_ids is not None else "live", "pipeline": selection["pipeline"],
+                              "coverage_known": coverage_known, "coverage": selection["coverage"],
+                              "incomplete": selection["incomplete"],
+                              "latest_runs": [{"id": str(row["id"]), "status": row["status"], "scanner": row["scanner"],
+                                               "metadata": row["metadata"]} for row in selection["latest"]]}
+    # This immutable manifest is the only source used by the asynchronous generator.
     for scan in scans:
         scan["id"] = str(scan["id"])
+        for field in ("created_at", "finished_at"):
+            scan[field] = scan[field].isoformat() if scan[field] else None
         scan["original_url"] = absolute_url(reverse("aspm_v1:artifact", args=[scan["id"]]))
     completed_scanners = {scan["scanner"] for scan in scans if scan["status"] == ScanRun.Status.COMPLETED}
     missing = sorted(set(scan_set.expected_scanners) - completed_scanners)
-    complete = bool(scans) and not missing and all(scan["status"] == ScanRun.Status.COMPLETED for scan in scans)
+    complete = bool(scans) and coverage_known and not missing and not selection_metadata.get("incomplete", False) and all(scan["status"] == ScanRun.Status.COMPLETED for scan in scans)
     version = (commit.aspm_reports.aggregate(value=Max("version"))["value"] or 0) + 1
     report = GeneratedReport.objects.create(
         commit=commit, scan_set=scan_set, version=version,
@@ -159,7 +189,7 @@ def request_report(commit, scan_set_id=None):
                   "commit_id": commit.pk, "branch": commit.branch, "parent_shas": commit.parent_shas,
                   "scan_set_id": str(scan_set.pk), "finalized_at": scan_set.created_at.isoformat(),
                   "expected_scanners": scan_set.expected_scanners, "missing_scanners": missing,
-                  "complete": complete, "scans": scans, "version": version,
+                  "complete": complete, "selection": selection_metadata, "scans": scans, "version": version,
                   "previous_report_ids": [str(pk) for pk in commit.aspm_reports.order_by("-version").values_list("pk", flat=True)[:20]]},
     )
     IngestionJob.objects.create(report=report, next_dispatch_at=timezone.now())

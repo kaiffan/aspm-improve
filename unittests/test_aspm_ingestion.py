@@ -149,10 +149,10 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
             self.assertEqual(response.status_code, 200, getattr(response, "data", None))
             self.assertTrue(b"ASPM" in b"".join(response.streaming_content) if kind == "html" else True)
 
-    def test_report_requires_explicit_finalization(self):
+    def test_report_does_not_require_explicit_finalization(self):
         scan = self.complete(self.accepted())
         response = self.client.post(reverse("aspm_v1:reports", args=[scan.commit_id]), {}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 202)
 
     def test_finalize_pins_pipeline_attempt_and_rejects_another_commit(self):
         failed = self.accepted(key="older-job", report=b"invalid JSON")

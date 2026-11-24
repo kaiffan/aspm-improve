@@ -1,40 +1,68 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% block content %}
-<section class="panel panel-default aspm-evidence">
+<section class="panel panel-default aspm-evidence" data-aspm-state-url="{% url 'aspm_commit_state' commit.pk %}" data-aspm-revision="{{ state_revision }}">
     <div class="panel-heading"><h1>Commit evidence</h1></div>
     <div class="panel-body">
         <p><a href="{% url 'view_product' commit.repository.product_id %}">{{ commit.repository.product.name }}</a> → <a href="{% url 'scm_repository_detail' commit.repository_id %}">{{ commit.repository.url }}</a> → <code>{{ commit.sha }}</code></p>
         <nav aria-label="Commit evidence"><ul class="nav nav-tabs">
-            <li><a href="?tab=overview">Overview</a></li>
-            <li><a href="?tab=originals">Original Scanner Reports</a></li>
-            <li><a href="?tab=reports">ASPM Generated Reports</a></li>
-            <li><a href="?tab=findings">Historical Findings</a></li>
-            <li><a href="?tab=changes">Commit Changes</a></li>
+            <li><a href="?tab=overview{{ nav_params }}">Overview</a></li>
+            <li><a href="?tab=originals{{ nav_params }}">Scanner Reports</a></li>
+            <li><a href="?tab=reports{{ nav_params }}">ASPM Report</a></li>
+            <li><a href="?tab=findings{{ nav_params }}">Findings</a></li>
+            <li><a href="?tab=changes{{ nav_params }}">Changes</a></li>
         </ul></nav>
+        <form method="get" class="form-inline">
+            <input type="hidden" name="tab" value="{{ section }}">
+            <label for="aspm-pipeline">Results from pipeline</label>
+            <select id="aspm-pipeline" name="pipeline"><option value="">Choose a pipeline</option>
+                {% for context in selection.contexts %}<option value="{{ context }}" {% if context == selection.pipeline %}selected{% endif %}>{{ context }}</option>{% endfor %}
+            </select><button class="btn btn-default" type="submit">Select results</button>
+        </form>
+        {% if selection.ambiguous %}<p class="alert alert-warning">Independent pipelines or jobs are available. Choose a pipeline or select exact runs in Scanner Reports. Results have not been combined.</p>{% endif %}
+        {% if selection.contexts_truncated %}<p>Showing the first 100 pipeline choices. Use explicit scan_ids through the reports API for other pipelines.</p>{% endif %}
+        <p role="status">Coverage: <strong>{{ selection.coverage }}</strong>. Available findings: {{ selection.finding_count }}.
+            {% if not selection.coverage_known %}Expected scanners are unknown; available results do not establish full coverage.{% endif %}
+            {% if selection.incomplete %}A newer run is pending or failed, or an expected scanner is missing. Earlier successful results remain available.{% endif %}
+        </p>
+        {% if section == 'overview' or section == 'reports' %}
+            <h2>Available results</h2>
+            <dl>{% for severity, total in selection.severity_summary.items %}<dt>{{ severity }}</dt><dd>{{ total }}</dd>{% empty %}<dt>Findings</dt><dd>No completed results in this selection.</dd>{% endfor %}</dl>
+            <div class="table-responsive"><table class="table"><thead><tr><th>Scanner / scope</th><th>Latest successful ScanRun</th><th>Pipeline / job / CI attempt</th><th>Completed / findings</th></tr></thead><tbody>
+                {% for scan in selection.scans %}<tr><td>{{ scan.scanner }} / {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.id }}</td><td>{{ scan.pipeline }} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}</td><td>{{ scan.finished_at }} / {{ scan.finding_count }}</td></tr>{% endfor %}
+            </tbody></table></div>
+            <p>CWE / CVE sample (first 20 selected observations): {% for cwe, ids in taxonomy_preview %}CWE-{{ cwe|default:"unknown" }} {{ ids|join:", " }}; {% empty %}No completed observations.{% endfor %}</p>
+            <p><a href="?tab=findings{{ nav_params }}">Browse historical CWE / CVE observations →</a></p>
+        {% endif %}
         {% if section == 'overview' %}
-            <h2>Overview</h2><p>Scanner results arrive through the CI/CD API. Coverage is complete only for an explicitly finalized set with all expected scanners completed. Later runs do not change earlier reports.</p>
+            <h2>Overview</h2><p>Scanner results arrive through the CI/CD API. Completed results appear automatically. No finalize is required. Fixed exports preserve their exact selected ScanRuns and never change after later deliveries.</p>
             <p>Branch: {{ commit.branch|default:"—" }}</p>
             <dl>{% for status in scan_statuses %}<dt>{{ status.status }}</dt><dd>{{ status.total }} ScanRun(s)</dd>{% empty %}<dt>ScanRuns</dt><dd>No deliveries received.</dd>{% endfor %}</dl>
         {% elif section == 'originals' %}
-            <h2>Original Scanner Reports</h2>
-            <div class="table-responsive"><table class="table"><thead><tr><th>Scanner / ScanRun</th><th>Status</th><th>SHA256 / bytes</th><th>Original</th></tr></thead><tbody>
-            {% for scan in scans %}<tr><td>{{ scan.scanner }}<br><code>{{ scan.pk }}</code></td><td>{{ scan.status }} {{ scan.error_code }}</td><td><code>{{ scan.artifact_sha256 }}</code><br>{{ scan.artifact_size }}</td><td><a href="{% url 'aspm_v1:artifact' scan.pk %}">{{ scan.original_name }}</a></td></tr>{% empty %}<tr><td colspan="4">No scans received.</td></tr>{% endfor %}
-            </tbody></table></div>{% include "dojo/paging_snippet.html" with page=scans %}
+            <h2>Scanner Reports</h2>
+            <form method="get"><input type="hidden" name="tab" value="findings">
+            <div class="table-responsive"><table class="table"><thead><tr><th>Select / scanner / ScanRun</th><th>Pipeline / job / CI attempt</th><th>Received / status / findings</th><th>SHA256 / bytes</th><th>Original</th></tr></thead><tbody>
+            {% for scan in scans %}<tr><td>{% if scan.status == 'COMPLETED' %}<input type="checkbox" name="scan_ids" value="{{ scan.pk }}" aria-label="Select {{ scan.scanner }} {{ scan.pk }}">{% endif %}{{ scan.scanner }}<br><code>{{ scan.pk }}</code></td><td>{% firstof scan.metadata.pipeline_id scan.metadata.build_id "undeclared" %} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}<br>Scope: {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.created_at }}<br>{{ scan.status }} {{ scan.error_code }}<br>Processing attempt: {{ scan.attempt }}{% if scan.status == 'COMPLETED' %}<br>{{ scan.finding_count }} findings{% endif %}</td><td><code>{{ scan.artifact_sha256 }}</code><br>{{ scan.artifact_size }}</td><td><a href="{% url 'aspm_v1:artifact' scan.pk %}">{{ scan.original_name }}</a></td></tr>{% empty %}<tr><td colspan="4">No scans received.</td></tr>{% endfor %}
+            </tbody></table></div><button type="submit" class="btn btn-default">View selected runs</button></form>{% include "dojo/paging_snippet.html" with page=scans %}
         {% elif section == 'reports' %}
-            <h2>ASPM Generated Reports</h2>
+            <h2>Fixed exports</h2>
+            <p>Live results above require no physical export. Generate a new immutable version only when needed.</p>
+            {% if can_export and selection.scans and not selection.ambiguous %}<form method="post" action="{% url 'aspm_create_report' commit.pk %}">{% csrf_token %}{% if selection.explicit_ids %}{% for id in selection.explicit_ids %}<input type="hidden" name="scan_ids" value="{{ id }}">{% endfor %}{% else %}<input type="hidden" name="pipeline" value="{{ selection.pipeline }}">{% endif %}<button type="submit" class="btn btn-default">Generate fixed HTML / JSON export</button></form>{% endif %}
             <div class="table-responsive"><table class="table"><thead><tr><th>Version</th><th>Coverage / status</th><th>Created</th><th>Download</th></tr></thead><tbody>
-            {% for report in reports %}<tr><td>{{ report.version }}</td><td>{% if report.manifest.complete %}Complete{% else %}Incomplete{% endif %} / {{ report.status }}</td><td>{{ report.created_at }}</td><td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No generated reports.</td></tr>{% endfor %}
+            {% for report in reports %}<tr><td>{{ report.version }}</td><td>{% if report.manifest.complete %}Known complete{% else %}Unknown / incomplete{% endif %} / {{ report.status }}</td><td>{{ report.created_at }}</td><td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No generated reports.</td></tr>{% endfor %}
             </tbody></table></div>{% include "dojo/paging_snippet.html" with page=reports %}
         {% else %}
             <h2>{% if section == 'changes' %}Commit Changes{% else %}Historical Findings{% endif %}</h2>
-            <form method="get"><input type="hidden" name="tab" value="{{ section }}">
+            <form method="get"><input type="hidden" name="tab" value="{{ section }}">{% if selection.explicit_ids %}{% for id in selection.explicit_ids %}<input type="hidden" name="scan_ids" value="{{ id }}">{% endfor %}{% else %}<input type="hidden" name="pipeline" value="{{ selection.pipeline|default:'' }}">{% endif %}
                 <label for="aspm-severity">Severity</label><select id="aspm-severity" name="severity"><option value="">All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option><option>Info</option></select>
                 {% if section == 'changes' %}<label for="aspm-base">Base commit</label><select id="aspm-base" name="base" required>{% for recent in recent_commits %}<option value="{{ recent.pk }}">{{ recent.sha }}</option>{% endfor %}</select>
+                <label for="aspm-base-pipeline">Base pipeline</label><select id="aspm-base-pipeline" name="base_pipeline"><option value="">Automatic when unambiguous</option>{% for context in base_coverage.contexts %}<option value="{{ context }}" {% if context == base_pipeline %}selected{% endif %}>{{ context }}</option>{% endfor %}</select>
+                <label for="aspm-base-report">Base version</label><select id="aspm-base-report" name="base_report"><option value="">Live results</option>{% for report in base_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == base_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select>
+                <label for="aspm-target-report">Target version</label><select id="aspm-target-report" name="target_report"><option value="">Live results</option>{% for report in target_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == target_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select>
                 <label for="aspm-category">Change</label><select id="aspm-category" name="category"><option value="new">New</option><option value="fixed">Absent in target</option><option value="unchanged">Unchanged</option></select>{% endif %}
                 <button class="btn btn-default" type="submit">Filter</button>
             </form>
-            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }} using the latest finalized pipeline sets: {{ base_coverage.set.pk|default:"unfinalized" }} → {{ target_coverage.set.pk|default:"unfinalized" }}. Absence describes the recorded comparable scans.</p>{% endif %}
+            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }} using pipeline contexts {{ base_coverage.pipeline|default:"unselected" }} → {{ target_coverage.pipeline|default:"unselected" }}; versions {{ base_coverage.report.version|default:"live" }} → {{ target_coverage.report.version|default:"live" }}. Absence describes the recorded comparable scans.</p>{% endif %}
             {% if coverage_warning %}<p class="alert alert-warning" role="status">{{ coverage_warning }}</p>{% endif %}
             <div class="table-responsive"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
             {% for observation in observations %}<tr><td>{{ observation.snapshot.title }}<br>{{ observation.snapshot.file_path }}:{{ observation.snapshot.line }}</td><td>{{ observation.severity }}</td><td>{{ observation.snapshot.cwe }} {{ observation.snapshot.vulnerability_ids|join:", " }}</td><td>{{ observation.scan.scanner }}<br>{{ observation.scan_id }}</td></tr>{% empty %}<tr><td colspan="4">No observations in this selection.</td></tr>{% endfor %}
@@ -42,4 +70,9 @@
         {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_javascript %}
+{{ block.super }}
+<script src="{% static 'dojo/js/aspm-evidence.js' %}" defer></script>
 {% endblock %}

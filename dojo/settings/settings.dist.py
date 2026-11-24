@@ -192,7 +192,12 @@ env = environ.FileAwareEnv(
     DD_MAX_AUTOCOMPLETE_WORDS=(int, 20000),
     DD_ASPM_FINDING_UI_FAST_LISTS=(bool, False),
     DD_ASPM_FINDING_CURSOR=(bool, False),
-    DD_ASPM_SCM_HIERARCHY=(bool, False),
+    DD_ASPM_SCM_HIERARCHY=(bool, True),
+    DD_ASPM_INGESTION_ENABLED=(bool, True),
+    DD_ASPM_API_ONLY=(bool, True),
+    DD_ASPM_ARTIFACT_ROOT=(str, "/app/aspm-private"),
+    DD_ASPM_MAX_SCAN_BYTES=(int, 52428800),
+    DD_ASPM_TOKEN_RATE_PER_MINUTE=(int, 120),
     DD_JIRA_SSL_VERIFY=(bool, True),
     DD_JIRA_DESCRIPTION_MAX_LENGTH=(int, 32767),
     # When interacting with jira tickets that attached finding groups, we should no be opening any findings
@@ -634,9 +639,15 @@ MAX_REQRESP_FROM_API = env("DD_MAX_REQRESP_FROM_API")
 MAX_AUTOCOMPLETE_WORDS = env("DD_MAX_AUTOCOMPLETE_WORDS")
 ASPM_FINDING_UI_FAST_LISTS = env("DD_ASPM_FINDING_UI_FAST_LISTS")
 ASPM_SCM_HIERARCHY = env("DD_ASPM_SCM_HIERARCHY")
+ASPM_INGESTION_ENABLED = env("DD_ASPM_INGESTION_ENABLED")
+ASPM_API_ONLY = env("DD_ASPM_API_ONLY")
+ASPM_ARTIFACT_ROOT = env("DD_ASPM_ARTIFACT_ROOT")
+ASPM_MAX_SCAN_BYTES = env("DD_ASPM_MAX_SCAN_BYTES")
+ASPM_TOKEN_RATE_PER_MINUTE = env("DD_ASPM_TOKEN_RATE_PER_MINUTE")
 ENABLE_AUDITLOG = env("DD_ENABLE_AUDITLOG")
 
 LOGIN_EXEMPT_URLS = (
+    rf"^{URL_PREFIX}api/aspm/v1/",
     rf"^{URL_PREFIX}static/",
     rf"^{URL_PREFIX}webhook/([\w-]+)$",
     rf"^{URL_PREFIX}webhook/",
@@ -929,6 +940,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "dojo.aspm_ingestion.middleware.ingestion_context",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "dojo.context_processors.globalize_vars",
@@ -983,6 +995,7 @@ INSTALLED_APPS = (
 # MIDDLEWARE
 # ------------------------------------------------------------------------------
 DJANGO_MIDDLEWARE_CLASSES = [
+    "dojo.aspm_ingestion.middleware.ApiOnlyScansMiddleware",
     "django.middleware.common.CommonMiddleware",
     "dojo.middleware.APITrailingSlashMiddleware",
     "dojo.middleware.DojoSettingsManagerMiddleware",
@@ -2431,3 +2444,6 @@ if DEBUG:
 #########################################################################################################
 # End of Auditlog configuration                                                                          #
 #########################################################################################################
+
+# Persistent transactional outbox recovery; dedicated worker consumes aspm_ingestion.
+CELERY_BEAT_SCHEDULE["aspm-ingestion-outbox"] = {"task": "dojo.aspm_ingestion.dispatch_jobs", "schedule": 30.0}

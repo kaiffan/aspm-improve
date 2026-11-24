@@ -106,7 +106,7 @@
                                 </a>
                             </li>
                             {% endif %}
-                            {% if eng|has_object_permission:"import" %}
+                            {% if not aspm_api_only and eng|has_object_permission:"import" %}
                             <li role="presentation">
                                 <a class="" href="{% url 'import_scan_results' eng.id %}">
                                     <i class="fa-solid fa-upload"></i> Import Scan Results

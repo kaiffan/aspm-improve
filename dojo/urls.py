@@ -30,6 +30,7 @@ from dojo.api_v2.views import (
     SonarqubeIssueViewSet,
 )
 from dojo.api_v2.views import DojoSpectacularAPIView as SpectacularAPIView
+from dojo.aspm_ingestion.ui.urls import urlpatterns as ingestion_ui_urls
 from dojo.asset.api.urls import add_asset_urls
 from dojo.asset.urls import urlpatterns as asset_urls
 from dojo.banner.ui.urls import urlpatterns as banner_urls
@@ -205,6 +206,7 @@ ur += regulations
 ur += announcement_urls
 if settings.ASPM_SCM_HIERARCHY:
     ur += scm_urls
+    ur += ingestion_ui_urls
 
 # Module-level Classic UI route wiring: fixed at URLConf build time on
 # settings.V3_FEATURE_LOCATIONS (a stored-flag toggle cannot re-mount these
@@ -217,6 +219,7 @@ else:
 
 
 api_v2_urls = [
+    re_path(r"^{}api/aspm/v1/".format(get_system_setting("url_prefix")), include("dojo.aspm_ingestion.api.urls")),
     #  Django Rest Framework API v2
     re_path(r"^{}api/v2/".format(get_system_setting("url_prefix")), include(v2_api.urls)),
     re_path(r"^{}api/v2/user_profile/".format(get_system_setting("url_prefix")), UserProfileView.as_view(), name="user_profile"),

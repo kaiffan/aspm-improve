@@ -727,7 +727,7 @@
                                                         </a>
                                                     </li>
                                                 {% endif %}
-                                                {% if product_tab.product|has_object_permission:"import" %}
+                                                {% if not aspm_api_only and product_tab.product|has_object_permission:"import" %}
                                                     <li>
                                                         <a href="{% url 'import_scan_results_prod' product_tab.product.id %}">
                                                             <i class="fa-solid fa-upload"></i>

@@ -11,6 +11,7 @@ from rest_framework.exceptions import (
 )
 from rest_framework.request import Request
 
+from dojo.aspm_ingestion.permissions import legacy_scan_principal_allowed
 from dojo.authorization.authorization import (
     user_has_configuration_permission,
     user_has_global_permission,
@@ -548,6 +549,8 @@ class UserHasBurpRawRequestResponsePermission(permissions.BasePermission):
 
 class UserHasImportPermission(permissions.BasePermission):
     def has_permission(self, request, view):
+        if not legacy_scan_principal_allowed(request.user):
+            return False
         # permission check takes place before validation, so we don't have access to serializer.validated_data()
         # and we have to validate ourselves unfortunately
         auto_create = AutoCreateContextManager.for_request(request)
@@ -752,6 +755,8 @@ class UserHasOrganizationPermission(permissions.BasePermission):
 
 class UserHasReimportPermission(permissions.BasePermission):
     def has_permission(self, request, view):
+        if not legacy_scan_principal_allowed(request.user):
+            return False
         # permission check takes place before validation, so we don't have access to serializer.validated_data()
         # and we have to validate ourselves unfortunately
         auto_create = AutoCreateContextManager.for_request(request)

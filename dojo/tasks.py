@@ -365,3 +365,6 @@ def update_watson_search_index_for_model(model_name, pk_list, *args, **kwargs):
     except Exception as e:
         logger.error(f"Watson async index update failed for {model_name}: {e}")
         raise
+
+
+from dojo.aspm_ingestion.tasks import dispatch_jobs, process_job  # noqa: E402, F401

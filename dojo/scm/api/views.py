@@ -1,8 +1,9 @@
 from django.db import IntegrityError, transaction
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, viewsets
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 
+from dojo.api_v2.views import DojoModelViewSet
 from dojo.authorization.authorization import user_has_permission_or_403
 from dojo.scm.api.filters import CommitFilter, RepositoryFilter
 from dojo.scm.api.serializer import CommitSerializer, RepositorySerializer
@@ -10,9 +11,15 @@ from dojo.scm.models import Commit, Repository
 from dojo.scm.queries import authorized_commits, authorized_repositories
 
 
-class ProductScopedSCMViewSet(viewsets.ModelViewSet):
+class ProductScopedSCMViewSet(DojoModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        instance = super().get_object()
+        if self.action == "delete_preview":
+            user_has_permission_or_403(self.request.user, self.product_for_instance(instance), "delete")
+        return instance
 
     def perform_create(self, serializer):
         user_has_permission_or_403(self.request.user, self.product_for_create(serializer.validated_data), "add")

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<section class="panel panel-default aspm-evidence">
+    <div class="panel-heading"><h1>Commit evidence</h1></div>
+    <div class="panel-body">
+        <p><a href="{% url 'view_product' commit.repository.product_id %}">{{ commit.repository.product.name }}</a> → <a href="{% url 'scm_repository_detail' commit.repository_id %}">{{ commit.repository.url }}</a> → <code>{{ commit.sha }}</code></p>
+        <nav aria-label="Commit evidence"><ul class="nav nav-tabs">
+            <li><a href="?tab=overview">Overview</a></li>
+            <li><a href="?tab=originals">Original Scanner Reports</a></li>
+            <li><a href="?tab=reports">ASPM Generated Reports</a></li>
+            <li><a href="?tab=findings">Historical Findings</a></li>
+            <li><a href="?tab=changes">Commit Changes</a></li>
+        </ul></nav>
+        {% if section == 'overview' %}
+            <h2>Overview</h2><p>Scanner results arrive through the CI/CD API. Coverage is complete only for an explicitly finalized set with all expected scanners completed. Later runs do not change earlier reports.</p>
+            <p>Branch: {{ commit.branch|default:"—" }}</p>
+            <dl>{% for status in scan_statuses %}<dt>{{ status.status }}</dt><dd>{{ status.total }} ScanRun(s)</dd>{% empty %}<dt>ScanRuns</dt><dd>No deliveries received.</dd>{% endfor %}</dl>
+        {% elif section == 'originals' %}
+            <h2>Original Scanner Reports</h2>
+            <div class="table-responsive"><table class="table"><thead><tr><th>Scanner / ScanRun</th><th>Status</th><th>SHA256 / bytes</th><th>Original</th></tr></thead><tbody>
+            {% for scan in scans %}<tr><td>{{ scan.scanner }}<br><code>{{ scan.pk }}</code></td><td>{{ scan.status }} {{ scan.error_code }}</td><td><code>{{ scan.artifact_sha256 }}</code><br>{{ scan.artifact_size }}</td><td><a href="{% url 'aspm_v1:artifact' scan.pk %}">{{ scan.original_name }}</a></td></tr>{% empty %}<tr><td colspan="4">No scans received.</td></tr>{% endfor %}
+            </tbody></table></div>{% include "dojo/paging_snippet.html" with page=scans %}
+        {% elif section == 'reports' %}
+            <h2>ASPM Generated Reports</h2>
+            <div class="table-responsive"><table class="table"><thead><tr><th>Version</th><th>Coverage / status</th><th>Created</th><th>Download</th></tr></thead><tbody>
+            {% for report in reports %}<tr><td>{{ report.version }}</td><td>{% if report.manifest.complete %}Complete{% else %}Incomplete{% endif %} / {{ report.status }}</td><td>{{ report.created_at }}</td><td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No generated reports.</td></tr>{% endfor %}
+            </tbody></table></div>{% include "dojo/paging_snippet.html" with page=reports %}
+        {% else %}
+            <h2>{% if section == 'changes' %}Commit Changes{% else %}Historical Findings{% endif %}</h2>
+            <form method="get"><input type="hidden" name="tab" value="{{ section }}">
+                <label for="aspm-severity">Severity</label><select id="aspm-severity" name="severity"><option value="">All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option><option>Info</option></select>
+                {% if section == 'changes' %}<label for="aspm-base">Base commit</label><select id="aspm-base" name="base" required>{% for recent in recent_commits %}<option value="{{ recent.pk }}">{{ recent.sha }}</option>{% endfor %}</select>
+                <label for="aspm-category">Change</label><select id="aspm-category" name="category"><option value="new">New</option><option value="fixed">Absent in target</option><option value="unchanged">Unchanged</option></select>{% endif %}
+                <button class="btn btn-default" type="submit">Filter</button>
+            </form>
+            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }}. Absence describes the recorded scans; it is not proof of remediation when coverage is incomplete.</p>{% endif %}
+            <div class="table-responsive"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
+            {% for observation in observations %}<tr><td>{{ observation.snapshot.title }}<br>{{ observation.snapshot.file_path }}:{{ observation.snapshot.line }}</td><td>{{ observation.severity }}</td><td>{{ observation.snapshot.cwe }} {{ observation.snapshot.vulnerability_ids|join:", " }}</td><td>{{ observation.scan.scanner }}<br>{{ observation.scan_id }}</td></tr>{% empty %}<tr><td colspan="4">No observations in this selection.</td></tr>{% endfor %}
+            </tbody></table></div>{% if next_url %}<nav aria-label="Historical findings pages"><a href="{{ next_url }}">Next observations →</a></nav>{% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

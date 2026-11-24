@@ -722,3 +722,5 @@ admin.site.register(DojoMeta)
 # Development_Environment admin registered in dojo/development_environment/admin.py
 # Announcement + UserAnnouncement admin registered in dojo/announcement/admin.py
 # BannerConf admin registered in dojo/banner/admin.py
+
+import dojo.aspm_ingestion.models  # noqa: E402, F401

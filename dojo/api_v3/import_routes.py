@@ -26,6 +26,7 @@ from ninja.files import UploadedFile  # noqa: TC002 -- runtime import: ninja res
 
 from dojo.api_v3.errors import ProblemDetail, json_response, not_found_problem, validation_problem
 from dojo.api_v3.refs import to_ref
+from dojo.aspm_ingestion.permissions import legacy_scan_principal_allowed
 from dojo.authorization.api_permissions import check_auto_create_permission
 from dojo.authorization.authorization import user_has_permission
 from dojo.importers.auto_create_context import AutoCreateContextManager
@@ -186,6 +187,7 @@ def build_import_router(*, auth=NOT_SET) -> Router:
         payload: ImportForm = Form(...),  # noqa: B008 -- ninja's declarative param default
         file: UploadedFile | None = File(None),  # noqa: B008 -- ninja's declarative param default
     ):
+        _require_permission(allowed=legacy_scan_principal_allowed(request.user))
         if payload.mode not in {"auto", "import", "reimport"}:
             raise validation_problem({"mode": ["must be one of auto, import, reimport"]})
 

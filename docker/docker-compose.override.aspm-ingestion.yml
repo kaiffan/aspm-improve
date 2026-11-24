@@ -1,0 +1,19 @@
+# Shared private evidence storage; deliberately not mounted into nginx.
+services:
+  uwsgi:
+    environment:
+      DD_ASPM_INGESTION_ENABLED: "True"
+      DD_ASPM_API_ONLY: "True"
+      DD_ASPM_SCM_HIERARCHY: "True"
+      DD_ASPM_ARTIFACT_ROOT: /app/aspm-private
+      DD_ASPM_MAX_SCAN_BYTES: "52428800"
+    volumes:
+      - aspm_private_evidence:/app/aspm-private
+  celeryworker:
+    environment:
+      DD_ASPM_ARTIFACT_ROOT: /app/aspm-private
+      DD_ASPM_SCM_HIERARCHY: "True"
+    volumes:
+      - aspm_private_evidence:/app/aspm-private
+volumes:
+  aspm_private_evidence:

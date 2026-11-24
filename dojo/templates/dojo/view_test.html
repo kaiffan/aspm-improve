@@ -58,7 +58,7 @@
                             </li>
                         {% endif %}
                         {% if show_re_upload %}
-                            {% if test|has_object_permission:"import" %}
+                            {% if not aspm_api_only and test|has_object_permission:"import" %}
                                 <li>
                                     <a href="{% url 're_import_scan_results' test.id %}">
                                         <i class="fa-solid fa-upload"></i> {% trans "Re-Upload Scan" %}

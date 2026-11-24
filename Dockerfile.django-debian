@@ -154,6 +154,7 @@ RUN \
     chmod g=u /var/run/${appuser} && \
     chmod 775 /*.sh && \
     mkdir -p media/threat && chown -R ${uid} media && \
+    mkdir -p aspm-private && chown ${uid}:${gid} aspm-private && chmod 700 aspm-private && \
     # To avoid warning: (staticfiles.W004) The directory '/app/components/node_modules' in the STATICFILES_DIRS setting does not exist.
     mkdir -p components/node_modules && \
     chown ${appuser} components/node_modules

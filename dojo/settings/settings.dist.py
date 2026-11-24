@@ -2445,5 +2445,5 @@ if DEBUG:
 # End of Auditlog configuration                                                                          #
 #########################################################################################################
 
-# Persistent transactional outbox recovery; dedicated worker consumes aspm_ingestion.
+# Persistent transactional outbox recovery; tasks use the existing default worker queue.
 CELERY_BEAT_SCHEDULE["aspm-ingestion-outbox"] = {"task": "dojo.aspm_ingestion.dispatch_jobs", "schedule": 30.0}

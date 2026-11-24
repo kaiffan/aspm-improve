@@ -306,6 +306,10 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
             url = reverse(name, args=[pk])
             self.assertEqual(client.get(url).status_code, 404)
             self.assertEqual(client.post(url).status_code, 404)
+        for name in ("new_eng_for_prod", "new_eng_for_prod_cicd"):
+            response = client.get(reverse(name, args=[self.product.pk]))
+            self.assertEqual(response.status_code, 200)
+            self.assertNotContains(response, "Import Scan Results")
         for tab in ("overview", "originals", "reports", "findings", "changes"):
             response = client.get(reverse("aspm_commit_evidence", args=[scan.commit_id]), {"tab": tab})
             self.assertEqual(response.status_code, 200)

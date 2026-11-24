@@ -62,7 +62,7 @@ class AspmView(APIView):
             raise Http404
         super().initial(request, *args, **kwargs)
         if isinstance(request.auth, IngestionToken):
-            # PostgreSQL advisory xact lock + UPSERT is an exact fixed-bucket_minute limiter across app replicas.
+            # PostgreSQL UPSERT serializes an exact fixed-minute limiter across app replicas.
             # It runs before DRF parses the multipart body. No request or credential is logged.
             bucket_minute = int(time.time()) // 60
             with connection.cursor() as cursor:

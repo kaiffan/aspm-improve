@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;"><title>ASPM commit report</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:2em auto;padding:0 1em;color:#202124}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f4f4;padding:1em}article{border-bottom:1px solid #ddd;padding:1em 0}h1,h2,h3{line-height:1.25}a{overflow-wrap:anywhere}</style></head><body><h1>ASPM generated commit report</h1><p>Coverage: complete</p><pre>{
+  &quot;scans&quot;: [
+    {
+      &quot;id&quot;: &quot;f5658669-6e45-4331-aed2-19d4893c56c7&quot;,
+      &quot;status&quot;: &quot;COMPLETED&quot;,
+      &quot;scanner&quot;: &quot;Semgrep JSON Report&quot;,
+      &quot;metadata&quot;: {
+        &quot;job_id&quot;: &quot;semgrep&quot;,
+        &quot;pipeline_id&quot;: &quot;47ed6da3094f443f97eff9d0c0ec0c91&quot;,
+        &quot;attempt_number&quot;: 1
+      },
+      &quot;error_code&quot;: &quot;&quot;,
+      &quot;original_url&quot;: &quot;http://127.0.0.1:48094/api/aspm/v1/scans/f5658669-6e45-4331-aed2-19d4893c56c7/artifact/&quot;,
+      &quot;artifact_size&quot;: 1740,
+      &quot;finding_count&quot;: 1,
+      &quot;artifact_sha256&quot;: &quot;ce1ecaf496d775ea19515b210cf4bba565328719df94b033d6ff57768a1a4d49&quot;,
+      &quot;severity_summary&quot;: {
+        &quot;Medium&quot;: 1
+      },
+      &quot;observation_generation&quot;: 1
+    },
+    {
+      &quot;id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;,
+      &quot;status&quot;: &quot;COMPLETED&quot;,
+      &quot;scanner&quot;: &quot;Trivy Scan&quot;,
+      &quot;metadata&quot;: {
+        &quot;job_id&quot;: &quot;trivy&quot;,
+        &quot;pipeline_id&quot;: &quot;47ed6da3094f443f97eff9d0c0ec0c91&quot;,
+        &quot;attempt_number&quot;: 1
+      },
+      &quot;error_code&quot;: &quot;&quot;,
+      &quot;original_url&quot;: &quot;http://127.0.0.1:48094/api/aspm/v1/scans/c54fdbc1-e845-42da-a35f-2272998cba82/artifact/&quot;,
+      &quot;artifact_size&quot;: 15991,
+      &quot;finding_count&quot;: 5,
+      &quot;artifact_sha256&quot;: &quot;2f4d1f9b8f53c338da9d8e395244dcbf2bcbae1863a159e2a3b3e7060c2c5cad&quot;,
+      &quot;severity_summary&quot;: {
+        &quot;High&quot;: 1,
+        &quot;Medium&quot;: 3,
+        &quot;Critical&quot;: 1
+      },
+      &quot;observation_generation&quot;: 1
+    }
+  ],
+  &quot;branch&quot;: &quot;&quot;,
+  &quot;project&quot;: {
+    &quot;id&quot;: 1,
+    &quot;name&quot;: &quot;ASPM API validation&quot;
+  },
+  &quot;version&quot;: 3,
+  &quot;complete&quot;: true,
+  &quot;commit_id&quot;: 77,
+  &quot;commit_sha&quot;: &quot;cccccccccccccccccccccccccccccccccccccccc&quot;,
+  &quot;repository&quot;: {
+    &quot;id&quot;: 77,
+    &quot;url&quot;: &quot;https://github.com/example/aspm-runtime-47ed6da3094f443f97eff9d0c0ec0c91&quot;
+  },
+  &quot;parent_shas&quot;: [],
+  &quot;scan_set_id&quot;: &quot;06644e75-8161-42b4-a864-4f15ddea3133&quot;,
+  &quot;finalized_at&quot;: &quot;2026-11-24T08:45:05.689602+00:00&quot;,
+  &quot;schema_version&quot;: &quot;1.0&quot;,
+  &quot;missing_scanners&quot;: [],
+  &quot;expected_scanners&quot;: [
+    &quot;Semgrep JSON Report&quot;,
+    &quot;Trivy Scan&quot;
+  ],
+  &quot;previous_report_ids&quot;: [
+    &quot;ea18a4ee-20a9-43b0-8686-645105a7b94c&quot;,
+    &quot;a1a2ce29-18d3-4ac1-9108-67dcee0b5003&quot;
+  ],
+  &quot;severity_summary&quot;: {
+    &quot;Medium&quot;: 4,
+    &quot;High&quot;: 1,
+    &quot;Critical&quot;: 1
+  }
+}</pre><h2>Original scanner artifacts</h2><ul><li><a href="http://127.0.0.1:48094/api/aspm/v1/scans/f5658669-6e45-4331-aed2-19d4893c56c7/artifact/">Semgrep JSON Report</a></li><li><a href="http://127.0.0.1:48094/api/aspm/v1/scans/c54fdbc1-e845-42da-a35f-2272998cba82/artifact/">Trivy Scan</a></li></ul><h2>Historical finding observations</h2><article><h3>java.lang.security.audit.cbc-padding-oracle.cbc-padding-oracle</h3><p>Semgrep JSON Report · Medium</p><pre>{&quot;scan_id&quot;: &quot;f5658669-6e45-4331-aed2-19d4893c56c7&quot;, &quot;scanner&quot;: &quot;Semgrep JSON Report&quot;, &quot;id&quot;: 4097, &quot;cwe&quot;: 696, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: 64, &quot;title&quot;: &quot;java.lang.security.audit.cbc-padding-oracle.cbc-padding-oracle&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;Medium&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;src/main/java/org/owasp/benchmark/testcode/BenchmarkTest02194.java&quot;, &quot;hash_code&quot;: &quot;d08db17f6ce95e15eb7f96abe2a6b4c2f4d85d4432dbcbd9ed5a332443cbfea8&quot;, &quot;mitigation&quot;: &quot;javax crypto Cipher.getInstance(\&quot;AES/GCM/NoPadding\&quot;);&quot;, &quot;description&quot;: &quot;**Result message:** Using CBC with PKCS5Padding is susceptible to padding orcale attacks. A malicious actor\ncould discern the difference between plaintext with valid or invalid padding. Further,\nCBC mode does not include any integrity checks. See https://find-sec-bugs.github.io/bugs.htm#CIPHER_INTEGRITY.\nUse &#x27;AES/GCM/NoPadding&#x27; instead.\n\n**Snippet:**\n```\t\t\tjavax.crypto.Cipher c = javax.crypto.Cipher.getInstance(\&quot;DES/CBC/PKCS5Padding\&quot;);```\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: null, &quot;component_version&quot;: null, &quot;vulnerability_ids&quot;: [], &quot;unique_id_from_tool&quot;: null}</pre></article><article><h3>CVE-2018-1324 org.apache.commons:commons-compress 1.14</h3><p>Trivy Scan · Medium</p><pre>{&quot;scan_id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;, &quot;scanner&quot;: &quot;Trivy Scan&quot;, &quot;id&quot;: 4098, &quot;cwe&quot;: 835, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: null, &quot;title&quot;: &quot;CVE-2018-1324 org.apache.commons:commons-compress 1.14&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;Medium&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;app/libs/commons-compress-1.14&quot;, &quot;hash_code&quot;: &quot;2940a2b528924dd7533352d7d5450b1941333c13fa7deb4bd659d4847f423893&quot;, &quot;mitigation&quot;: &quot;1.16&quot;, &quot;description&quot;: &quot;apache-commons-compress:  Infinite loop via extra field parser in ZipFile and ZipArchiveInputStream classes\n**Target:** app/libs/commons-compress-1.14.jar\n**Type:** jar\n**Fixed version:** 1.16\n\nA specially crafted ZIP archive can be used to cause an infinite loop inside of Apache Commons Compress&#x27; extra field parser used by the ZipFile and ZipArchiveInputStream classes in versions 1.11 to 1.15. This can be used to mount a denial of service attack against services that use Compress&#x27; zip package.\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: &quot;org.apache.commons:commons-compress&quot;, &quot;component_version&quot;: &quot;1.14&quot;, &quot;vulnerability_ids&quot;: [&quot;CVE-2018-1324&quot;], &quot;unique_id_from_tool&quot;: null}</pre></article><article><h3>CVE-2020-28196 Krb5-Libs 1.15.5-r0</h3><p>Trivy Scan · High</p><pre>{&quot;scan_id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;, &quot;scanner&quot;: &quot;Trivy Scan&quot;, &quot;id&quot;: 4099, &quot;cwe&quot;: 674, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: null, &quot;title&quot;: &quot;CVE-2020-28196 Krb5-Libs 1.15.5-r0&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;High&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;app/libs/krb5-libs-1.15.5-r0&quot;, &quot;hash_code&quot;: &quot;3a2fd7afcfc96e95e92b1ef4121b68ba0974fd8c9f786cc2bf0ee7d1358ffc64&quot;, &quot;mitigation&quot;: &quot;1.15.5-r1&quot;, &quot;description&quot;: &quot;krb5: unbounded recursion via an ASN.1-encoded Kerberos message in lib/krb5/asn.1/asn1_encode.c may lead to DoS\n**Target:** teamdojo:latest (alpine 3.9.4)\n**Type:** alpine\n**Fixed version:** 1.15.5-r1\n\nMIT Kerberos 5 (aka krb5) before 1.17.2 and 1.18.x before 1.18.3 allows unbounded recursion via an ASN.1-encoded Kerberos message because the lib/krb5/asn.1/asn1_encode.c support for BER indefinite lengths lacks a recursion limit.\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: &quot;krb5-libs&quot;, &quot;component_version&quot;: &quot;1.15.5-r0&quot;, &quot;vulnerability_ids&quot;: [&quot;CVE-2020-28196&quot;], &quot;unique_id_from_tool&quot;: null}</pre></article><article><h3>CVE-2019-12900 Libbz2 1.0.6-r6</h3><p>Trivy Scan · Critical</p><pre>{&quot;scan_id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;, &quot;scanner&quot;: &quot;Trivy Scan&quot;, &quot;id&quot;: 4100, &quot;cwe&quot;: 787, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: null, &quot;title&quot;: &quot;CVE-2019-12900 Libbz2 1.0.6-r6&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;Critical&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;app/libs/libbz2-1.0.6-r6&quot;, &quot;hash_code&quot;: &quot;8328e7f901d6d307a27d104e5802b5f21208d72a0917b0798d2a7de2fb9a1e64&quot;, &quot;mitigation&quot;: &quot;1.0.6-r7&quot;, &quot;description&quot;: &quot;bzip2: out-of-bounds write in function BZ2_decompress\n**Target:** teamdojo:latest (alpine 3.9.4)\n**Type:** alpine\n**Fixed version:** 1.0.6-r7\n\nBZ2_decompress in decompress.c in bzip2 through 1.0.6 has an out-of-bounds write when there are many selectors.\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: &quot;libbz2&quot;, &quot;component_version&quot;: &quot;1.0.6-r6&quot;, &quot;vulnerability_ids&quot;: [&quot;CVE-2019-12900&quot;], &quot;unique_id_from_tool&quot;: null}</pre></article><article><h3>CVE-2020-15999 Freetype 2.9.1-r2</h3><p>Trivy Scan · Medium</p><pre>{&quot;scan_id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;, &quot;scanner&quot;: &quot;Trivy Scan&quot;, &quot;id&quot;: 4101, &quot;cwe&quot;: 787, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: null, &quot;title&quot;: &quot;CVE-2020-15999 Freetype 2.9.1-r2&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;Medium&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;app/libs/freetype-2.9.1-r2&quot;, &quot;hash_code&quot;: &quot;bc31efb86809530d98dea4469f22358ac754d576dc7344d9ee96cb7ba316b744&quot;, &quot;mitigation&quot;: &quot;2.9.1-r3&quot;, &quot;description&quot;: &quot;freetype: Heap-based buffer overflow due to integer truncation in Load_SBit_Png\n**Target:** teamdojo:latest (alpine 3.9.4)\n**Type:** alpine\n**Fixed version:** 2.9.1-r3\n\nHeap buffer overflow in Freetype in Google Chrome prior to 86.0.4240.111 allowed a remote attacker to potentially exploit heap corruption via a crafted HTML page.\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: &quot;freetype&quot;, &quot;component_version&quot;: &quot;2.9.1-r2&quot;, &quot;vulnerability_ids&quot;: [&quot;CVE-2020-15999&quot;], &quot;unique_id_from_tool&quot;: null}</pre></article><article><h3>CVE-2018-11771 org.apache.commons:commons-compress 1.14</h3><p>Trivy Scan · Medium</p><pre>{&quot;scan_id&quot;: &quot;c54fdbc1-e845-42da-a35f-2272998cba82&quot;, &quot;scanner&quot;: &quot;Trivy Scan&quot;, &quot;id&quot;: 4102, &quot;cwe&quot;: 835, &quot;date&quot;: &quot;2026-11-24&quot;, &quot;line&quot;: null, &quot;title&quot;: &quot;CVE-2018-11771 org.apache.commons:commons-compress 1.14&quot;, &quot;active&quot;: true, &quot;false_p&quot;: false, &quot;service&quot;: null, &quot;severity&quot;: &quot;Medium&quot;, &quot;verified&quot;: false, &quot;duplicate&quot;: false, &quot;file_path&quot;: &quot;app/libs/commons-compress-1.14&quot;, &quot;hash_code&quot;: &quot;c66e44c484826760d1b4f535cfce6f123aeeb5a63d28bcf030fe9a4708787b6c&quot;, &quot;mitigation&quot;: &quot;1.18&quot;, &quot;description&quot;: &quot;apache-commons-compress: ZipArchiveInputStream.read() fails to identify correct EOF allowing for DoS via crafted zip\n**Target:** app/libs/commons-compress-1.14.jar\n**Type:** jar\n**Fixed version:** 1.18\n\nWhen reading a specially crafted ZIP archive, the read method of Apache Commons Compress 1.7 to 1.17&#x27;s ZipArchiveInputStream can fail to return the correct EOF indication after the end of the stream has been reached. When combined with a java.io.InputStreamReader this can lead to an infinite stream, which can be used to mount a denial of service attack against services that use Compress&#x27; zip package.\n&quot;, &quot;is_mitigated&quot;: false, &quot;out_of_scope&quot;: false, &quot;component_name&quot;: &quot;org.apache.commons:commons-compress&quot;, &quot;component_version&quot;: &quot;1.14&quot;, &quot;vulnerability_ids&quot;: [&quot;CVE-2018-11771&quot;], &quot;unique_id_from_tool&quot;: null}</pre></article></body></html>

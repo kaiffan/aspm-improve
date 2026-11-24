@@ -1,0 +1,56 @@
+{
+  "source_commit": "3fbb68543265f5393cf538943011c5c0ecdbde0e",
+  "full_django": {
+    "source_commit": "3fbb68543265f5393cf538943011c5c0ecdbde0e",
+    "run": 8815,
+    "skipped": 553,
+    "passed": 8262,
+    "seconds": 393.796,
+    "failures": 0,
+    "errors": 0,
+    "mode": "Fresh isolated test database and cache; legacy compatibility corpus, ASPM test classes explicitly override API-only=True",
+    "log_sha256": "fd0a4dc83edf513ccd53809798a63c7b631f4d6e5e8660dc52daa26aee482caf",
+    "log_gzip": "django-full.log.gz",
+    "log_gzip_sha256": "fac4c8b0ad3e2cd7a6d7a8a421afb363d32f4299f27afd4be02df095b02251d5"
+  },
+  "js_unit": {
+    "tests": 12,
+    "passed": 12
+  },
+  "browser": {
+    "no_upload_controls": true,
+    "read_only_navigation": true,
+    "downloads": true,
+    "pages": 44
+  },
+  "strict_api_only": {
+    "run": 20,
+    "passed": 20,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 1.359
+  },
+  "targeted": {
+    "run": 37,
+    "passed": 37,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 3.818
+  },
+  "ui_regression": {
+    "previous_template_fails": true,
+    "fixed_template_passes": true,
+    "routes": [
+      "new_eng_for_prod",
+      "new_eng_for_prod_cicd"
+    ]
+  },
+  "reused_database_attempt": {
+    "run": 8815,
+    "failures": 8,
+    "errors": 0,
+    "seconds": 391.935,
+    "skipped": 553,
+    "scope": "Query-count importer/SLA tests on reused keepdb/cache state; rerun on clean isolated test DB/cache without changing expectations."
+  }
+}

@@ -434,6 +434,15 @@ components:
             maxLength: 200
           maxItems: 100
           minItems: 1
+        scan_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Pin this pipeline's deliveries. If omitted, include all accepted
+            runs currently on the commit.
+          maxItems: 1000
+          minItems: 1
       required:
       - expected_scanners
     Report:

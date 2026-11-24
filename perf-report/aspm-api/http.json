@@ -1,0 +1,343 @@
+{
+  "scenario": "Real HTTP, PostgreSQL, Valkey and prefork Celery; synthetic scanner fixtures",
+  "scan_count": 27,
+  "independent_repositories": 24,
+  "concurrency": 8,
+  "duplicate_request_codes": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    202
+  ],
+  "upload_seconds": {
+    "median": 0.12068895797710866,
+    "p95": 0.17162916698725894,
+    "max": 0.19738750002579764
+  },
+  "upload_samples_seconds": [
+    0.12416595901595429,
+    0.030771874997299165,
+    0.06348775001242757,
+    0.06680091604357585,
+    0.13706600002478808,
+    0.1156662919675,
+    0.0589215419604443,
+    0.15081641601864249,
+    0.12140820798231289,
+    0.13515024998923764,
+    0.1707029590033926,
+    0.1691262919921428,
+    0.09523729200009257,
+    0.12065612495644018,
+    0.11998387501807883,
+    0.19738750002579764,
+    0.11997983301989734,
+    0.17162916698725894,
+    0.15828595799393952,
+    0.11850958300055936,
+    0.12466554204002023,
+    0.11966412502806634,
+    0.12072179099777713,
+    0.1513789999880828,
+    0.09716829197714105,
+    0.09069879102753475
+  ],
+  "percentile_method": "nearest rank",
+  "concurrent_24_upload_seconds": 0.4186960000079125,
+  "phases": [
+    {
+      "scanner": "Semgrep JSON Report",
+      "finding_count": 1,
+      "parser_seconds": 0.00041437800973653793,
+      "queue_wait_seconds": 0.014162,
+      "observation_seconds": 0.005938796966802329,
+      "reimport_dedup_seconds": 0.08964609302347526,
+      "artifact_storage_seconds": 0.009768827992957085,
+      "acceptance_to_start_seconds": 0.047722
+    },
+    {
+      "scanner": "Trivy Scan",
+      "finding_count": 5,
+      "parser_seconds": 0.001418511033989489,
+      "queue_wait_seconds": 0.013253,
+      "observation_seconds": 0.004900165018625557,
+      "reimport_dedup_seconds": 0.14493782602949068,
+      "artifact_storage_seconds": 0.009493785037193447,
+      "acceptance_to_start_seconds": 0.03157
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0032311929971911013,
+      "queue_wait_seconds": 0.195784,
+      "observation_seconds": 0.005690919992048293,
+      "reimport_dedup_seconds": 0.0643205139786005,
+      "artifact_storage_seconds": 0.016796759038697928,
+      "acceptance_to_start_seconds": 0.393036
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0076059779967181385,
+      "queue_wait_seconds": 0.204827,
+      "observation_seconds": 0.002633646014146507,
+      "reimport_dedup_seconds": 0.05680757999652997,
+      "artifact_storage_seconds": 0.010010787984356284,
+      "acceptance_to_start_seconds": 0.29202
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.006082715990487486,
+      "queue_wait_seconds": 0.306201,
+      "observation_seconds": 0.003187941969372332,
+      "reimport_dedup_seconds": 0.016738966980483383,
+      "artifact_storage_seconds": 0.01051237597130239,
+      "acceptance_to_start_seconds": 0.392395
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.007278224977198988,
+      "queue_wait_seconds": 0.428537,
+      "observation_seconds": 0.0029486900311894715,
+      "reimport_dedup_seconds": 0.01789964403724298,
+      "artifact_storage_seconds": 0.01210284698754549,
+      "acceptance_to_start_seconds": 0.465856
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.007171849021688104,
+      "queue_wait_seconds": 0.363116,
+      "observation_seconds": 0.0034117780160158873,
+      "reimport_dedup_seconds": 0.015757084998767823,
+      "artifact_storage_seconds": 0.01423348899697885,
+      "acceptance_to_start_seconds": 0.448273
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0035560280084609985,
+      "queue_wait_seconds": 0.303153,
+      "observation_seconds": 0.002891397976782173,
+      "reimport_dedup_seconds": 0.01579350105021149,
+      "artifact_storage_seconds": 0.010183497972320765,
+      "acceptance_to_start_seconds": 0.388977
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.006602594978176057,
+      "queue_wait_seconds": 0.431739,
+      "observation_seconds": 0.003074192034546286,
+      "reimport_dedup_seconds": 0.016658425040077418,
+      "artifact_storage_seconds": 0.012068971991539001,
+      "acceptance_to_start_seconds": 0.448893
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0070880980347283185,
+      "queue_wait_seconds": 0.368465,
+      "observation_seconds": 0.0026700219605118036,
+      "reimport_dedup_seconds": 0.018308854952920228,
+      "artifact_storage_seconds": 0.007464018010068685,
+      "acceptance_to_start_seconds": 0.452076
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.004199699964374304,
+      "queue_wait_seconds": 0.493443,
+      "observation_seconds": 0.0031523999641649425,
+      "reimport_dedup_seconds": 0.01750088995322585,
+      "artifact_storage_seconds": 0.015691625012550503,
+      "acceptance_to_start_seconds": 0.504401
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.003828196960967034,
+      "queue_wait_seconds": 0.496384,
+      "observation_seconds": 0.0028895240393467247,
+      "reimport_dedup_seconds": 0.014206780993845314,
+      "artifact_storage_seconds": 0.010343790985643864,
+      "acceptance_to_start_seconds": 0.56022
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.006569135992322117,
+      "queue_wait_seconds": 0.434945,
+      "observation_seconds": 0.0031511510023847222,
+      "reimport_dedup_seconds": 0.016050794976763427,
+      "artifact_storage_seconds": 0.011247507005464286,
+      "acceptance_to_start_seconds": 0.509394
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.005877755000256002,
+      "queue_wait_seconds": 0.465663,
+      "observation_seconds": 0.0023222689633257687,
+      "reimport_dedup_seconds": 0.01714901195373386,
+      "artifact_storage_seconds": 0.019441487966105342,
+      "acceptance_to_start_seconds": 0.538773
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.004182991979178041,
+      "queue_wait_seconds": 0.528517,
+      "observation_seconds": 0.0031688580056652427,
+      "reimport_dedup_seconds": 0.0350624059792608,
+      "artifact_storage_seconds": 0.013323439983651042,
+      "acceptance_to_start_seconds": 0.547422
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.005406001990195364,
+      "queue_wait_seconds": 0.56438,
+      "observation_seconds": 0.0032398590119555593,
+      "reimport_dedup_seconds": 0.06152932601980865,
+      "artifact_storage_seconds": 0.012220723030623049,
+      "acceptance_to_start_seconds": 0.575603
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0035396110033616424,
+      "queue_wait_seconds": 0.668855,
+      "observation_seconds": 0.0031779000419192016,
+      "reimport_dedup_seconds": 0.016302380012348294,
+      "artifact_storage_seconds": 0.013400899013504386,
+      "acceptance_to_start_seconds": 0.743747
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.005718878994230181,
+      "queue_wait_seconds": 0.600962,
+      "observation_seconds": 0.003651945968158543,
+      "reimport_dedup_seconds": 0.019541864981874824,
+      "artifact_storage_seconds": 0.009662868978921324,
+      "acceptance_to_start_seconds": 0.613763
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0045444940333254635,
+      "queue_wait_seconds": 0.598851,
+      "observation_seconds": 0.0030217330204322934,
+      "reimport_dedup_seconds": 0.019715573987923563,
+      "artifact_storage_seconds": 0.012056222010869533,
+      "acceptance_to_start_seconds": 0.6711
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0060780070489272475,
+      "queue_wait_seconds": 0.607119,
+      "observation_seconds": 0.00477516301907599,
+      "reimport_dedup_seconds": 0.01795614301227033,
+      "artifact_storage_seconds": 0.014417697966564447,
+      "acceptance_to_start_seconds": 0.680138
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.004666203982196748,
+      "queue_wait_seconds": 0.745237,
+      "observation_seconds": 0.003161067026667297,
+      "reimport_dedup_seconds": 0.01915773598011583,
+      "artifact_storage_seconds": 0.01263289200142026,
+      "acceptance_to_start_seconds": 1.048042
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0062296329997479916,
+      "queue_wait_seconds": 0.751754,
+      "observation_seconds": 0.00251985399518162,
+      "reimport_dedup_seconds": 0.01704476203303784,
+      "artifact_storage_seconds": 0.008455442963168025,
+      "acceptance_to_start_seconds": 1.053856
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.006628635979723185,
+      "queue_wait_seconds": 0.808604,
+      "observation_seconds": 0.0032809010008350015,
+      "reimport_dedup_seconds": 0.017668016022071242,
+      "artifact_storage_seconds": 0.01090971298981458,
+      "acceptance_to_start_seconds": 1.09748
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.006325842987280339,
+      "queue_wait_seconds": 0.811664,
+      "observation_seconds": 0.0033020679838955402,
+      "reimport_dedup_seconds": 0.017370931047480553,
+      "artifact_storage_seconds": 0.018018351984210312,
+      "acceptance_to_start_seconds": 1.086959
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.005846546031534672,
+      "queue_wait_seconds": 0.871501,
+      "observation_seconds": 0.0036271539865992963,
+      "reimport_dedup_seconds": 0.017452139989472926,
+      "artifact_storage_seconds": 0.016557965020183474,
+      "acceptance_to_start_seconds": 1.143707
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.004554077982902527,
+      "queue_wait_seconds": 0.936803,
+      "observation_seconds": 0.0031470669782720506,
+      "reimport_dedup_seconds": 0.018233479000627995,
+      "artifact_storage_seconds": 0.009761703026015311,
+      "acceptance_to_start_seconds": 1.161124
+    },
+    {
+      "scanner": "Generic Findings Import",
+      "finding_count": 1,
+      "parser_seconds": 0.0062020919867791235,
+      "queue_wait_seconds": 0.872106,
+      "observation_seconds": 0.00365769601194188,
+      "reimport_dedup_seconds": 0.01757809898117557,
+      "artifact_storage_seconds": 0.012140556005761027,
+      "acceptance_to_start_seconds": 1.099451
+    }
+  ],
+  "report_timings": {
+    "generation_seconds": 0.013623077014926821
+  },
+  "report_checksums": {
+    "html": "4b36a1eff9b26fae5debc6dc7c3833d1358ad9771f39ab85856c64429e2933a8",
+    "json": "6b5f2cbd023288ec62bbe0c02d6260b77bb81396043aa69e982ff5c1984cb5b8"
+  },
+  "commit_id": 77,
+  "repository_url": "https://github.com/example/aspm-runtime-47ed6da3094f443f97eff9d0c0ec0c91",
+  "report_id": "a1a2ce29-18d3-4ac1-9108-67dcee0b5003",
+  "checks": {
+    "byte_exact_originals": true,
+    "same_commit": true,
+    "idempotent_concurrent_posts": true,
+    "all_workers_completed": true,
+    "exact_report_membership": true,
+    "immutable_report_after_late_upload": true,
+    "cross_product_denied": true,
+    "cve_preserved": true
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-24",
+  "timezone": "Europe/Moscow",
+  "host": {
+    "cpu": "Apple M5",
+    "logical_cpus": 10,
+    "memory_bytes": 17179869184
+  },
+  "software": {
+    "python": "3.14.8",
+    "django": "5.2.17",
+    "drf": "3.18.3",
+    "celery": "5.6.3"
+  },
+  "containers": {
+    "postgres": {
+      "image": "dd-api-perf-postgres:18.6",
+      "cpus": 1,
+      "memory_limit": "768m"
+    },
+    "valkey": {
+      "image": "dd-api-perf-valkey:local",
+      "cpus": 0.25,
+      "memory_limit": "128m"
+    },
+    "uwsgi": {
+      "image": "aspm-audit-tests:940a40f1-79326044e6ef",
+      "cpus": 2,
+      "memory_limit": "1536m"
+    },
+    "gateway": {
+      "image": "aspm-nginx-build:940a40f1f6f2",
+      "cpus": null,
+      "memory_limit": null
+    }
+  },
+  "isolation": "New PostgreSQL/Valkey/private volume; no baseline RC5 database or image changes",
+  "benchmark_scope": "1M synthetic live Finding rows; production observation and report generation; not 1M parser/reimport throughput",
+  "source_commit": "3fbb68543265f5393cf538943011c5c0ecdbde0e",
+  "measurement_commits": {
+    "http_and_1m": "436bf5d6ace5647a3a101d74ce23ff1e3e84f53f",
+    "selected_ci_report": "0fd6439c86b82881e931dfa75fe4787841b46f5d",
+    "final_browser": "3fbb68543265f5393cf538943011c5c0ecdbde0e"
+  }
+}

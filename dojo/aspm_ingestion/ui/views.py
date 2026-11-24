@@ -1,28 +1,26 @@
 from urllib.parse import urlencode
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, F, OuterRef
+from django.db.models import Count
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
 
-from dojo.aspm_ingestion.models import FindingObservation, ScanRun
+from dojo.aspm_ingestion.queries import compare_observations, completed_observations
 from dojo.scm.queries import authorized_commits
 
 
-def completed_observations(commit):
-    return FindingObservation.objects.filter(scan__commit=commit, scan__status=ScanRun.Status.COMPLETED, generation=F("scan__observation_generation"))
-
-
 @require_GET
-def commit_evidence(request, commit_id):
+def commit_evidence(request, commit_id, *, section=None):
     commit = get_object_or_404(authorized_commits(request.user), pk=commit_id)
-    section = request.GET.get("tab", "overview")
+    section = section or request.GET.get("tab", "overview")
     observations = completed_observations(commit).select_related("scan")
     severity = request.GET.get("severity", "")
     if severity in {"Critical", "High", "Medium", "Low", "Info"}:
         observations = observations.filter(severity=severity)
     base = None
+    coverage_warning = ""
+    base_coverage = target_coverage = None
     category = request.GET.get("category", "new")
     if section == "changes" and request.GET.get("base"):
         try:
@@ -34,9 +32,7 @@ def commit_evidence(request, commit_id):
         base = get_object_or_404(authorized_commits(request.user).filter(repository=commit.repository).exclude(pk=commit.pk), pk=base_id)
         if category not in {"new", "fixed", "unchanged"}:
             category = "new"
-        before = completed_observations(base)
-        source, other = (before, observations) if category == "fixed" else (observations, before)
-        observations = source.annotate(in_other=Exists(other.filter(identity=OuterRef("identity")))).filter(in_other=category == "unchanged")
+        observations, coverage_warning, base_coverage, target_coverage = compare_observations(base, commit, category, severity)
     elif section == "changes":
         observations = observations.none()
     next_url = None
@@ -56,6 +52,7 @@ def commit_evidence(request, commit_id):
         rows = rows[:50]
     return render(request, "dojo/aspm/commit_evidence.html", {
         "commit": commit, "section": section, "base_commit": base, "category": category,
+        "coverage_warning": coverage_warning, "base_coverage": base_coverage, "target_coverage": target_coverage,
         "scans": Paginator(commit.scan_runs.order_by("-created_at"), 25).get_page(request.GET.get("page")),
         "reports": Paginator(commit.aspm_reports.order_by("-version"), 25).get_page(request.GET.get("page")),
         "observations": rows, "next_url": next_url,

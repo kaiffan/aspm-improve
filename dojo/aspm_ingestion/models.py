@@ -88,6 +88,17 @@ class CommitScanSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class CommitScanSetMembership(models.Model):
+
+    """FK-backed mirror of the frozen UUID list, maintained and protected by PostgreSQL."""
+
+    scan_set = models.ForeignKey("dojo.CommitScanSet", related_name="memberships", on_delete=models.PROTECT)
+    scan = models.ForeignKey("dojo.ScanRun", on_delete=models.PROTECT)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("scan_set", "scan"), name="aspm_finalized_scan_unique")]
+
+
 class GeneratedReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit = models.ForeignKey("dojo.Commit", related_name="aspm_reports", on_delete=models.PROTECT)

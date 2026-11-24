@@ -34,7 +34,8 @@
                 <label for="aspm-category">Change</label><select id="aspm-category" name="category"><option value="new">New</option><option value="fixed">Absent in target</option><option value="unchanged">Unchanged</option></select>{% endif %}
                 <button class="btn btn-default" type="submit">Filter</button>
             </form>
-            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }}. Absence describes the recorded scans; it is not proof of remediation when coverage is incomplete.</p>{% endif %}
+            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }} using the latest finalized pipeline sets: {{ base_coverage.set.pk|default:"unfinalized" }} → {{ target_coverage.set.pk|default:"unfinalized" }}. Absence describes the recorded comparable scans.</p>{% endif %}
+            {% if coverage_warning %}<p class="alert alert-warning" role="status">{{ coverage_warning }}</p>{% endif %}
             <div class="table-responsive"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
             {% for observation in observations %}<tr><td>{{ observation.snapshot.title }}<br>{{ observation.snapshot.file_path }}:{{ observation.snapshot.line }}</td><td>{{ observation.severity }}</td><td>{{ observation.snapshot.cwe }} {{ observation.snapshot.vulnerability_ids|join:", " }}</td><td>{{ observation.scan.scanner }}<br>{{ observation.scan_id }}</td></tr>{% empty %}<tr><td colspan="4">No observations in this selection.</td></tr>{% endfor %}
             </tbody></table></div>{% if next_url %}<nav aria-label="Historical findings pages"><a href="{{ next_url }}">Next observations →</a></nav>{% endif %}

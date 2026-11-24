@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import F
 from django.http import HttpResponseBadRequest
@@ -82,6 +83,10 @@ def commit_compare(request, commit_id):
     if not form.is_valid():
         return HttpResponseBadRequest(_("Choose a valid base commit and comparison category."))
     base = get_object_or_404(commit.repository.commits.exclude(pk=commit.pk), pk=form.cleaned_data["base"])
+    if settings.ASPM_API_ONLY:
+        from dojo.aspm_ingestion.ui.views import commit_evidence  # noqa: PLC0415 -- optional historical evidence layer
+
+        return commit_evidence(request, commit_id, section="changes")
     category = form.cleaned_data["category"] or "new"
     findings, next_id = compare_findings(
         request.user, base, commit, category, after=form.cleaned_data["after"] or 0, page_size=PAGE_SIZE,

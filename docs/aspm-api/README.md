@@ -73,6 +73,8 @@ ASPM сама потоково формирует HTML и JSON из зафикс
 
 Product → Repositories → Repository → Commit → Commit evidence. Вкладки: Overview, Original Scanner Reports, ASPM Generated Reports, Historical Findings, Commit Changes. Доступ — существующий Product RBAC. Фильтр severity и сравнение двух коммитов используют сохранённые observations. Отсутствие finding при неполном покрытии не доказывает исправление. API-only режим скрывает import/reimport controls и keyboard shortcut, старые browser import routes возвращают 404 на GET и POST. Загрузка через UI отсутствует.
 
+API-only обязателен вне явного `manage.py test`: значение `DD_ASPM_API_ONLY=False` в web/worker/management-процессе не открывает UI или legacy import для людей. False используется только совместимым тестовым корпусом. Compare Commit использует последний финализированный набор каждого коммита; категория отсутствующих findings доступна только при полном сопоставимом наборе сканеров и явно совпадающем непустом `scan_scope`. Scope должен описывать сравнимые пути, правила и настройки scanner; отсутствие scope означает неизвестное покрытие для такого вывода. Финализированные ScanRuns защищены FK-backed membership, включая FAILED.
+
 ## Запуск и эксплуатация
 
 ```sh

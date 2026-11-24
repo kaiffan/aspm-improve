@@ -1,10 +1,19 @@
+import sys
+from pathlib import Path
+
 from django.conf import settings
 from django.utils import timezone
 
 
+def api_only_scans_enabled():
+    """Legacy UI compatibility is confined to the explicit Django test command."""
+    test_command = bool(sys.argv) and Path(sys.argv[0]).name == "manage.py" and sys.argv[1:2] == ["test"]
+    return settings.ASPM_API_ONLY or not test_command
+
+
 def legacy_scan_principal_allowed(user):
     """Keep legacy administrative integrations; human member accounts cannot bypass ASPM via v2/v3."""
-    if not settings.ASPM_API_ONLY or user.is_superuser:
+    if not api_only_scans_enabled() or user.is_superuser:
         return True
     if not (user.is_authenticated and user.is_active and not user.is_staff and not user.has_usable_password()):
         return False

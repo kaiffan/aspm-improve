@@ -2,9 +2,12 @@
 
 import hashlib
 import json
+import secrets
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, connection, transaction
 from django.test import Client
 from django.urls import reverse
@@ -182,3 +185,28 @@ class IngestionSecurityTests(IngestionFixture, APITestCase):
         html = private_path(report.html_path).read_text()
         self.assertNotIn("<script>alert", html)
         self.assertIn("&lt;script&gt;", html)
+
+    def test_production_flag_false_cannot_enable_human_legacy_import(self):
+        user = get_user_model().objects.create_user(username="production-human", password=secrets.token_urlsafe(24))
+        self.product.authorized_users.add(user.pk)
+        self.client.credentials()
+        self.client.force_authenticate(user=user)
+        payload = {"scan_type": "Generic Findings Import", "product_name": self.product.name,
+                   "engagement_name": "No production human uploads", "auto_create_context": True,
+                   "file": SimpleUploadedFile("scan.json", generic()), "deduplication_execution_mode": "sync"}
+        with self.settings(ASPM_API_ONLY=False), patch("sys.argv", ["uwsgi", "--ini", "uwsgi.ini"]):
+            response = self.client.post(reverse("importscan-list"), payload, format="multipart")
+        self.assertEqual(response.status_code, 403)
+
+    def test_production_flag_false_cannot_expose_browser_upload(self):
+        scan = self.complete(self.accepted())
+        user = get_user_model().objects.create_user(username="production-ui-human", password=secrets.token_urlsafe(24))
+        self.product.authorized_users.add(user.pk)
+        browser = Client()
+        browser.force_login(user)
+        with self.settings(ASPM_API_ONLY=False), patch("sys.argv", ["uwsgi", "--ini", "uwsgi.ini"]):
+            for name, pk in (("import_scan_results_prod", self.product.pk), ("import_scan_results", scan.test.engagement_id), ("re_import_scan_results", scan.test_id)):
+                with self.subTest(name=name):
+                    self.assertEqual(browser.get(reverse(name, args=[pk])).status_code, 404)
+            response = browser.get(reverse("new_eng_for_prod", args=[self.product.pk]))
+            self.assertNotContains(response, "Import Scan Results")

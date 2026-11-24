@@ -1,6 +1,5 @@
 from urllib.parse import urlencode
 
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import F
 from django.http import HttpResponseBadRequest
@@ -8,6 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from dojo.aspm_ingestion.permissions import api_only_scans_enabled
 from dojo.models import Engagement
 from dojo.product.queries import get_authorized_products
 from dojo.scm.queries import authorized_commits, authorized_repositories, compare_findings
@@ -83,7 +83,7 @@ def commit_compare(request, commit_id):
     if not form.is_valid():
         return HttpResponseBadRequest(_("Choose a valid base commit and comparison category."))
     base = get_object_or_404(commit.repository.commits.exclude(pk=commit.pk), pk=form.cleaned_data["base"])
-    if settings.ASPM_API_ONLY:
+    if api_only_scans_enabled():
         from dojo.aspm_ingestion.ui.views import commit_evidence  # noqa: PLC0415 -- optional historical evidence layer
 
         return commit_evidence(request, commit_id, section="changes")

@@ -60,7 +60,7 @@ def live_selection(commit, *, pipeline=None, scan_ids=None, expected_scanners=No
             pipeline = contexts[0]
         if pipeline is None and contexts:
             return _summary([], [], contexts, None, expected_scanners, ambiguous=True)
-        if pipeline is not None and not qs.filter(pipeline=pipeline).exists():
+        if pipeline is not None and pipeline not in contexts and (len(contexts) < 101 or not qs.filter(pipeline=pipeline).exists()):
             msg = "Unknown pipeline context for this commit."
             raise ValidationError(msg)
         qs = qs.filter(pipeline=pipeline) if pipeline is not None else qs.none()

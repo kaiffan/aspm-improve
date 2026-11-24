@@ -77,28 +77,34 @@ def commit_evidence(request, commit_id, *, section=None):
     nav_params = request.GET.copy()
     for key in ("tab", "after", "page"):
         nav_params.pop(key, None)
+    scan_statuses = scan_state(commit)
     return render(request, "dojo/aspm/commit_evidence.html", {
         "base_reports": base.aspm_reports.filter(status="COMPLETED").order_by("-version")[:100] if base else [],
         "target_reports": commit.aspm_reports.filter(status="COMPLETED").order_by("-version")[:100] if section == "changes" else [],
         "base_pipeline": request.GET.get("base_pipeline", ""),
         "base_report_id": request.GET.get("base_report", ""), "target_report_id": request.GET.get("target_report", ""),
         "taxonomy_preview": list(observations.order_by("pk").values_list("snapshot__cwe", "snapshot__vulnerability_ids")[:20]) if section in {"overview", "reports"} else [],
-        "selection": selection, "state_revision": state_revision(commit),
+        "selection": selection, "state_revision": state_revision(commit, scans=scan_statuses),
         "nav_params": "&" + nav_params.urlencode() if nav_params else "",
-        "can_export": get_authorized_products("edit", user=request.user).filter(pk=commit.repository.product_id).exists(),
+        "can_export": section == "reports" and get_authorized_products("edit", user=request.user).filter(pk=commit.repository.product_id).exists(),
         "commit": commit, "section": section, "base_commit": base, "category": category,
         "coverage_warning": coverage_warning, "base_coverage": base_coverage, "target_coverage": target_coverage,
-        "scans": Paginator(commit.scan_runs.order_by("-created_at"), 25).get_page(request.GET.get("page")),
-        "reports": Paginator(commit.aspm_reports.order_by("-version"), 25).get_page(request.GET.get("page")),
+        "scans": Paginator(commit.scan_runs.order_by("-created_at"), 25).get_page(request.GET.get("page")) if section == "originals" else None,
+        "reports": Paginator(commit.aspm_reports.order_by("-version"), 25).get_page(request.GET.get("page")) if section == "reports" else None,
         "observations": rows, "next_url": next_url,
-        "scan_statuses": commit.scan_runs.values("status").annotate(total=Count("pk")).order_by("status"),
+        "scan_statuses": scan_statuses,
         "recent_commits": commit.repository.commits.exclude(pk=commit.pk).order_by("-pk")[:100],
     })
 
 
-def state_revision(commit):
+def scan_state(commit):
+    return list(commit.scan_runs.values("status").annotate(total=Count("pk"), created=Max("created_at"), finished=Max("finished_at"), started=Max("started_at")).order_by("status"))
+
+
+def state_revision(commit, *, scans=None):
     """Small ScanRun/report aggregates only; never scan FindingObservation for polling."""
-    scans = list(commit.scan_runs.values("status").annotate(total=Count("pk"), created=Max("created_at"), finished=Max("finished_at"), started=Max("started_at")).order_by("status"))
+    if scans is None:
+        scans = scan_state(commit)
     reports = list(commit.aspm_reports.values("status").annotate(total=Count("pk"), version=Max("version")).order_by("status"))
     return hashlib.sha256(json.dumps([scans, reports], default=str, sort_keys=True).encode()).hexdigest()
 

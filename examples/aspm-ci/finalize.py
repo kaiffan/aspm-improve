@@ -48,7 +48,7 @@ def main():
     else:
         msg = "Timed out waiting for scanner processing."
         raise TimeoutError(msg)
-    scan_set = api(f"/commits/{commit_id}/finalize/", {"expected_scanners": expected})
+    scan_set = api(f"/commits/{commit_id}/finalize/", {"expected_scanners": expected, "scan_ids": [row["id"] for row in deliveries]})
     report = api(f"/commits/{commit_id}/reports/", {"scan_set_id": scan_set["id"]})
     deadline = time.monotonic() + 900
     while time.monotonic() < deadline:

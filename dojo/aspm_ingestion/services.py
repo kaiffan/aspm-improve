@@ -119,11 +119,18 @@ def accept_scan(token, data, upload):
 
 
 @transaction.atomic
-def finalize_commit(commit, expected_scanners):
+def finalize_commit(commit, expected_scanners, *, scan_ids=None):
     Commit.objects.select_for_update().get(pk=commit.pk)
+    scans = commit.scan_runs.order_by("created_at", "pk")
+    if scan_ids is not None:
+        selected = {str(identifier) for identifier in scan_ids}
+        scans = scans.filter(pk__in=selected)
+        if scans.count() != len(selected):
+            msg = "All selected ScanRuns must belong to this commit."
+            raise ValidationError(msg)
     return CommitScanSet.objects.create(
         commit=commit, expected_scanners=sorted(set(expected_scanners)),
-        scan_ids=[str(pk) for pk in commit.scan_runs.order_by("created_at", "pk").values_list("pk", flat=True)],
+        scan_ids=[str(pk) for pk in scans.values_list("pk", flat=True)],
     )
 
 

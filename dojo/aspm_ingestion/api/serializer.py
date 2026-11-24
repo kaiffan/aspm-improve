@@ -92,6 +92,7 @@ class ScanRunSerializer(serializers.ModelSerializer):
 
 class FinalizeSerializer(serializers.Serializer):
     expected_scanners = serializers.ListField(child=serializers.CharField(max_length=200), min_length=1, max_length=100)
+    scan_ids = serializers.ListField(child=serializers.UUIDField(), min_length=1, max_length=1000, required=False, help_text="Pin this pipeline's deliveries. If omitted, include all accepted runs currently on the commit.")
 
     def validate_expected_scanners(self, value):
         if any(scanner not in PARSERS for scanner in value):

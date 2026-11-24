@@ -154,6 +154,22 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
         response = self.client.post(reverse("aspm_v1:reports", args=[scan.commit_id]), {}, format="json")
         self.assertEqual(response.status_code, 400)
 
+    def test_finalize_pins_pipeline_attempt_and_rejects_another_commit(self):
+        failed = self.accepted(key="older-job", report=b"invalid JSON")
+        process_job("scan", str(failed.pk))
+        current = self.complete(self.accepted(key="new-job-attempt", attempt_number=2))
+        other = self.complete(self.accepted(key="another-commit", commit_sha="b" * 40))
+        url = reverse("aspm_v1:finalize", args=[current.commit_id])
+        invalid = self.client.post(url, {"expected_scanners": [current.scanner], "scan_ids": [str(other.pk)]}, format="json")
+        self.assertEqual(invalid.status_code, 400)
+        response = self.client.post(url, {"expected_scanners": [current.scanner], "scan_ids": [str(current.pk)]}, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["scan_ids"], [str(current.pk)])
+        report = request_report(current.commit, response.json()["id"])
+        self.assertTrue(report.manifest["complete"])
+        failed.refresh_from_db()
+        self.assertEqual(failed.status, "FAILED")
+
     def test_scope_product_repository_user_and_token_lifecycle(self):
         self.assertEqual(self.upload(project_id=self.hidden.pk).status_code, 403)
         hidden_repo = Repository.objects.create(product=self.hidden, url=URL)

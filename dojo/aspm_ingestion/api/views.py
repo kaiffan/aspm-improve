@@ -182,7 +182,7 @@ class FinalizeView(AspmView):
         require_scope(request.auth, "finalize")
         serializer = FinalizeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = finalize_commit(self.commit(request, pk), serializer.validated_data["expected_scanners"])
+        result = finalize_commit(self.commit(request, pk), serializer.validated_data["expected_scanners"], scan_ids=serializer.validated_data.get("scan_ids"))
         return Response(ScanSetSerializer(result).data, status=201)
 
 

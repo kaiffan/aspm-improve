@@ -199,5 +199,7 @@ RUN pip3 install --no-cache-dir -r requirements-dev.txt && \
 USER ${uid}
 
 FROM development AS django-unittests
+# Existing DefectDojo regression cases exercise legacy UI. ASPM tests explicitly enable strict mode.
+ENV DD_ASPM_API_ONLY=False
 COPY unittests/ ./unittests/
 COPY tests/ ./tests/

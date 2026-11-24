@@ -66,4 +66,6 @@ echo "Running docker compose unit tests with test case $TEST_CASE ..."
 # Compose V2 integrates compose functions into the Docker platform, continuing to support
 # most of the  previous docker-compose features and flags. You can run Compose V2 by
 # replacing the hyphen (-) with a space, using docker compose, instead of docker-compose.
-docker compose exec uwsgi bash -c "python manage.py test $TEST_CASE -v2 --keepdb $FAIL_FAST"
+# The legacy corpus still covers upstream import UI. ASPM-specific cases override strict mode to True.
+# Set ASPM_TEST_API_ONLY=True to run a strict-mode-only test target against a development image.
+docker compose exec -e DD_ASPM_API_ONLY="${ASPM_TEST_API_ONLY:-False}" uwsgi bash -c "python manage.py test $TEST_CASE -v2 --keepdb $FAIL_FAST"

@@ -1,0 +1,6 @@
+FROM aspm-rc5-api-integration:19cd7b4129de-qualified
+USER root
+COPY dojo/ /app/dojo/
+ENV DD_ASPM_GIT_SHA=12dfcbe6bb0beb1cbe0bd411b2c26b820cb9d23a DD_ASPM_BUILD_TIMESTAMP=2026-11-24T20:06:17Z
+LABEL org.opencontainers.image.revision="12dfcbe6bb0beb1cbe0bd411b2c26b820cb9d23a" org.opencontainers.image.created="2026-11-24T20:06:17Z" org.opencontainers.image.version="zero-finalize-candidate" org.aspm.integration.channel="unreleased-zero-finalize-candidate" org.aspm.zero-finalize.base="19cd7b4129de52e75eabaf0e07739e4c2b682f8e"
+USER 1001:1337

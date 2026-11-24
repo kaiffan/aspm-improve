@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "broker_loss": {
+    "accepted_during_outage": {
+      "status": "ACCEPTED",
+      "attempt": 0,
+      "test": null,
+      "count": 0,
+      "generation": 0,
+      "outbox": true
+    },
+    "recovered": {
+      "status": "COMPLETED",
+      "attempt": 1,
+      "test": 13,
+      "count": 1,
+      "generation": 1,
+      "outbox": false
+    }
+  },
+  "worker_sigkill": {
+    "before": {
+      "status": "PROCESSING",
+      "attempt": 1,
+      "test": 14,
+      "count": 0,
+      "generation": 0,
+      "outbox": true
+    },
+    "after_kill": {
+      "status": "PROCESSING",
+      "attempt": 1,
+      "test": 14,
+      "count": 0,
+      "generation": 0,
+      "outbox": true
+    },
+    "recovered": {
+      "status": "COMPLETED",
+      "attempt": 2,
+      "test": 14,
+      "count": 3000,
+      "generation": 2,
+      "outbox": false
+    }
+  },
+  "scope": "owned local containers; actual broker outage and SIGKILL; immediate dispatcher retry scheduling only for the two synthetic jobs"
+}

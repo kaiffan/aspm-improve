@@ -1,0 +1,107 @@
+{
+  "variant": "B",
+  "diagnostic_only": true,
+  "method": "Django in-process client, real PostgreSQL/importer; no broker queue or network latency",
+  "scans": 6,
+  "findings_per_scan": 100,
+  "acceptance": {
+    "n": 6,
+    "median_ms": 17.107776482589543,
+    "p95_ms": 18.04180903127417,
+    "queries": [
+      14,
+      26
+    ]
+  },
+  "completion": {
+    "n": 6,
+    "median_ms": 620.2688184857834,
+    "p95_ms": 653.3677120460197,
+    "queries": [
+      668,
+      669
+    ]
+  },
+  "snapshot_seconds": [
+    0.00947049300884828,
+    0.008039516978897154,
+    0.008479771960992366,
+    0.00816268497146666,
+    0.007942850003018975,
+    0.00810310203814879
+  ],
+  "views": {
+    "overview": {
+      "n": 20,
+      "median_ms": 11.293328017927706,
+      "p95_ms": 12.211986002512276,
+      "queries": [
+        23
+      ]
+    },
+    "findings": {
+      "n": 20,
+      "median_ms": 12.731075985357165,
+      "p95_ms": 13.62879597581923,
+      "queries": [
+        22
+      ]
+    },
+    "reports": {
+      "n": 20,
+      "median_ms": 11.143076495500281,
+      "p95_ms": 12.029358942527324,
+      "queries": [
+        23
+      ]
+    }
+  },
+  "reports": [
+    {
+      "fixation": {
+        "seconds": 0.008068141993135214,
+        "sql_queries": 13
+      },
+      "generation": {
+        "seconds": 0.01623366097919643,
+        "sql_queries": 9
+      },
+      "bytes": {
+        "html": 103439,
+        "json": 61693
+      }
+    },
+    {
+      "fixation": {
+        "seconds": 0.0039477989776059985,
+        "sql_queries": 10
+      },
+      "generation": {
+        "seconds": 0.015630862035322934,
+        "sql_queries": 9
+      },
+      "bytes": {
+        "html": 103495,
+        "json": 61731
+      }
+    },
+    {
+      "fixation": {
+        "seconds": 0.004366095992736518,
+        "sql_queries": 10
+      },
+      "generation": {
+        "seconds": 0.014725143031682819,
+        "sql_queries": 9
+      },
+      "bytes": {
+        "html": 103549,
+        "json": 61771
+      }
+    }
+  ],
+  "observation_relation_bytes": 638976,
+  "database_bytes": 34379455,
+  "app_cpu_seconds": 2.101650464,
+  "peak_rss_kib": 221028
+}

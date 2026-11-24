@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "method": "CUA real in-app browser, local candidate HTTP and real Celery worker",
+  "url": "http://localhost:48125/commits/2/evidence?tab=overview",
+  "tabs": [
+    "Overview",
+    "Scanner Reports",
+    "ASPM Report",
+    "Findings",
+    "Changes"
+  ],
+  "observed": {
+    "live_findings": 8,
+    "coverage": "UNKNOWN",
+    "scanners": [
+      "Generic Findings Import",
+      "Gitleaks Scan",
+      "Semgrep JSON Report",
+      "Trivy Scan"
+    ],
+    "semgrep_ci_attempt": 2,
+    "failed_history_visible": true,
+    "fixed_export_json_links": 4,
+    "upload_controls": 0,
+    "bounded_poll_script_present": true
+  },
+  "initial_failure": "HTTP internal network did not publish host port; task-local bridge network added, then browser passed."
+}

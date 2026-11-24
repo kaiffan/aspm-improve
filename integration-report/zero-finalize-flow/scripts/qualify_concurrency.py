@@ -1,8 +1,8 @@
 """Run via manage.py shell on an isolated disposable database; never on production."""
-# ruff: noqa: INP001, T201, PLC0415
+# ruff: noqa: INP001, T201, S101, PLC0415
 import hashlib
 import json
-import os
+import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
@@ -24,10 +24,15 @@ from dojo.aspm_ingestion.storage import private_path
 from dojo.aspm_ingestion.tasks import dispatch_jobs, process_job
 from dojo.models import Product, Product_Type
 
+if sys.flags.optimize:
+    msg = "Qualification requires Python assertions enabled."
+    raise RuntimeError(msg)
+
 
 def main():
     if settings.DATABASES["default"]["NAME"] != "aspm_zero":
-        raise RuntimeError("This harness is restricted to the owned aspm_zero database")
+        msg = "This harness is restricted to the owned aspm_zero database"
+        raise RuntimeError(msg)
     run = uuid.uuid4().hex[:12]
     user_model = get_user_model()
     product_type, = Product_Type.objects.bulk_create([Product_Type(name="Zero " + run)])
@@ -35,7 +40,7 @@ def main():
     service = user_model.objects.create_user(username="zero-ci-" + run, password=None)
     _, raw = issue_token(user=service, product=product, scopes=["submit", "read", "status", "reports"],
                          expires_at=timezone.now() + timedelta(hours=4), label="zero qualification")
-    reader = user_model.objects.create_user(username="zero-reader-" + run, password="ZeroFinalize-local-smoke-2026")
+    reader = user_model.objects.create_user(username="zero-reader-" + run, password="ZeroFinalize-local-smoke-2026")  # noqa: S106 -- isolated synthetic browser fixture
     product.authorized_users.add(reader.pk)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION="ASPM " + raw)
@@ -100,7 +105,7 @@ def main():
         assert report.status == "COMPLETED"
         assert json.dumps(report.manifest, sort_keys=True) == frozen
         membership = {str(pk) for pk in CommitScanSetMembership.objects.filter(scan_set=report.scan_set).values_list("scan_id", flat=True)}
-        payload = json.loads(private_path(report.json_path).read_text())
+        payload = json.loads(private_path(report.json_path).read_text(encoding="utf-8"))
         assert membership == set(report.scan_set.scan_ids) == {row["id"] for row in payload["report"]["scans"]}
         assert {row["scan_id"] for row in payload["observations"]} <= membership
         assert late_id not in membership
@@ -125,8 +130,8 @@ def main():
         process_job("scan", queued)
         assert ScanRun.objects.get(pk=queued).status == "COMPLETED"
         checks["outbox_fault_and_recovery"] = True
-    from django.contrib.sessions.backends.db import SessionStore
     from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
+    from django.contrib.sessions.backends.db import SessionStore
     session = SessionStore()
     session[SESSION_KEY] = str(reader.pk)
     session[BACKEND_SESSION_KEY] = "django.contrib.auth.backends.ModelBackend"

@@ -1,9 +1,10 @@
 """Small fresh A/B diagnostic; does not replace frozen 1M Core9/acceptance qualification."""
-# ruff: noqa: INP001, T201
+# ruff: noqa: INP001, T201, S101, PT018
 import json
 import os
 import resource
 import statistics
+import sys
 import time
 from datetime import timedelta
 from unittest.mock import patch
@@ -24,6 +25,10 @@ from dojo.aspm_ingestion.storage import private_path
 from dojo.aspm_ingestion.tasks import process_job
 from dojo.models import Product, Product_Type
 
+if sys.flags.optimize:
+    msg = "Qualification requires Python assertions enabled."
+    raise RuntimeError(msg)
+
 
 def measure(function):
     start = time.perf_counter()
@@ -36,7 +41,7 @@ def summary(rows):
     times = sorted(row["seconds"] for row in rows)
     return {"n": len(rows), "median_ms": statistics.median(times) * 1000,
             "p95_ms": times[max(0, int(len(times) * .95) - 1)] * 1000,
-            "queries": sorted(set(row["sql_queries"] for row in rows))}
+            "queries": sorted({row["sql_queries"] for row in rows})}
 
 
 def main():
@@ -61,7 +66,7 @@ def main():
     artifact = json.dumps({"findings": [{"title": f"Diagnostic finding {i}", "severity": "High", "description": "Small synthetic A/B", "cwe": 79} for i in range(size)]}).encode()
     with patch("dojo.aspm_ingestion.services.wake_dispatcher"):
         for i in range(samples):
-            response, timing = measure(lambda: api.post(reverse("aspm_v1:scans"), {
+            response, timing = measure(lambda i=i: api.post(reverse("aspm_v1:scans"), {
                 "project_id": product.pk, "repository_url": "https://example.invalid/small-ab", "commit_sha": "a" * 40,
                 "scanner_type": "Generic Findings Import", "pipeline_id": "small-ab", "job_id": "generic",
                 "scan_scope": "repository-v1", "attempt_number": i + 1, "idempotency_key": f"small/{i}",
@@ -70,19 +75,19 @@ def main():
             assert response.status_code == 202, response.content
             accepted.append(timing)
             scan = ScanRun.objects.get(pk=response.json()["id"])
-            _, timing = measure(lambda: process_job("scan", str(scan.pk)))
+            _, timing = measure(lambda scan=scan: process_job("scan", str(scan.pk)))
             completion.append(timing)
             scan.refresh_from_db()
             assert scan.status == "COMPLETED" and scan.finding_count == size
             snapshots.append(scan.timings["observation_seconds"])
-        for i in range(3):
+        for _ in range(3):
             def freeze():
                 if variant == "A":
                     frozen = finalize_commit(scan.commit, [scan.scanner], scan_ids=[scan.pk])
                     return request_report(scan.commit, frozen.pk)
                 return request_report(scan.commit, scan_ids=[scan.pk], expected_scanners=[scan.scanner])
             report, timing = measure(freeze)
-            _, generation = measure(lambda: process_job("report", str(report.pk)))
+            _, generation = measure(lambda report=report: process_job("report", str(report.pk)))
             report.refresh_from_db()
             assert report.status == "COMPLETED"
             reports.append({"fixation": timing, "generation": generation,
@@ -91,7 +96,7 @@ def main():
         for tab in ("overview", "findings", "reports"):
             observations = []
             for _ in range(21):
-                response, timing = measure(lambda: browser.get(reverse("aspm_commit_evidence", args=[scan.commit_id]), {"tab": tab}))
+                response, timing = measure(lambda tab=tab: browser.get(reverse("aspm_commit_evidence", args=[scan.commit_id]), {"tab": tab}))
                 assert response.status_code == 200
                 observations.append(timing)
             views[tab] = summary(observations[1:])

@@ -18,3 +18,5 @@ node --test release/1.0.1/scripts/*.test.cjs
 Image строится из `git archive 12dfcbe6bb0beb1cbe0bd411b2c26b820cb9d23a dojo` с [Dockerfile.candidate](Dockerfile.candidate). `scripts/verify_image_sources.py` проверяет каждый tracked Git blob в A/B images. Script paths для local qualification рассчитаны на приватный Docker runtime и volumes `/zero-qualification` и `/zero-runtime`; env/credentials должны принадлежать вашему изолированному стенду и не публиковаться.
 
 `scripts/qualify_concurrency.py` ограничен runtime DB `aspm_zero`; worker fault controller проверяет ownership labels и работает только с `aspm-zero-runtime-*`. `scripts/benchmark_small.py` ограничен `aspm_zero_ab_a/b`; одинаковые CPU2 / RAM1536MiB, PostgreSQL CPU1 / RAM768MiB, native ARM64. Он выполняется последовательно, отдельно от full suites и HTTP worker traffic.
+
+Standalone qualification scripts запрещают запуск Python с `-O`: ownership checks и behavioral oracles используют assertions. Последующая правка форматирования/guards этих scripts не изменяет application/test source или source SHA собранного image.

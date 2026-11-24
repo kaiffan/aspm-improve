@@ -184,6 +184,12 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
         self.client.force_authenticate(user=user)
         self.assertEqual(self.upload(key="human").status_code, 403)
         self.assertEqual(self.client.post(reverse("importscan-list"), {}, format="multipart").status_code, 403)
+        user.set_unusable_password()  # SSO humans also have unusable passwords; that is not machine enrollment.
+        user.save()
+        legacy_payload = {"scan_type": "Generic Findings Import", "product_name": self.product.name,
+                          "engagement_name": "SSO upload must be denied", "auto_create_context": True,
+                          "file": SimpleUploadedFile("scan.json", generic()), "deduplication_execution_mode": "sync"}
+        self.assertEqual(self.client.post(reverse("importscan-list"), legacy_payload, format="multipart").status_code, 403)
         self.assertEqual(self.client.get(reverse("aspm_v1:scan-detail", args=[scan.pk])).status_code, 200)
         self.product.authorized_users.remove(user.pk)
         self.assertEqual(self.client.get(reverse("aspm_v1:scan-detail", args=[scan.pk])).status_code, 404)

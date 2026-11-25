@@ -50,6 +50,12 @@ class ChartTests(unittest.TestCase):
         paths = {web[key]["httpGet"]["path"] for key in ("startupProbe", "readinessProbe", "livenessProbe")}
         self.assertEqual(len(paths), 3)
 
+    def test_nginx_temp_paths_are_on_the_writable_mount(self):
+        config = next(x["data"]["nginx.conf"] for x in render() if x["kind"] == "ConfigMap")
+        for directive in ("client_body", "proxy", "uwsgi", "fastcgi", "scgi"):
+            with self.subTest(directive=directive):
+                self.assertIn(f"{directive}_temp_path /tmp/", config)
+
     def test_migrations_are_separate_fenced_hook(self):
         job = next(x for x in render() if x["kind"] == "Job")
         self.assertEqual(job["metadata"]["annotations"]["helm.sh/hook"], "pre-install,pre-upgrade")

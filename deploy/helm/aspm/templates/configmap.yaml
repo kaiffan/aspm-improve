@@ -16,6 +16,8 @@ data:
       client_body_temp_path /tmp/client-body;
       proxy_temp_path /tmp/proxy;
       uwsgi_temp_path /tmp/uwsgi;
+      fastcgi_temp_path /tmp/fastcgi;
+      scgi_temp_path /tmp/scgi;
       client_max_body_size 51m;
       server {
         listen 8080;

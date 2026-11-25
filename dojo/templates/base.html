@@ -394,6 +394,7 @@
                             {% if "dojo.view_note_type"|has_configuration_permission:request %}
                                 <a href="{% url 'note_type' %}" class="block py-1.5 ps-12 pe-4 text-sm">{% trans "Note Types" %}</a>
                             {% endif %}
+                            {% if aspm_webhooks_can_manage %}<a href="{% url 'aspm_webhooks' %}" class="block py-1.5 ps-12 pe-4 text-sm">{% trans "Integrations → Webhooks" %}</a>{% endif %}
                             <a href="{% url 'notifications' %}" class="block py-1.5 ps-12 pe-4 text-sm">{% trans "Notifications" %}</a>
                             {% if system_settings.enable_webhooks_notifications and "dojo.view_notification_webhooks"|has_configuration_permission:request %}
                                 <a href="{% url 'notification_webhooks' %}" class="block py-1.5 ps-12 pe-4 text-sm">{% trans "Notification Webhooks" %}</a>

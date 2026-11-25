@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel panel-default aspm-evidence"><div class="panel-heading"><h1>{{ subscription.name }}: delivery history</h1></div><div class="panel-body">
+<nav aria-label="Breadcrumb"><a href="{% url 'aspm_webhooks' %}">Settings → Integrations → Webhooks</a> → {{ subscription.name }}</nav>
+<p>Project ID {{ subscription.product_id }} · {% if subscription.archived %}Archived{% elif subscription.enabled %}Enabled{% else %}Disabled{% endif %} · Last success: {{ subscription.last_success_at|default:"None" }}</p><p class="aspm-wrap">Endpoint: {{ subscription.endpoint }}</p>
+{% if not subscription.archived %}<p><a class="btn btn-default" href="{% url 'aspm_webhook_edit' subscription.pk %}">Edit configuration</a></p><div class="aspm-hook-actions">
+<form method="post" action="{% url 'aspm_webhook_action' subscription.pk 'test' %}">{% csrf_token %}<button class="btn btn-default" type="submit">Send test event</button></form>
+<form method="post" action="{% url 'aspm_webhook_action' subscription.pk 'rotate' %}">{% csrf_token %}<button class="btn btn-default" type="submit">Rotate secret</button></form>
+<form method="post" action="{% url 'aspm_webhook_action' subscription.pk 'disable' %}">{% csrf_token %}<button class="btn btn-default" type="submit">Disable</button></form>
+<form method="post" action="{% url 'aspm_webhook_action' subscription.pk 'archive' %}">{% csrf_token %}<button class="btn btn-default" type="submit">Archive</button></form></div>{% endif %}
+<form method="get"><label for="delivery-state">Delivery state</label><select id="delivery-state" name="state"><option value="">All</option>{% for state in states %}<option {% if selected_state == state %}selected{% endif %}>{{ state }}</option>{% endfor %}</select><button class="btn btn-default" type="submit">Filter</button></form>
+<div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Event / ID</th><th>State / error</th><th>Attempts</th><th>Next attempt</th><th>Actions</th></tr></thead><tbody>
+{% for row in page %}<tr><td>{{ row.event.event_type }}<br><code>{{ row.event_id }}</code></td><td>{{ row.state }}<br>{{ row.last_error }}</td><td>{{ row.attempts }}</td><td>{% if row.state == 'PENDING' or row.state == 'RETRY' or row.state == 'IN_FLIGHT' %}{{ row.next_attempt_at }}{% else %}—{% endif %}</td><td><a href="{% url 'aspm_webhook_attempts' subscription.pk row.pk %}">Attempts</a>{% if row.state == 'DEAD' or row.state == 'SUCCEEDED' or row.state == 'CANCELLED' %}<form method="post" action="{% url 'aspm_webhook_replay' subscription.pk row.pk %}">{% csrf_token %}<button class="btn btn-default" type="submit">Replay</button></form>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No deliveries yet. Send a test event or wait for a matching business event. Filters apply only to attributes present in that event.</td></tr>{% endfor %}
+</tbody></table></div>{% include "dojo/webhooks/_pages.html" %}
+</div></section>
+{% endblock %}

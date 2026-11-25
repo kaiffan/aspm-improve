@@ -94,6 +94,7 @@ from dojo.user.api.urls import add_user_urls
 from dojo.user.api.views import ForcedResetObtainAuthToken, RevokeApiTokenView, UserProfileView
 from dojo.user.ui.urls import urlpatterns as user_urls
 from dojo.utils import get_system_setting
+from dojo.webhooks.ui.urls import urlpatterns as webhook_ui_urls
 
 logger = logging.getLogger(__name__)
 
@@ -196,6 +197,7 @@ ur += cicd_infrastructure_urls
 ur += sla_urls
 ur += system_settings_urls
 ur += notifications_urls
+ur += webhook_ui_urls
 ur += object_urls
 ur += benchmark_urls
 ur += notes_urls

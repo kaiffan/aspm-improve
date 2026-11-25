@@ -366,3 +366,15 @@ code { color: var(--color-dd-interactive-700); }
 .aspm-workspace-form p { margin: 0; }
 .aspm-workspace-form select { max-width: min(100%, 33rem); }
 .aspm-workspace-form input { width: auto; max-width: 100%; }
+.aspm-workspace-form :is(.form-control, select, input),
+.aspm-workspace-form .btn-secondary,
+#aspm-topbar #simple_search_submit {
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.aspm-workspace-form .btn-secondary:hover,
+#aspm-topbar #simple_search_submit:hover {
+  background-color: var(--color-surface-3);
+}

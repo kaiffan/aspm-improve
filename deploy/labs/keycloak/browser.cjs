@@ -65,10 +65,24 @@ async function capture(session, name) {
       stylesheet: Array.from(document.styleSheets).some(sheet => sheet.href?.includes('tailwind-out.css') && sheet.cssRules.length > 0),
     }));
     assert.ok(check.stylesheet, 'Compiled application stylesheet is missing');
+    const contrast = await session.page.waitForFunction(() => {
+      const luminance = rgb => rgb.match(/[0-9.]+/g).slice(0, 3).map(value => {
+        const channel = Number(value) / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      }).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+      const controls = document.querySelectorAll('.aspm-workspace-form input, .aspm-workspace-form .btn-secondary, #simple_search_submit');
+      const minimum = Math.min(...Array.from(controls, element => {
+        const style = getComputedStyle(element);
+        const [lower, higher] = [luminance(style.color), luminance(style.backgroundColor)].sort((a, b) => a - b);
+        return (higher + 0.05) / (lower + 0.05);
+      }));
+      return minimum >= 4.5 ? minimum : false;
+    }, undefined, { timeout: 4000 });
+    const minimumContrast = await contrast.jsonValue();
     assert.ok(check.heading, `No heading on ${name}`);
     assert.ok(check.scroll <= check.width + 2, `Horizontal overflow on ${name} at ${width}`);
     await session.page.screenshot({ path: join(output, `${name}-${width}-${theme}.png`), fullPage: true });
-    checks.push({ stage: 'browser-layout', page: name, width, theme });
+    checks.push({ stage: 'browser-layout', page: name, width, theme, form_contrast_minimum: Number(minimumContrast.toFixed(2)) });
   }
 }
 

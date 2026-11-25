@@ -14,6 +14,7 @@ The limit itself (``DATA_UPLOAD_MAX_NUMBER_FIELDS``) is now configurable via the
 it for instances that legitimately submit very large imports.
 """
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import TooManyFieldsSent
 from django.test import SimpleTestCase, override_settings
 from rest_framework.exceptions import ValidationError
@@ -40,7 +41,9 @@ class ImportPermissionUploadLimitsTest(SimpleTestCase):
         django_request = APIRequestFactory().post(
             "/api/v2/import-scan/", payload, format="multipart",
         )
-        return Request(django_request, parsers=[MultiPartParser(), FormParser()])
+        request = Request(django_request, parsers=[MultiPartParser(), FormParser()])
+        request.user = get_user_model()(username="scan-uploader")
+        return request
 
     @override_settings(DATA_UPLOAD_MAX_NUMBER_FIELDS=5)
     def test_too_many_fields_raises_validation_error(self):

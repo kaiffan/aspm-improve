@@ -1,0 +1,7 @@
+# Kubernetes test results
+
+Helm lint/template and typed values schema checks: see raw/helm-qualification.txt. Kubernetes 1.31 strict schema validation of default and extended manifests: see raw/helm-qualification.txt. Invalid-value and component-switch tests use real helm template invocations. These are unit/manifest checks, not a cluster deployment.
+
+No Kubernetes current context was configured and kind was unavailable. Installation, upgrade, rollback, pod replacement, scaling, CNI, actual migration hook ordering, storage access modes and external HA dependency failures are NOT TESTED on Kubernetes. deploy/scripts/kubernetes-smoke.sh requires an explicitly named aspm-lab-* namespace with an ownership label and existing reviewed Secrets/PVCs. It installs/upgrades, runs a Helm HTTP test and replaces web/worker pods without deleting namespaces or volumes. Extend the lab with database/broker/storage failure injection and restore verification before claiming KUBERNETES DEPLOYED.
+
+The final chart passed 11 render tests and strict validation of 48 resources across the default, development, staging, production example, and extended profiles. Running the rendered commands in local read-only ARM64 containers reproduced an nginx startup failure caused by default FastCGI temp paths. The corrected configuration passed `nginx -t`, public login and internal readiness. The ServiceMonitor route was also checked over HTTP and adjusted to `/django_metrics/metrics`. See [local metrics evidence](raw/metrics-smoke.json) and [Helm output](raw/helm-qualification.txt).

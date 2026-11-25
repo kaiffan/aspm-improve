@@ -1,0 +1,24 @@
+groups:
+  - name: aspm-durable-delivery
+    rules:
+      - alert: AspmWebhookDeliveryDelayed
+        expr: max(aspm_webhook_outbox_oldest_seconds) > 600
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: ASPM webhook delivery has been pending for more than ten minutes
+      - alert: AspmWebhookDeadLettersIncreased
+        expr: delta((max(aspm_webhook_outbox_dead))[30m:]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: ASPM recorded new dead-letter deliveries
+      - alert: AspmOutboxMetricsUnavailable
+        expr: max(aspm_outbox_metrics_available) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: ASPM cannot collect durable outbox metrics

@@ -1,0 +1,5 @@
+FROM aspm-zero-finalize:25da29aaff22
+ARG REVISION
+LABEL org.opencontainers.image.revision=$REVISION
+ENV DD_ASPM_GIT_SHA=$REVISION
+COPY dojo/ /app/dojo/

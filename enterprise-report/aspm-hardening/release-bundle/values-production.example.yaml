@@ -1,0 +1,15 @@
+# Replace repository, digest, host, Secret/PVC names and networkPolicy rules.
+# Pin both images to registry manifest digests from a qualified native build.
+web:
+  replicas: 3
+worker:
+  replicas: 3
+  concurrency: 2
+config:
+  DD_ALLOWED_HOSTS: localhost,aspm.corp.example
+  DD_SITE_URL: https://aspm.corp.example
+ingress:
+  enabled: true
+  host: aspm.corp.example
+  tlsSecretName: aspm-corp-tls
+# Empty egress deliberately fails closed; supply actual dependency selectors/CIDRs.

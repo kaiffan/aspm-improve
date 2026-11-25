@@ -1,0 +1,5 @@
+FROM aspm-nginx-build:940a40f1f6f2
+ARG REVISION
+LABEL org.opencontainers.image.revision=$REVISION
+COPY aspm.css /usr/share/nginx/html/static/dojo/css/aspm.css
+COPY aspm.js /usr/share/nginx/html/static/dojo/js/aspm.js

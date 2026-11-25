@@ -1,0 +1,7 @@
+# Helm values
+
+The generated chart README lists every value and type. Schema generation and documentation are reproducible via tests/generate_schema.py and tests/generate_readme.py. Run validate-chart.sh with Python PyYAML/jsonschema, Helm and kubeconform installed. Unknown root keys, invalid digests, invalid port/replica types and short worker shutdown grace fail validation.
+
+Provision an existing runtime Secret with django-secret-key, credential-aes-key, database-url, broker-url and cache-url. The latter two must identify distinct Redis/Valkey databases or instances; separate instances are preferred. Database URL identifies the primary. Configure DD_DATABASE_OPTIONS for connect_timeout, sslmode=verify-full and CA path. DD_DATABASE_CONN_MAX_AGE controls connection lifetime; it is not an automatic connection pool. Budget connections for web processes × threads, worker concurrency, beat, migration and monitoring, plus reserve. Advisory locks require direct PostgreSQL or session pooling; transaction pooling is unsupported for these commands/tasks.
+
+Provide existing RWX evidence/media claims and CA Secret before installation. Replace placeholder image repositories/tags, set registry manifest digests from a qualified build, set allowed hosts/site URL and reviewed egress rules. Supply image pull secrets where needed. Never put live credentials into values or git. Development profile explicitly disables PostgreSQL TLS and secure cookies; never promote it to production.

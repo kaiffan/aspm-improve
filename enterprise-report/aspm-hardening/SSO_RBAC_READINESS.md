@@ -1,0 +1,5 @@
+# SSO/RBAC readiness
+
+No corporate OIDC/AD integration is implemented or claimed. Existing Product authorization still governs scanner artifacts, commits, observations and generated report downloads. New integration management has one explicit platform capability (dojo.manage_outbound_webhooks), with superuser support, active-user enforcement and no is_staff shortcut. Expert access must not be inferred from staff status. Product membership alone never grants platform management.
+
+Future SecOps mapping should grant platform capabilities through reviewed OIDC/AD group claims. Expert should receive cross-Product triage/report capabilities without this management permission. User should map validated external groups such as devsecops-TEST-user to Product TEST read access only. Do not permit client-supplied group/Product IDs to establish membership. Implement group reconciliation, removal, disabled-user/session revocation, issuer/audience validation, role conflict handling and negative cross-Product tests in a separate IAM milestone. Preserve service-token scopes and lifecycle independently of interactive SSO.

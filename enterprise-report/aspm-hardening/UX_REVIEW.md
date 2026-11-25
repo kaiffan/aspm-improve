@@ -1,0 +1,5 @@
+# UX review
+
+Reviewed actual Dashboard, Projects, profile, Commit evidence, scanner report/history, generated report, historical observations, changes and webhook workflows through browser automation. Existing corporate shell, brand palette and theme system were retained. Pages are server-rendered and keep their existing navigation/filter/pagination contracts. Repository/Commit behavior remains covered by existing functional tests; exhaustive system-settings and every legacy page/mobile workflow are not claimed.
+
+Found stale session breadcrumbs in new integration pages, visually indistinguishable breadcrumb links and keyboard-inaccessible horizontal result regions on narrow displays. A global error handler incorrectly returned HTTP 400 for permission-denied pages. The corrupt-original download reproduction returned HTTP 200 with altered evidence. See the corresponding fixes and before/after raw evidence. Theme contrast must be checked after the existing transition finishes; the browser harness now waits for finite animations rather than sampling intermediate colors.

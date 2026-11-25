@@ -1,0 +1,9 @@
+# Private storage architecture
+
+This candidate uses the allowed shared-filesystem alternative. There is no new S3 backend and no claim of S3 qualification. Every web/worker replica must mount the same RWX evidence claim at /app/aspm-private, with UID 1001 ownership and private access. nginx receives no evidence mount. Observations and immutable report manifests remain in PostgreSQL. Media uses a separate shared claim.
+
+Original uploads use random server-generated keys, exclusive file creation, streaming SHA-256 and size validation, file/directory fsync and database publication only after persistence. Reports publish unique paths/checksums only after both outputs are complete. Downloads authorize through the existing Product/token boundary, verify the opened file's checksum before streaming, and return a sanitized 503 on absence/corruption. The handle is rewound rather than reopening the path. Existing immutable history is not rewritten.
+
+New guards reserve 1 GiB free and limit each generated HTML/JSON file to 512 MiB by default. Failed generation removes unpublished files. These guards supplement CSI filesystem quotas; they do not serialize simultaneous writers or provide a cluster-wide quota ledger. Full checksum verification adds sequential read I/O to downloads. Configure retention of orphaned/unreferenced files using a reviewed manifest; never remove referenced artifacts or finalized observations. Backup database and evidence together and verify checksums after restore. Local Docker volume checks do not qualify an RWX CSI implementation.
+
+The local ARM64 smoke proved writes by a Celery worker could be read and checksum verified by the nginx/Django web workload sharing one Docker volume. A local PostgreSQL restore to a fresh database and a separate evidence directory verified 206 file references. These checks cover one host. Kubernetes storage remains to be verified across nodes with the target CSI driver.

@@ -1,0 +1,13 @@
+web:
+  replicas: 1
+worker:
+  replicas: 1
+  concurrency: 1
+pdb:
+  enabled: false
+config:
+  DD_DATABASE_OPTIONS: '{"connect_timeout":3,"sslmode":"disable"}'
+  DD_SESSION_COOKIE_SECURE: "False"
+  DD_CSRF_COOKIE_SECURE: "False"
+databaseTLS:
+  existingSecret: ""

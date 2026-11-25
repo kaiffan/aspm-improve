@@ -1,0 +1,7 @@
+# Migration and rollback
+
+Review 0307_aspm_scm_hierarchy (non-atomic operations and PostgreSQL trigger updates) and 0316_aspm_finalized_scan_membership (backfill and immutable membership triggers). They remain unchanged. New 0317 adds webhook tables/indexes/uniqueness, 0318 captures transactional business events and protects payload immutability, and 0319 separates broker dispatch leases from retry eligibility.
+
+Before upgrade, capture a database backup and matching immutable evidence manifest; rehearse restore elsewhere. Run the chart migration hook or python manage.py aspm_migrate with a reviewed timeout. A session advisory lock permits one runner; the Job's active deadline bounds the outer operation. Use PostgreSQL lock/statement timeout policy appropriate for actual data volume. Do not raise resource limits to hide blocking locks. Investigate blockers and retry a failed release deliberately. Application preflight must pass before accepting traffic.
+
+Helm rollback reverts workloads/configuration, not physical database state. Do not automatically unapply historical data migrations. Retain additive webhook schema/triggers when rolling application code back; review enabled subscriptions and pause dispatch before downgrade. A reverse migration would remove new delivery history and must be treated as a separate destructive operation requiring a verified backup. Restore to a new database/PVC and switch only after schema and checksum checks. No automatic PostgreSQL schema rollback is promised.

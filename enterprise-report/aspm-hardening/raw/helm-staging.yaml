@@ -1,0 +1,954 @@
+---
+# Source: aspm/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qualification-aspm
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aspm
+      app.kubernetes.io/instance: qualification
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "ingress-nginx"
+      ports: [{protocol: TCP, port: 8080}]
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aspm
+              app.kubernetes.io/instance: qualification
+              app.kubernetes.io/component: test
+      ports: [{protocol: TCP, port: 8080}]
+  egress:
+    - to:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+
+---
+# Source: aspm/templates/scaling.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: qualification-aspm-web
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aspm
+      app.kubernetes.io/instance: qualification
+      app.kubernetes.io/component: web
+
+---
+# Source: aspm/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: qualification-aspm
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+  annotations:
+    {}
+automountServiceAccountToken: false
+
+---
+# Source: aspm/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qualification-aspm-nginx
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+data:
+  nginx.conf: |
+    worker_processes auto;
+    pid /tmp/nginx.pid;
+    error_log /dev/stderr warn;
+    events { worker_connections 1024; }
+    http {
+      include /etc/nginx/mime.types;
+      access_log /dev/stdout;
+      client_body_temp_path /tmp/client-body;
+      proxy_temp_path /tmp/proxy;
+      uwsgi_temp_path /tmp/uwsgi;
+      fastcgi_temp_path /tmp/fastcgi;
+      scgi_temp_path /tmp/scgi;
+      client_max_body_size 51m;
+      server {
+        listen 8080;
+        server_tokens off;
+        location /static/ { alias /usr/share/nginx/html/static/; }
+        location /health/ { return 404; }
+        location /django_metrics { return 404; }
+        location / {
+          include /etc/nginx/wsgi_params;
+          uwsgi_pass 127.0.0.1:3031;
+          uwsgi_read_timeout 120s;
+          uwsgi_param HTTP_X_FORWARDED_PROTO $http_x_forwarded_proto;
+        }
+      }
+    }
+
+---
+# Source: aspm/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: qualification-aspm
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+  annotations:
+    {}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/component: web
+  ports: [{name: http, port: 80, targetPort: http}]
+
+---
+# Source: aspm/templates/workloads.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qualification-aspm-web
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+    app.kubernetes.io/component: web
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aspm
+      app.kubernetes.io/instance: qualification
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aspm
+        app.kubernetes.io/instance: qualification
+        app.kubernetes.io/component: web
+      annotations:
+        checksum/config: b035d082685be4be8e7887a47a39d60e6f50de6cfc63f37c66ccd0827f97ac77
+        checksum/nginx: 3fdd2f89595c01c1d9cdf2c733d5c6342a1e82a725a1a353792057405c61d8c5
+    spec:
+      serviceAccountName: qualification-aspm
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 90
+      securityContext:
+        fsGroup: 1337
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: schema-and-storage
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [python, manage.py, aspm_preflight, --wait-seconds=300]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: tmp, mountPath: /tmp}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      containers:
+        - name: web
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [uwsgi]
+          args: [--master, --need-app, --die-on-term, --enable-threads, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, "2", --threads, "2", --buffer-size, "16384", --reload-mercy, "60"]
+          ports: [{name: health, containerPort: 8081}]
+          startupProbe:
+            failureThreshold: 60
+            httpGet:
+              httpHeaders:
+              - name: Host
+                value: localhost
+              path: /health/startup
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              httpHeaders:
+              - name: Host
+                value: localhost
+              path: /health/ready
+              port: health
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              httpHeaders:
+              - name: Host
+                value: localhost
+              path: /health/live
+              port: health
+            periodSeconds: 15
+            timeoutSeconds: 3
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: media, mountPath: /app/media}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/defectdojo}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+        - name: nginx
+          image: "aspm/nginx:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [nginx, -g, "daemon off;"]
+          ports: [{name: http, containerPort: 8080}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          volumeMounts:
+            - {name: nginx-config, mountPath: /etc/nginx/nginx.conf, subPath: nginx.conf, readOnly: true}
+            - {name: nginx-tmp, mountPath: /tmp}
+      volumes:
+        - name: evidence
+          persistentVolumeClaim: {claimName: "aspm-evidence"}
+        - name: media
+          persistentVolumeClaim: {claimName: "aspm-media"}
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        - {name: run, emptyDir: {sizeLimit: 64Mi}}
+        - name: db-tls
+          secret: {secretName: "aspm-postgres-ca"}
+        - {name: nginx-tmp, emptyDir: {sizeLimit: 128Mi}}
+        - name: nginx-config
+          configMap: {name: qualification-aspm-nginx}
+---
+# Source: aspm/templates/workloads.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qualification-aspm-worker
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aspm
+      app.kubernetes.io/instance: qualification
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aspm
+        app.kubernetes.io/instance: qualification
+        app.kubernetes.io/component: worker
+      annotations:
+        checksum/config: b035d082685be4be8e7887a47a39d60e6f50de6cfc63f37c66ccd0827f97ac77
+        checksum/nginx: 3fdd2f89595c01c1d9cdf2c733d5c6342a1e82a725a1a353792057405c61d8c5
+    spec:
+      serviceAccountName: qualification-aspm
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 960
+      securityContext:
+        fsGroup: 1337
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: schema-and-storage
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [python, manage.py, aspm_preflight, --wait-seconds=300]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: tmp, mountPath: /tmp}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      containers:
+        - name: worker
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [celery]
+          args: [--app=dojo, worker, --loglevel=INFO, --pool=prefork, "--concurrency=2", --prefetch-multiplier=1, "--queues=celery"]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: media, mountPath: /app/media}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/defectdojo}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      volumes:
+        - name: evidence
+          persistentVolumeClaim: {claimName: "aspm-evidence"}
+        - name: media
+          persistentVolumeClaim: {claimName: "aspm-media"}
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        - {name: run, emptyDir: {sizeLimit: 64Mi}}
+        - name: db-tls
+          secret: {secretName: "aspm-postgres-ca"}
+---
+# Source: aspm/templates/workloads.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qualification-aspm-beat
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+    app.kubernetes.io/component: beat
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aspm
+      app.kubernetes.io/instance: qualification
+      app.kubernetes.io/component: beat
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aspm
+        app.kubernetes.io/instance: qualification
+        app.kubernetes.io/component: beat
+      annotations:
+        checksum/config: b035d082685be4be8e7887a47a39d60e6f50de6cfc63f37c66ccd0827f97ac77
+        checksum/nginx: 3fdd2f89595c01c1d9cdf2c733d5c6342a1e82a725a1a353792057405c61d8c5
+    spec:
+      serviceAccountName: qualification-aspm
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1337
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: schema-and-storage
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [python, manage.py, aspm_preflight, --wait-seconds=300]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: tmp, mountPath: /tmp}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      containers:
+        - name: beat
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [python, manage.py, aspm_beat]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: media, mountPath: /app/media}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/defectdojo}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      volumes:
+        - name: evidence
+          persistentVolumeClaim: {claimName: "aspm-evidence"}
+        - name: media
+          persistentVolumeClaim: {claimName: "aspm-media"}
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        - {name: run, emptyDir: {sizeLimit: 64Mi}}
+        - name: db-tls
+          secret: {secretName: "aspm-postgres-ca"}
+---
+# Source: aspm/templates/migration.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qualification-aspm-migrate
+  labels:
+    app.kubernetes.io/name: aspm
+    app.kubernetes.io/instance: qualification
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: "aspm-0.1.0-rc.1"
+    app.kubernetes.io/component: migration
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aspm
+        app.kubernetes.io/instance: qualification
+        app.kubernetes.io/component: migration
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1337
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: "aspm/django:1.0.1-enterprise-rc"
+          imagePullPolicy: IfNotPresent
+          command: [python, manage.py, aspm_migrate, "--lock-wait-seconds=120"]
+          env:
+
+            - name: DD_ALLOWED_HOSTS
+              value: "localhost,aspm.example.invalid"
+            - name: DD_ASPM_API_ONLY
+              value: "True"
+            - name: DD_ASPM_ARTIFACT_ROOT
+              value: "/app/aspm-private"
+            - name: DD_ASPM_INGESTION_ENABLED
+              value: "True"
+            - name: DD_ASPM_SCM_HIERARCHY
+              value: "True"
+            - name: DD_ASPM_WEBHOOKS_ENABLED
+              value: "True"
+            - name: DD_CSRF_COOKIE_SECURE
+              value: "True"
+            - name: DD_DATABASE_CONN_MAX_AGE
+              value: "60"
+            - name: DD_DATABASE_OPTIONS
+              value: "{\"connect_timeout\":3,\"sslmode\":\"verify-full\",\"sslrootcert\":\"/app/db-tls/ca.crt\"}"
+            - name: DD_DEBUG
+              value: "False"
+            - name: DD_DJANGO_METRICS_ENABLED
+              value: "True"
+            - name: DD_SECURE_PROXY_SSL_HEADER
+              value: "True"
+            - name: DD_SESSION_COOKIE_SECURE
+              value: "True"
+            - name: DD_SITE_URL
+              value: "https://aspm.example.invalid"
+            - name: DD_TRACK_MIGRATIONS
+              value: "True"
+            - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
+              value: "1.073741824e+09"
+            - name: DD_CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: cache-url
+            - name: DD_CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: broker-url
+            - name: DD_CREDENTIAL_AES_256_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: credential-aes-key
+            - name: DD_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: database-url
+            - name: DD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aspm-runtime
+                  key: django-secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+      volumes:
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        - name: db-tls
+          secret: {secretName: "aspm-postgres-ca"}

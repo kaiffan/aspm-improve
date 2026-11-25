@@ -1,0 +1,170 @@
+{
+  "unittests/test_answer_questionnaire_authz.py": [
+    {
+      "line": 85,
+      "before": "        self.assertNotContains(response, VICTIM_ANSWER, status_code=400)",
+      "after": "        self.assertNotContains(response, VICTIM_ANSWER, status_code=403)"
+    },
+    {
+      "line": 93,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_authorized_users_ui.py": [
+    {
+      "line": 72,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 82,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 100,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 149,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 159,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 176,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_cicd_infrastructure.py": [
+    {
+      "line": 318,
+      "before": "        self.assertEqual(r.status_code, 400, r.content[:300])",
+      "after": "        self.assertEqual(r.status_code, 403, r.content[:300])"
+    }
+  ],
+  "unittests/test_empty_questionnaire_object_authz.py": [
+    {
+      "line": 111,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 119,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 93,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_empty_questionnaire_relink_authz.py": [
+    {
+      "line": 113,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 125,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 98,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 106,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_finding_browser_recovery.py": [
+    {
+      "line": 120,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_location_reference_scoped_writes.py": [
+    {
+      "line": 137,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_questionnaire_question_set_authz.py": [
+    {
+      "line": 88,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 93,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 99,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ],
+  "unittests/test_v3_endpoint_route_authz.py": [
+    {
+      "line": 265,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 287,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 256,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 270,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 246,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 199,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 194,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 189,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    },
+    {
+      "line": 184,
+      "before": "        self.assertEqual(response.status_code, 400)",
+      "after": "        self.assertEqual(response.status_code, 403)"
+    }
+  ]
+}

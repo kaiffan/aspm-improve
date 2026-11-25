@@ -1,0 +1,5 @@
+# Webhook delivery tests
+
+Behavioral coverage: transaction rollback, immutable event content, actual Finding no-op/change detection, bulk updates, complete/failure scan/report catalogue, idempotent uploads, multiple subscriptions, severity/repository/scanner filters and cross-Product rejection. Delivery cases cover 200/204, 400/401, 429, 500, redirect rejection, DNS/TLS/network failures, bounded attempts, early duplicates, broker publication failure, interrupted attempt recovery, replay and rotation/disable/archive revocation. Negative RBAC and CSRF tests verify staff/viewer denial and explicit capability grants. Transport checks assert IP pinning, original-host TLS verification and no response-body reads.
+
+See the complete regression report for transactional, worker-interruption and delivery-state assertions. The local tests include a controlled HTTPS receiver that verifies the signature. Production webhook delivery p95 and recovery from HTTP interruption on the target cluster remain NOT TESTED.

@@ -1,0 +1,86 @@
+{
+  "branch": "feature/aspm-enterprise-hardening",
+  "baseline_application_sha": "25da29aaff229d3a815e223d8af8bdc4ecca7c5e",
+  "baseline_evidence_head": "1ed9e9f396e11314514d58176db43af805e128ec",
+  "integration_verified_sha": "19cd7b4129de52e75eabaf0e07739e4c2b682f8e",
+  "rc5_verified_sha": "3000b9755021667db4c1c8960771913c240761a4",
+  "application_sha": "5133e155d102eb0f431560924ea129b2287319ff",
+  "chart_commit": "f37a65b62248bdd9efe53e74137b13e79796cb8f",
+  "source_bundle_head": "07b83fa6929f55d141fcb2311449cc5d34ebbcec",
+  "chart_version": "0.1.0-rc.1",
+  "chart_sha256": "e5a907ba385486905b481dbf5defd5d7fedd13131b3072d9b7e9334e6b9f2505",
+  "images": [
+    {
+      "id": "sha256:13aa8918217617f3aa21ddd1a6574212cfa7a6f405ae6eb95ee8ed2d4c1005d7",
+      "tags": [
+        "aspm-hardening-local/django:5133e155d1"
+      ],
+      "architecture": "arm64",
+      "os": "linux",
+      "revision": "5133e155d102eb0f431560924ea129b2287319ff",
+      "registry_manifest_digest": null
+    },
+    {
+      "id": "sha256:44abbfcab1b8ac23683e91bffce9623cc58bf2c94a07278a1bad5a2327d513e3",
+      "tags": [
+        "aspm-hardening-local/nginx:5133e155d1"
+      ],
+      "architecture": "arm64",
+      "os": "linux",
+      "revision": "5133e155d102eb0f431560924ea129b2287319ff",
+      "registry_manifest_digest": null
+    }
+  ],
+  "cached_arm64_base_ids": {
+    "django": "sha256:6f276aa582690eecfab68c93e4679489d57525b836494dc29bbd6ed40504552b",
+    "nginx": "sha256:fa79905bf706563a4a54c1172694a1a0be2fcc2bd3f268befff47f07ca91f827"
+  },
+  "implementation_commits": [
+    {
+      "sha": "310c9c1e545dab6e59038d44cf9aa7e80949bfbe",
+      "subject": "feat(operations): fence startup and migrations and split dependency probes"
+    },
+    {
+      "sha": "7798dd7857a588b8159a6904c78c8458c1779437",
+      "subject": "fix(storage): verify evidence downloads and bound report publication"
+    },
+    {
+      "sha": "ded0cf24170e1f302a36a4619183f0dd55f2bacd",
+      "subject": "feat(webhooks): capture transactional events and fence durable signed deliveries"
+    },
+    {
+      "sha": "b0106a2c63f151dc706131a36b3b1ca3c7e68ce6",
+      "subject": "feat(webhooks): add capability-gated management and delivery history UI"
+    },
+    {
+      "sha": "015d12224ce094ee6f7105fddb93e2f33f93023b",
+      "subject": "fix(ux): expose denial status and improve evidence navigation accessibility"
+    },
+    {
+      "sha": "be70b3564329457ae48cc86ca904e8069024dd8f",
+      "subject": "feat(helm): add external-service ASPM chart and guarded qualification helpers"
+    },
+    {
+      "sha": "4e58c5fc572228db82c4436c42e562b9d0451d70",
+      "subject": "test(aspm): cover webhook recovery TLS concurrency RBAC and evidence integrity"
+    },
+    {
+      "sha": "5133e155d102eb0f431560924ea129b2287319ff",
+      "subject": "test(aspm): use committed fixtures for PostgreSQL webhook race"
+    },
+    {
+      "sha": "d11d936278a32e234c073aae7a81f3901d8341c2",
+      "subject": "fix(helm): keep nginx temp paths writable on read-only roots"
+    },
+    {
+      "sha": "f37a65b62248bdd9efe53e74137b13e79796cb8f",
+      "subject": "fix(helm): point private scrape at the Django metrics route"
+    },
+    {
+      "sha": "07b83fa6929f55d141fcb2311449cc5d34ebbcec",
+      "subject": "fix(release): print native disk preflight evidence"
+    }
+  ],
+  "stable_published": false,
+  "registry_push": false
+}

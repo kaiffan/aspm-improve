@@ -1,0 +1,11 @@
+# Observability and operations
+
+Health endpoints: /health/live and /health/startup return process/framework availability without dependency queries; /health/ready performs short dependency checks and sanitized 503 failures. Full schema readiness is fenced before application startup by aspm_preflight. Do not use the dependency probe as liveness. New chart probes target the internal application port, while nginx hides health/metrics paths.
+
+X-Correlation-ID is accepted only as a bounded safe identifier or generated afresh. Ingestion saves it independently of the idempotency fingerprint, and ScanRun transition events carry it with stable scan/commit/event IDs. Celery ingestion tasks already carry ScanRun ID; webhook logs carry event/delivery IDs. Full arbitrary distributed tracing and report-request correlation propagation are not implemented. No credential or report content is placed in the correlation value.
+
+Existing django-prometheus supplies HTTP request latency/rate/error instrumentation when enabled. DurableOutboxCollector provides database-authoritative ingestion backlog, webhook pending/dead/unexpanded counts and oldest age, with per-query 1-second statement timeouts and an availability gauge. Delivery attempt/latency counters are process-local; cross-pod aggregation of these requires worker metrics collection. PostgreSQL CPU/locks/waits/WAL/I/O and worker RSS require external postgres_exporter/cAdvisor/Celery instrumentation. Optional ServiceMonitor discovers the private web metrics service; CRDs and monitoring selectors are operator prerequisites. Full production telemetry qualification remains open.
+
+Runbooks are in OPERATIONS_RUNBOOKS.md.
+
+The internal `/django_metrics/metrics` scrape returned HTTP 200 with the ingestion backlog gauge and the Django HTTP counter. The nginx listener returned 404 for the same path. After the test broker was stopped, readiness returned 503 and liveness remained 200. A queued scan processed and published verified artifacts after broker restart. Example alert rules are available under [release-bundle](release-bundle/prometheus-rules.example.yaml). See [scrape evidence](raw/metrics-smoke.json) and [broker recovery](raw/broker-recovery.json).

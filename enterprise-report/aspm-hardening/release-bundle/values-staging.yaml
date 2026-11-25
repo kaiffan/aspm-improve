@@ -1,0 +1,7 @@
+web:
+  replicas: 2
+worker:
+  replicas: 2
+config:
+  DD_ASPM_WEBHOOKS_ENABLED: "True"
+# Add dependency CIDRs/selectors to networkPolicy.egress before installation.

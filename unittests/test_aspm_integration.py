@@ -186,17 +186,24 @@ class IngestionSecurityTests(IngestionFixture, APITestCase):
         self.assertNotIn("<script>alert", html)
         self.assertIn("&lt;script&gt;", html)
 
-    def test_production_flag_false_cannot_enable_human_legacy_import(self):
+    def test_production_legacy_import_requires_product_permission(self):
         user = get_user_model().objects.create_user(username="production-human", password=secrets.token_urlsafe(24))
-        self.product.authorized_users.add(user.pk)
         self.client.credentials()
         self.client.force_authenticate(user=user)
         payload = {"scan_type": "Generic Findings Import", "product_name": self.product.name,
-                   "engagement_name": "No production human uploads", "auto_create_context": True,
-                   "file": SimpleUploadedFile("scan.json", generic()), "deduplication_execution_mode": "sync"}
+                   "engagement_name": "Classic assessment", "auto_create_context": True,
+                   "deduplication_execution_mode": "sync"}
         with self.settings(ASPM_API_ONLY=False), patch("sys.argv", ["uwsgi", "--ini", "uwsgi.ini"]):
-            response = self.client.post(reverse("importscan-list"), payload, format="multipart")
-        self.assertEqual(response.status_code, 403)
+            response = self.client.post(reverse("importscan-list"), {
+                **payload, "file": SimpleUploadedFile("scan.json", generic()),
+            }, format="multipart")
+            self.assertEqual(response.status_code, 403)
+
+            self.product.authorized_users.add(user.pk)
+            response = self.client.post(reverse("importscan-list"), {
+                **payload, "file": SimpleUploadedFile("scan.json", generic()),
+            }, format="multipart")
+            self.assertEqual(response.status_code, 201)
 
     def test_production_flag_false_cannot_expose_browser_upload(self):
         scan = self.complete(self.accepted())

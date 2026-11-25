@@ -15,8 +15,8 @@ const fixture = Buffer.from(JSON.stringify({ findings: [{
   title: 'Synthetic Classic finding', description: 'Local assessment evidence', severity: 'Medium',
 }] }));
 
-async function login(browser, user) {
-  const context = await browser.newContext({ ignoreHTTPSErrors: true, reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } });
+async function login(browser, user, colorScheme = 'light') {
+  const context = await browser.newContext({ ignoreHTTPSErrors: true, colorScheme, reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   await page.goto(origin + '/sso/login');
   await page.locator('#username').fill(user);
@@ -39,7 +39,7 @@ async function capture(page, label) {
   await page.waitForFunction(() => document.querySelector('.aspm-brand img')?.naturalWidth > 0);
   const layout = await page.evaluate(() => ({ width: innerWidth, scroll: document.documentElement.scrollWidth }));
   assert.ok(layout.scroll <= layout.width + 2, `Horizontal overflow on ${label}`);
-  await page.screenshot({ path: join(output, label + '.png'), fullPage: true });
+  await page.screenshot({ path: join(output, label + '.png'), animations: 'disabled', fullPage: true });
   checks.push({ label, ...layout });
 }
 
@@ -70,6 +70,7 @@ async function main() {
     });
     assert.equal(patched.status(), 200);
     assert.equal((await patched.json()).false_p, true);
+    checks.push({ label: 'Finding PATCH and False Positive', status: 200 });
 
     await expert.page.getByRole('link', { name: 'Classic Workspace', exact: true }).click();
     await expert.page.getByRole('heading', { name: 'Classic Workspace' }).waitFor();
@@ -80,12 +81,14 @@ async function main() {
     assert.equal((await expert.page.goto(origin + `/engagement/${engagement.id}`)).status(), 200);
     await capture(expert.page, 'classic-engagement-desktop');
 
-    const reader = await login(browser, 'reader-test');
+    const reader = await login(browser, 'reader-test', 'dark');
     await reader.page.getByRole('link', { name: 'Classic Workspace', exact: true }).click();
     const classicProjects = await reader.page.locator('table tbody th a').allTextContents();
     assert.deepEqual(classicProjects, ['TEST']);
+    assert.equal((await reader.page.goto(origin + '/product')).status(), 200);
+    assert.deepEqual(await reader.page.locator('table tbody th a').allTextContents(), ['TEST']);
+    checks.push({ label: 'Classic Product bookmark remains scoped after login', status: 200 });
     await reader.page.setViewportSize({ width: 390, height: 844 });
-    await reader.page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
     await reader.page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
     await capture(reader.page, 'classic-reader-mobile-dark');
     const report = await reader.context.request.get(origin + `/test/${classicTest}/report?_generate=1&report_type=HTML`);
@@ -110,6 +113,10 @@ async function main() {
     await reader.page.getByRole('link', { name: 'View originating ScanRun and commit' }).click();
     await reader.page.waitForURL(url => url.pathname.endsWith('/evidence') && url.searchParams.get('run') === scan.id);
     checks.push({ label: 'Bidirectional Test and ScanRun navigation', status: 200 });
+
+    await expert.page.getByRole('link', { name: 'DevSecOps Workspace', exact: true }).click();
+    await expert.page.waitForURL(origin + '/workspace/projects');
+    await capture(expert.page, 'devsecops-expert-desktop');
   } finally {
     writeFileSync(join(output, 'browser.json'), JSON.stringify(checks, null, 2) + '\n');
     await browser.close();

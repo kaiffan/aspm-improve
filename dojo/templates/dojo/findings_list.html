@@ -1,8 +1,21 @@
 {% extends "base.html" %}
 {% load navigation_tags %}
 {% load display_tags %}
-{% load static %}
+{% load static i18n %}
 {% block content %}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{% trans "Findings" %}</h1>
+        <p>{% trans "Review severity and triage status, filter the list, and open a finding to see its evidence." %}</p>
+    </div></header></div>
+    {% if not product_tab %}
+        <nav class="aspm-workspace-tabs" aria-label="{% trans 'Finding status' %}">
+            {% url 'all_findings' as all_url %}{% url 'open_findings' as open_url %}{% url 'closed_findings' as closed_url %}{% url 'accepted_findings' as accepted_url %}
+            <a href="{{ all_url }}" {% if request.path == all_url %}aria-current="page"{% endif %}>{% trans "All" %}</a>
+            <a href="{{ open_url }}" {% if request.path == open_url %}aria-current="page"{% endif %}>{% trans "Open" %}</a>
+            <a href="{{ closed_url }}" {% if request.path == closed_url %}aria-current="page"{% endif %}>{% trans "Closed" %}</a>
+            <a href="{{ accepted_url }}" {% if request.path == accepted_url %}aria-current="page"{% endif %}>{% trans "Risk accepted" %}</a>
+        </nav>
+    {% endif %}
     {% comment %} include inherits the current context so findings, filtered and other variables {% endcomment %}
     {% include "dojo/findings_list_snippet.html" %}
 {% endblock %}

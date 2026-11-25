@@ -22,6 +22,10 @@
 {% endblock %}
 {% block content %}
     {{ block.super }}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading">
+        <div><h1>{{ test }}</h1><p>{{ test.engagement.name }} · {{ test.target_start|date }} – {{ test.target_end|date }}</p></div>
+        <a class="btn btn-secondary" href="{% url 'test_report' test.pk %}">{% trans "Test report" %}</a>
+    </header></div>
     {% if linked_scan %}{% include "dojo/aspm/linked_scan.html" %}{% endif %}
     <!--Test Header begin -->
     <div class="panel panel-default">

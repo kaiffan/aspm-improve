@@ -468,3 +468,13 @@ code { color: var(--color-dd-interactive-700); }
 .aspm-commit-meta code { overflow-wrap: anywhere; }
 #base-content .aspm-workspace-form select.form-control { width: auto; min-width: 8rem; }
 #base-content .aspm-workspace-tabs { max-width: 100%; }
+.aspm-admin-section { margin-bottom: 1rem; }
+.aspm-severity-grid .severity { border-color: currentColor; }
+.aspm-severity-grid .severity-critical { color: var(--color-panel-red); }
+.aspm-severity-grid .severity-high { color: var(--color-panel-yellow); }
+.aspm-severity-grid .severity-medium { color: var(--color-dd-interactive-700); }
+.aspm-severity-grid .severity-low { color: var(--color-panel-green); }
+:root[data-theme="dark"] .aspm-severity-grid .severity-critical { color: #ffb2bf; }
+:root[data-theme="dark"] .aspm-severity-grid .severity-high { color: #ffe3a6; }
+:root[data-theme="dark"] .aspm-severity-grid .severity-medium { color: #e2c5f5; }
+:root[data-theme="dark"] .aspm-severity-grid .severity-low { color: #a8ecc7; }

@@ -5,6 +5,10 @@
 {% load display_tags %}
 {% load authorization_tags %}
 {% block content %}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading">
+        <div><h1>{{ labels.ASSET_PLURAL_LABEL }}</h1><p>{% trans "Find and manage products and their classic assessments." %}</p></div>
+        <a class="btn btn-secondary" href="{% url 'aspm_classic' %}">{% trans "Classic Workspace" %}</a>
+    </header></div>
     {{ block.super }}
     <div class="row">
         <div class="col-md-12">

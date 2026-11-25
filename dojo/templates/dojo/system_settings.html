@@ -1,13 +1,15 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
 
 {% block content %}
     {{ block.super }}
-    <hr>
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{% trans "System settings" %}</h1>
+        <p>{% trans "Manage deployment-wide preferences, defaults, and notification options." %}</p>
+    </div></header></div>
     {% block settings %}
-    <div class="row">
-        <h3> System Settings </h3>
+    <section class="aspm-section"><div class="aspm-section-body">
         <form class="" method="post">{% csrf_token %}
             {% block form %}
                 {% include "dojo/form_fields.html" with form=form %}
@@ -18,7 +20,7 @@
                 </div>
             </div>
         </form>
-    </div>
+    </div></section>
     {% endblock settings %}
 {% endblock content %}
 {comment}

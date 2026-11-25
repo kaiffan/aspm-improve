@@ -1,12 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
-<section class="panel panel-default aspm-evidence"><div class="panel-heading"><h1>Outbound webhooks</h1></div><div class="panel-body">
-<nav aria-label="Breadcrumb"><a href="{% url 'system_settings' %}">Settings</a> → Integrations → Webhooks</nav>
-<p>Send selected Project events to HTTPS consumers. Deliveries are asynchronous and may arrive more than once. Receivers deduplicate by event ID.</p>
-<p><a class="btn btn-primary" href="{% url 'aspm_webhook_new' %}">Create webhook</a></p>
-<form method="get"><label for="webhook-search">Find webhook</label> <input id="webhook-search" name="q" value="{{ query }}" maxlength="120"> <button class="btn btn-default" type="submit">Search</button></form>
+<div class="aspm-workspace-hero"><header class="aspm-page-heading">
+    <div><h1>{% trans "Outbound webhooks" %}</h1><p>{% trans "Subscribe HTTPS consumers to project events and review delivery history." %}</p></div>
+    <a class="btn btn-primary" href="{% url 'aspm_webhook_new' %}">{% trans "Create webhook" %}</a>
+</header></div>
+<form class="filters aspm-workspace-form" method="get" role="search" aria-label="{% trans 'Filter webhooks' %}">
+    <label for="webhook-search">{% trans "Find webhook" %}</label>
+    <input class="form-control" id="webhook-search" name="q" value="{{ query }}" maxlength="120">
+    <button class="btn btn-secondary" type="submit">{% trans "Search" %}</button>
+</form>
+<section class="aspm-section aspm-evidence">
 <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Name / Project</th><th>Status</th><th>Last success</th><th>Actions</th></tr></thead><tbody>
 {% for sub in page %}<tr><td><a href="{% url 'aspm_webhook_history' sub.pk %}">{{ sub.name }}</a><br>{{ sub.product.name }} · ID {{ sub.product_id }}</td><td>{% if sub.enabled %}Enabled{% else %}Disabled{% endif %}</td><td>{{ sub.last_success_at|default:"No successful delivery yet" }}</td><td><a href="{% url 'aspm_webhook_edit' sub.pk %}">Edit</a> · <a href="{% url 'aspm_webhook_history' sub.pk %}">Delivery history</a></td></tr>{% empty %}<tr><td colspan="4">No webhooks match. Create a webhook to subscribe to Project events.</td></tr>{% endfor %}
-</tbody></table></div>{% include "dojo/webhooks/_pages.html" %}
-</div></section>
+</tbody></table></div><div class="aspm-pagination">{% include "dojo/webhooks/_pages.html" %}</div>
+</section>
 {% endblock %}

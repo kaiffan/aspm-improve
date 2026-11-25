@@ -7,6 +7,10 @@
 
 {% block content %}
     {{ block.super }}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{{ labels.ORG_LABEL }}</h1>
+        <p>{% trans "Group products and review their findings and assessments by product type." %}</p>
+    </div></header></div>
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-default">
@@ -44,7 +48,7 @@
                     {% include "dojo/paging_snippet.html" with page=pts page_size=True %}
                 </div>
 
-                <div class="panel panel-default table-responsive">
+                <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Product types table' %}">
                     <table id="product_types"
                            class="tablesorter-bootstrap table table-condensed table-striped">
                         <thead>
@@ -64,8 +68,8 @@
                                 <td>
                                     <ul>
                                         <li class="dropdown" style="list-style:none">
-                                            <a href="#" aria-label="{% trans 'Organization options menu' %}" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" id="dropdownMenuProductType">&nbsp;<b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
-                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuProductType">
+                                            <a href="#" aria-label="{% trans 'Organization options menu' %}" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" id="dropdownMenuProductType-{{ pt.pk }}">&nbsp;<b class="fa-solid fa-ellipsis-vertical"></b>&nbsp;</a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuProductType-{{ pt.pk }}">
                                                 <li role="presentation">
                                                     <a class="" href="{% url 'view_product_type' pt.id %}" role="menuitem">
                                                     <i class="fa-solid fa-rectangle-list"></i> {% trans "View" %}</a>

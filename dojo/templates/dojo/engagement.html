@@ -7,6 +7,15 @@
 
 {% block content %}
     {{ block.super }}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{% trans "Engagements" %}</h1><p>{% trans "Review assessments by product, date, status, and assigned lead." %}</p>
+    </div></header></div>
+    <nav class="aspm-workspace-tabs" aria-label="{% trans 'Engagement status' %}">
+        {% url 'all_engagements' as all_url %}{% url 'active_engagements' as active_url %}{% url 'engagements_all' as by_product_url %}
+        <a href="{{ all_url }}" {% if request.path == all_url %}aria-current="page"{% endif %}>{% trans "All engagements" %}</a>
+        <a href="{{ active_url }}" {% if request.path == active_url %}aria-current="page"{% endif %}>{% trans "Active" %}</a>
+        <a href="{{ by_product_url }}">{{ labels.ASSET_ENGAGEMENTS_BY_LABEL }}</a>
+    </nav>
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-default">
@@ -46,7 +55,7 @@
                     {% include "dojo/paging_snippet.html" with page=engagements page_size=True %}
                 </div>
 
-                <div class="table-responsive panel panel-default">
+                <div class="table-responsive panel panel-default" tabindex="0" role="region" aria-label="{% trans 'Engagements table' %}">
                     <table id="engagements"
                            class="tablesorter-bootstrap table table-condensed table-striped table-hover">
                         <tr>

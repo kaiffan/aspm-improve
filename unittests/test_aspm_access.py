@@ -156,6 +156,25 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         SsoProductGrant.objects.filter(group_id=GROUP_TEST).delete()
         self.assertEqual(client.get(reverse("aspm_v1:artifact", args=(self.scan.pk,))).status_code, 404)
 
+    def test_workspace_filters_and_report_tabs_preserve_product_grants(self):
+        client, _ = self._session("user", (GROUP_TEST,))
+        projects = reverse("aspm_projects")
+        visible = client.get(projects, {"product_type": self.product.prod_type_id, "q": self.product.name})
+        self.assertEqual([item.pk for item in visible.context["projects"]], [self.product.pk])
+        excluded = client.get(projects, {"q": self.hidden.name})
+        self.assertContains(excluded, "No projects match your search.")
+
+        reports = reverse("aspm_reports")
+        originals = client.get(reports, {"type": "originals"})
+        self.assertEqual([entry.pk for entry in originals.context["entries"]], [self.scan.pk])
+        self.assertContains(originals, reverse("aspm_v1:artifact", args=(self.scan.pk,)))
+        self.assertNotContains(originals, reverse("aspm_v1:artifact", args=(self.other_scan.pk,)))
+
+        classic = client.get(reports, {"type": "classic"})
+        self.assertEqual([entry.pk for entry in classic.context["entries"]], [self.product.pk])
+        self.assertContains(classic, reverse("product_report", args=(self.product.pk,)))
+        self.assertNotContains(classic, reverse("product_report", args=(self.hidden.pk,)))
+
     def test_role_boundaries_hold_at_legacy_and_aspm_routes(self):
         user, _ = self._session("user", (GROUP_TEST,))
         expert, _ = self._session("expert")

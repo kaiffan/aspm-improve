@@ -12,6 +12,10 @@
     }
 {% endblock %}
 {% block content %}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading">
+        <div><h1>{{ eng.name }}</h1><p>{{ eng.get_engagement_type_display }} · {{ eng.status }} · {{ eng.target_start|date }} – {{ eng.target_end|date }}</p></div>
+        <a class="btn btn-secondary" href="{% url 'engagement_report' eng.pk %}">{% trans "Engagement report" %}</a>
+    </header></div>
     <div class="row">
         <div class="col-md-8">
             <div class="panel panel-default">

@@ -44,8 +44,8 @@
                                     data-toggle="collapse"
                                     data-target="#the-filters"
                                     class="btn btn-primary toggle-filters"
-                                    aria-label="{% trans 'show-filters' %}">
-                                <i class="fa-solid fa-filter"></i> <i class="caret"></i>
+                                    aria-controls="the-filters" aria-label="{% trans 'Filter findings' %}">
+                                <i class="fa-solid fa-filter" aria-hidden="true"></i> {% trans "Filters" %}
                             </button>
                         </div>
                     </h3>
@@ -265,7 +265,7 @@
                         </ul>
                     </div>
                 {% endif %}
-                <div class="panel panel-default table-responsive">
+                <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Findings table' %}">
                     <table id="open_findings" class="tablesorter-bootstrap table table-condensed table-striped table-hover">
                         <thead>
                             <tr>

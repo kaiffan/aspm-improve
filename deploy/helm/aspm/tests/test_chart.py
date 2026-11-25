@@ -2,6 +2,7 @@
 # ruff: noqa: INP001, S607 -- standalone CLI helpers invoke installed git/helm tools
 import json
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -11,8 +12,8 @@ import yaml
 CHART = Path(__file__).resolve().parents[1]
 
 
-def render(*args):
-    result = subprocess.run(["helm", "template", "qualification", str(CHART), "--namespace", "aspm-test", *args], capture_output=True, text=True, check=True)
+def render(*args, chart=CHART):
+    result = subprocess.run(["helm", "template", "qualification", str(chart), "--namespace", "aspm-test", *args], capture_output=True, text=True, check=True)
     return [item for item in yaml.safe_load_all(result.stdout) if item]
 
 
@@ -85,6 +86,15 @@ class ChartTests(unittest.TestCase):
         self.assertNotIn("replicas", web["spec"])
         ingress = next(x for x in docs if x["kind"] == "Ingress")
         self.assertTrue(ingress["spec"]["tls"][0]["secretName"])
+
+    def test_packaged_chart_contains_opt_in_http_smoke_hook(self):
+        with tempfile.TemporaryDirectory() as directory:
+            subprocess.run(["helm", "package", str(CHART), "-d", directory], capture_output=True, text=True, check=True)
+            package, = Path(directory).glob("aspm-*.tgz")
+            self.assertFalse(any(doc["kind"] == "Pod" for doc in render(chart=package)))
+            pod, = (doc for doc in render("--set", "tests.enabled=true", chart=package) if doc["kind"] == "Pod")
+            self.assertEqual(pod["metadata"]["annotations"]["helm.sh/hook"], "test")
+            self.assertEqual(pod["metadata"]["labels"]["app.kubernetes.io/component"], "test")
 
     def test_names_digest_and_replica_settings(self):
         digest = "sha256:" + "a" * 64

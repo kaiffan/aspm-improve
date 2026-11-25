@@ -1,0 +1,42 @@
+Helm 0.1.0-rc.3
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 1.041s
+
+OK
+==> Linting deploy/helm/aspm
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Summary: 9 resources found in 1 file - Valid: 9, Invalid: 0, Errors: 0, Skipped: 0
+==> Linting deploy/helm/aspm
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Summary: 8 resources found in 1 file - Valid: 8, Invalid: 0, Errors: 0, Skipped: 0
+==> Linting deploy/helm/aspm
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Summary: 9 resources found in 1 file - Valid: 9, Invalid: 0, Errors: 0, Skipped: 0
+==> Linting deploy/helm/aspm
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Summary: 10 resources found in 1 file - Valid: 10, Invalid: 0, Errors: 0, Skipped: 0
+Summary: 13 resources found in 1 file - Valid: 13, Invalid: 0, Errors: 0, Skipped: 0
+Successfully packaged chart and saved it to: aspm-0.1.0-rc.3.tgz
+
+Kubernetes server-side dry run (local OrbStack cluster)
+networkpolicy.networking.k8s.io/qualification-aspm serverside-applied (server dry run)
+poddisruptionbudget.policy/qualification-aspm-web serverside-applied (server dry run)
+serviceaccount/qualification-aspm serverside-applied (server dry run)
+configmap/qualification-aspm-nginx serverside-applied (server dry run)
+service/qualification-aspm serverside-applied (server dry run)
+deployment.apps/qualification-aspm-web serverside-applied (server dry run)
+deployment.apps/qualification-aspm-worker serverside-applied (server dry run)
+deployment.apps/qualification-aspm-beat serverside-applied (server dry run)
+job.batch/qualification-aspm-migrate serverside-applied (server dry run)
+
+Node condition and taint
+orbstack	True	node.kubernetes.io/disk-pressure:NoSchedule

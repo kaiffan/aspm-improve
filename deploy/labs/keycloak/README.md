@@ -6,7 +6,7 @@ The lab uses synthetic identities and a private Keycloak realm. Run from the int
 umask 077
 python3 deploy/labs/keycloak/prepare.py .cache/keycloak
 python3 deploy/labs/keycloak/compose.py /secure/isolated-compose.json .cache/keycloak \
-  --nginx-image <local-compiled-nginx-image> --sha "$(git rev-parse HEAD)"
+  --nginx-image "${ASPM_NGINX_IMAGE:?Set the local compiled nginx image}" --sha "$(git rev-parse HEAD)"
 lab() { docker compose -p aspm-final-enterprise-integration -f .cache/keycloak/compose.json "$@"; }
 lab up -d postgres broker cache uwsgi
 lab exec -T -u 0 uwsgi chown 1001:1337 /app/aspm-private
@@ -23,3 +23,5 @@ node deploy/labs/keycloak/revoke.cjs .cache/keycloak .cache/browser-evidence/rev
 ```
 
 The tested services bind to loopback, locally trust generated test certificates and use Keycloak's development database. Keep the state directory private. The revocation check removes one synthetic user's group and restores it after verification. Prepare a fresh state directory to regenerate credentials. These services are suitable for local qualification only.
+
+For the worker recovery scenario, stop only the lab worker, run `node deploy/labs/keycloak/recovery.cjs submit .cache/keycloak .cache/recovery.json`, start the worker and run the same command in `recover` mode. Keep the broker, beat and PostgreSQL running.

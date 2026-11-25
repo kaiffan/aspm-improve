@@ -23,22 +23,26 @@ async function main() {
     return { context, page };
   };
   let groupPath;
-  let headers;
   let removed = false;
-  try {
+  const adminHeaders = async () => {
     const issued = await client.post('/realms/master/protocol/openid-connect/token', { form: {
       grant_type: 'password', client_id: 'admin-cli', username: 'lab-admin', password: state.admin,
     } });
     assert.equal(issued.status(), 200);
-    headers = { Authorization: 'Bearer ' + (await issued.json()).access_token };
+    return { Authorization: 'Bearer ' + (await issued.json()).access_token };
+  };
+  try {
+    const headers = await adminHeaders();
     const users = await client.get('/admin/realms/aspm-qualification/users?username=reader-test&exact=true', { headers });
     const groups = await client.get('/admin/realms/aspm-qualification/groups?search=devsecops-TEST-user&exact=true', { headers });
     const [user] = await users.json();
     const [group] = await groups.json();
     groupPath = `/admin/realms/aspm-qualification/users/${user.id}/groups/${group.id}`;
+    const initial = await client.put(groupPath, { headers });
+    assert.equal(initial.status(), 204);
     const active = await login();
     assert.equal(await active.page.getByRole('link', { name: 'TEST', exact: true }).count(), 1);
-    const removal = await client.delete(groupPath, { headers });
+    const removal = await client.delete(groupPath, { headers: await adminHeaders() });
     assert.equal(removal.status(), 204);
     removed = true;
     const after = await login();
@@ -57,11 +61,14 @@ async function main() {
     assert.equal(refusal.status(), 403);
     results.push({ stage: 'active-session-revoked', status: 403, elapsed_seconds: (Date.now() - start) / 1000, ttl_seconds: limit });
   } finally {
-    if (removed) {
-      const restore = await client.put(groupPath, { headers });
-      assert.equal(restore.status(), 204);
+    try {
+      if (removed) {
+        const restore = await client.put(groupPath, { headers: await adminHeaders() });
+        assert.equal(restore.status(), 204);
+      }
+    } finally {
+      writeFileSync(process.argv[3], JSON.stringify(results, null, 2) + '\n');
     }
-    writeFileSync(process.argv[3], JSON.stringify(results, null, 2) + '\n');
     await client.dispose();
     await browser.close();
   }

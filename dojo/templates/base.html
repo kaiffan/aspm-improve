@@ -938,7 +938,7 @@
                         {% else %}
                             <div class="row">
                                 <div class="col-lg-12">
-                                    {% if request.session.dojo_breadcrumbs %}
+                                    {% if request.session.dojo_breadcrumbs and not custom_breadcrumb %}
                                         <nav aria-label="{% trans 'Breadcrumb' %}"><ol class="breadcrumb main">
                                             {% for crumb in request.session.dojo_breadcrumbs %}
                                                 <li class="{% if forloop.last %}active{% endif %}">

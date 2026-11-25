@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n static %}
+{% block tab_bar %}{% endblock %}
 {% block content %}
 <div class="aspm-workspace-hero">
     <nav aria-label="{% trans 'Commit breadcrumb' %}" class="aspm-commit-meta">
@@ -24,12 +25,12 @@
             <a href="?tab=findings{{ nav_params }}" {% if section == "findings" %}aria-current="page"{% endif %}>{% trans "Findings" %}</a>
             <a href="?tab=changes{{ nav_params }}" {% if section == "changes" %}aria-current="page"{% endif %}>{% trans "Changes" %}</a>
         </nav>
-        <form method="get" class="form-inline">
+        <form method="get" class="aspm-comparison-form">
             <input type="hidden" name="tab" value="{{ section }}">
-            <label for="aspm-pipeline">Results from pipeline</label>
+            <label>Results from pipeline
             <select id="aspm-pipeline" name="pipeline"><option value="">Choose a pipeline</option>
                 {% for context in selection.contexts %}<option value="{{ context }}" {% if context == selection.pipeline %}selected{% endif %}>{{ context }}</option>{% endfor %}
-            </select><button class="btn btn-default" type="submit">Select results</button>
+            </select></label><button class="btn btn-secondary" type="submit">Select results</button>
         </form>
         {% if selection.ambiguous %}<p class="alert alert-warning">Independent pipelines or jobs are available. Choose a pipeline or select exact runs in Scanner Reports. Results have not been combined.</p>{% endif %}
         {% if selection.contexts_truncated %}<p>Showing the first 100 pipeline choices. Use explicit scan_ids through the reports API for other pipelines.</p>{% endif %}
@@ -65,16 +66,22 @@
             </tbody></table></div>{% include "dojo/paging_snippet.html" with page=reports %}
         {% else %}
             <h2>{% if section == 'changes' %}Commit Changes{% else %}Historical Findings{% endif %}</h2>
-            <form method="get"><input type="hidden" name="tab" value="{{ section }}">{% if selection.explicit_ids %}{% for id in selection.explicit_ids %}<input type="hidden" name="scan_ids" value="{{ id }}">{% endfor %}{% else %}<input type="hidden" name="pipeline" value="{{ selection.pipeline|default:'' }}">{% endif %}
-                <label for="aspm-severity">Severity</label><select id="aspm-severity" name="severity"><option value="">All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option><option>Info</option></select>
-                {% if section == 'changes' %}<label for="aspm-base">Base commit</label><select id="aspm-base" name="base" required>{% for recent in recent_commits %}<option value="{{ recent.pk }}">{{ recent.sha }}</option>{% endfor %}</select>
-                <label for="aspm-base-pipeline">Base pipeline</label><select id="aspm-base-pipeline" name="base_pipeline"><option value="">Automatic when unambiguous</option>{% for context in base_coverage.contexts %}<option value="{{ context }}" {% if context == base_pipeline %}selected{% endif %}>{{ context }}</option>{% endfor %}</select>
-                <label for="aspm-base-report">Base version</label><select id="aspm-base-report" name="base_report"><option value="">Live results</option>{% for report in base_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == base_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select>
-                <label for="aspm-target-report">Target version</label><select id="aspm-target-report" name="target_report"><option value="">Live results</option>{% for report in target_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == target_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select>
-                <label for="aspm-category">Change</label><select id="aspm-category" name="category"><option value="new">New</option><option value="fixed">Absent in target</option><option value="unchanged">Unchanged</option></select>{% endif %}
-                <button class="btn btn-default" type="submit">Filter</button>
+            <form method="get" class="aspm-comparison-form"><input type="hidden" name="tab" value="{{ section }}">{% if selection.explicit_ids %}{% for id in selection.explicit_ids %}<input type="hidden" name="scan_ids" value="{{ id }}">{% endfor %}{% else %}<input type="hidden" name="pipeline" value="{{ selection.pipeline|default:'' }}">{% endif %}
+                <label>Severity
+                    <select id="aspm-severity" name="severity"><option value="">All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option><option>Info</option></select></label>
+                {% if section == 'changes' %}<label>Base commit
+                    <select id="aspm-base" name="base" required>{% for recent in recent_commits %}<option value="{{ recent.pk }}" title="{{ recent.sha }}" {% if base_commit.pk == recent.pk %}selected{% endif %}>{{ recent.sha|slice:":12" }}</option>{% endfor %}</select></label>
+                <label>Base pipeline
+                    <select id="aspm-base-pipeline" name="base_pipeline"><option value="">Automatic when unambiguous</option>{% for context in base_coverage.contexts %}<option value="{{ context }}" {% if context == base_pipeline %}selected{% endif %}>{{ context }}</option>{% endfor %}</select></label>
+                <label>Base version
+                    <select id="aspm-base-report" name="base_report"><option value="">Live results</option>{% for report in base_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == base_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select></label>
+                <label>Target version
+                    <select id="aspm-target-report" name="target_report"><option value="">Live results</option>{% for report in target_reports %}<option value="{{ report.pk }}" {% if report.pk|stringformat:"s" == target_report_id %}selected{% endif %}>Export v{{ report.version }}</option>{% endfor %}</select></label>
+                <label>Change
+                    <select id="aspm-category" name="category"><option value="new">New</option><option value="fixed">Absent in target</option><option value="unchanged">Unchanged</option></select></label>{% endif %}
+                <button class="btn btn-secondary" type="submit">Filter</button>
             </form>
-            {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }} using pipeline contexts {{ base_coverage.pipeline|default:"unselected" }} → {{ target_coverage.pipeline|default:"unselected" }}; versions {{ base_coverage.report.version|default:"live" }} → {{ target_coverage.report.version|default:"live" }}. Absence describes the recorded comparable scans.</p>{% endif %}
+            {% if base_commit %}<p class="aspm-comparison-description">Comparing <code>{{ base_commit.sha }}</code> → <code>{{ commit.sha }}</code> using pipeline contexts {{ base_coverage.pipeline|default:"unselected" }} → {{ target_coverage.pipeline|default:"unselected" }}; versions {{ base_coverage.report.version|default:"live" }} → {{ target_coverage.report.version|default:"live" }}. Absence describes the recorded comparable scans.</p>{% endif %}
             {% if coverage_warning %}<p class="alert alert-warning" role="status">{{ coverage_warning }}</p>{% endif %}
             <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
             {% for observation in observations %}<tr><td>{{ observation.snapshot.title }}<br>{{ observation.snapshot.file_path }}:{{ observation.snapshot.line }}</td><td>{{ observation.severity }}</td><td>{{ observation.snapshot.cwe }} {{ observation.snapshot.vulnerability_ids|join:", " }}</td><td>{{ observation.scan.scanner }}<br>{{ observation.scan_id }}</td></tr>{% empty %}<tr><td colspan="4">No observations in this selection.</td></tr>{% endfor %}

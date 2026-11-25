@@ -478,3 +478,8 @@ code { color: var(--color-dd-interactive-700); }
 :root[data-theme="dark"] .aspm-severity-grid .severity-high { color: #ffe3a6; }
 :root[data-theme="dark"] .aspm-severity-grid .severity-medium { color: #e2c5f5; }
 :root[data-theme="dark"] .aspm-severity-grid .severity-low { color: #a8ecc7; }
+.aspm-comparison-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); align-items: end; gap: .65rem; margin-block: .8rem; }
+.aspm-comparison-form label { min-width: 0; margin: 0; }
+.aspm-comparison-form select { display: block; width: 100%; max-width: 100%; margin-top: .25rem; }
+.aspm-comparison-form button { justify-self: start; min-height: 2.5rem; }
+.aspm-comparison-description { overflow-wrap: anywhere; }

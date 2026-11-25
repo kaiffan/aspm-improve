@@ -26,7 +26,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   value: {{ $value | quote }}
 {{- end }}
 - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
-  value: {{ .Values.storage.minimumFreeBytes | quote }}
+  value: {{ .Values.storage.minimumFreeBytes | int64 | quote }}
 {{- $secret := .Values.existingSecret }}
 {{- range $env, $key := dict "DD_SECRET_KEY" .Values.secretKeys.secretKey "DD_CREDENTIAL_AES_256_KEY" .Values.secretKeys.credentialKey "DD_DATABASE_URL" .Values.secretKeys.databaseUrl "DD_CELERY_BROKER_URL" .Values.secretKeys.brokerUrl "DD_CACHE_URL" .Values.secretKeys.cacheUrl }}
 - name: {{ $env }}

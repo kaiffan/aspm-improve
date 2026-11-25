@@ -63,6 +63,14 @@ class ChartTests(unittest.TestCase):
         self.assertEqual(job["spec"]["backoffLimit"], 0)
         self.assertIn("aspm_migrate", job["spec"]["template"]["spec"]["containers"][0]["command"])
 
+    def test_storage_threshold_uses_decimal_integer_environment_values(self):
+        for args, expected in (((), "1073741824"), (("--set", "storage.minimumFreeBytes=5368709120"), "5368709120")):
+            with self.subTest(expected=expected):
+                migration = next(doc for doc in render(*args) if doc["kind"] == "Job")
+                container = migration["spec"]["template"]["spec"]["containers"][0]
+                threshold = next(env["value"] for env in container["env"] if env["name"] == "DD_ASPM_STORAGE_MIN_FREE_BYTES")
+                self.assertEqual(threshold, expected)
+
     def test_component_switches(self):
         for component in ("web", "worker", "beat", "migrations"):
             with self.subTest(component=component):

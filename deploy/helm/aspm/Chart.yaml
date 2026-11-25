@@ -1,7 +1,7 @@
 apiVersion: v2
 name: aspm
 description: ASPM API ingestion, private evidence and durable integrations
-version: 0.1.0-rc.3
+version: 0.1.0-rc.4
 appVersion: "1.0.1-enterprise-rc"
 type: application
 kubeVersion: ">=1.27.0-0"
@@ -12,3 +12,5 @@ annotations:
       description: ASPM workloads with external dependencies, schema fencing and private shared storage
     - kind: fixed
       description: Include the opt-in HTTP test Pod in the packaged chart
+    - kind: fixed
+      description: Render the free storage threshold as a decimal integer for the Django runtime

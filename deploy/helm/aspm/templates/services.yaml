@@ -1,0 +1,41 @@
+{{- if .Values.web.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aspm.fullname" . }}
+  labels: {{ include "aspm.labels" . | nindent 4 }}
+  annotations: {{ toYaml .Values.service.annotations | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "aspm.selector" . | nindent 4 }}
+    app.kubernetes.io/component: web
+  ports: [{name: http, port: {{ .Values.service.port }}, targetPort: http}]
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aspm.fullname" . }}-metrics
+  labels:
+    {{- include "aspm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
+spec:
+  selector:
+    {{- include "aspm.selector" . | nindent 4 }}
+    app.kubernetes.io/component: web
+  ports: [{name: metrics, port: 8081, targetPort: health}]
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aspm.fullname" . }}
+  labels: {{ toYaml .Values.monitoring.serviceMonitor.labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "aspm.selector" . | nindent 6 }}
+      app.kubernetes.io/component: metrics
+  endpoints: [{port: metrics, path: /django_metrics, interval: 30s}]
+{{- end }}
+{{- end }}

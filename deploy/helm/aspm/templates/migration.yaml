@@ -1,0 +1,47 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aspm.fullname" . }}-migrate
+  labels:
+    {{- include "aspm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: {{ .Values.migrations.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "aspm.selector" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migrate
+          image: {{ include "aspm.image" .Values.image | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [python, manage.py, aspm_migrate, {{ printf "--lock-wait-seconds=%v" .Values.migrations.lockWaitSeconds | quote }}]
+          env: {{ include "aspm.env" . | nindent 12 }}
+          securityContext: {{ toYaml .Values.securityContext | nindent 12 }}
+          resources: {{ toYaml .Values.migrations.resources | nindent 12 }}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+            {{- if .Values.databaseTLS.existingSecret }}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+            {{- end }}
+      volumes:
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        {{- if .Values.databaseTLS.existingSecret }}
+        - name: db-tls
+          secret: {secretName: {{ .Values.databaseTLS.existingSecret | quote }}}
+        {{- end }}
+{{- end }}

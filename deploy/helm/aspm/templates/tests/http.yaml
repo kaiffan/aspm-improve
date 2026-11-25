@@ -1,0 +1,36 @@
+{{- if and .Values.tests.enabled .Values.web.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "aspm.fullname" . }}-http-test
+  labels:
+    {{- include "aspm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 60
+  securityContext: {{ toYaml .Values.podSecurityContext | nindent 4 }}
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  containers:
+    - name: http
+      image: {{ include "aspm.image" .Values.image | quote }}
+      command: [python, -c]
+      args:
+        - |
+          import urllib.request
+          req = urllib.request.Request("http://{{ include "aspm.fullname" . }}:{{ .Values.service.port }}/login", headers={"Host":"localhost"})
+          with urllib.request.urlopen(req, timeout=10) as response:
+              if response.status != 200 or b"csrfmiddlewaretoken" not in response.read(1048576):
+                  raise SystemExit("ASPM login smoke failed")
+          print("ASPM login smoke passed")
+      securityContext: {{ toYaml .Values.securityContext | nindent 8 }}
+      resources:
+        requests: {cpu: 50m, memory: 128Mi}
+        limits: {cpu: 500m, memory: 256Mi}
+{{- end }}

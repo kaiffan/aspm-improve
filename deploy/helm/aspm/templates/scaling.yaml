@@ -1,0 +1,30 @@
+{{- if and .Values.web.enabled .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "aspm.fullname" . }}-web
+  labels: {{ include "aspm.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "aspm.selector" . | nindent 6 }}
+      app.kubernetes.io/component: web
+{{- end }}
+{{- if and .Values.web.enabled .Values.hpa.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "aspm.fullname" . }}-web
+  labels: {{ include "aspm.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: {{ include "aspm.fullname" . }}-web}
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: {type: Utilization, averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}}
+{{- end }}

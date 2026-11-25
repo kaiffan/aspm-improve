@@ -1,0 +1,135 @@
+{{- $root := . }}
+{{- range $component := list "web" "worker" "beat" }}
+{{- $cfg := index $root.Values $component }}
+{{- if $cfg.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aspm.fullname" $root }}-{{ $component }}
+  labels:
+    {{- include "aspm.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  {{- if eq $component "beat" }}
+  replicas: 1
+  strategy: {type: Recreate}
+  {{- else }}
+  {{- if or (ne $component "web") (not $root.Values.hpa.enabled) }}
+  replicas: {{ $cfg.replicas }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "aspm.selector" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $component }}
+  template:
+    metadata:
+      labels:
+        {{- with $root.Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- include "aspm.selector" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $component }}
+      annotations:
+        checksum/config: {{ toJson $root.Values.config | sha256sum }}
+        checksum/nginx: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | sha256sum }}
+        {{- with $root.Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "aspm.serviceAccount" $root }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ $cfg.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: schema-and-storage
+          image: {{ include "aspm.image" $root.Values.image | quote }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          command: [python, manage.py, aspm_preflight, --wait-seconds=300]
+          env: {{ include "aspm.env" $root | nindent 12 }}
+          securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
+          resources: {{ toYaml $cfg.resources | nindent 12 }}
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: tmp, mountPath: /tmp}
+            {{- if $root.Values.databaseTLS.existingSecret }}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+            {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: {{ include "aspm.image" $root.Values.image | quote }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          {{- if eq $component "web" }}
+          command: [uwsgi]
+          args: [--master, --need-app, --die-on-term, --enable-threads, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, {{ $cfg.processes | quote }}, --threads, {{ $cfg.threads | quote }}, --buffer-size, "16384", --reload-mercy, "60"]
+          ports: [{name: health, containerPort: 8081}]
+          startupProbe: {{ toYaml $cfg.startupProbe | nindent 12 }}
+          readinessProbe: {{ toYaml $cfg.readinessProbe | nindent 12 }}
+          livenessProbe: {{ toYaml $cfg.livenessProbe | nindent 12 }}
+          {{- else if eq $component "worker" }}
+          command: [celery]
+          args: [--app=dojo, worker, --loglevel=INFO, --pool=prefork, {{ printf "--concurrency=%v" $cfg.concurrency | quote }}, --prefetch-multiplier=1, {{ printf "--queues=%s" $cfg.queues | quote }}]
+          {{- else }}
+          command: [python, manage.py, aspm_beat]
+          {{- end }}
+          env: {{ include "aspm.env" $root | nindent 12 }}
+          securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
+          resources: {{ toYaml $cfg.resources | nindent 12 }}
+          volumeMounts:
+            - {name: evidence, mountPath: /app/aspm-private}
+            - {name: media, mountPath: /app/media}
+            - {name: tmp, mountPath: /tmp}
+            - {name: run, mountPath: /var/run/defectdojo}
+            {{- if $root.Values.databaseTLS.existingSecret }}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+            {{- end }}
+        {{- if eq $component "web" }}
+        - name: nginx
+          image: {{ include "aspm.image" $root.Values.nginxImage | quote }}
+          imagePullPolicy: {{ $root.Values.nginxImage.pullPolicy }}
+          command: [nginx, -g, "daemon off;"]
+          ports: [{name: http, containerPort: 8080}]
+          securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
+          resources: {{ toYaml $cfg.nginxResources | nindent 12 }}
+          volumeMounts:
+            - {name: nginx-config, mountPath: /etc/nginx/nginx.conf, subPath: nginx.conf, readOnly: true}
+            - {name: nginx-tmp, mountPath: /tmp}
+        {{- end }}
+      volumes:
+        - name: evidence
+          persistentVolumeClaim: {claimName: {{ $root.Values.storage.existingClaim | quote }}}
+        - name: media
+          persistentVolumeClaim: {claimName: {{ $root.Values.storage.mediaExistingClaim | quote }}}
+        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        - {name: run, emptyDir: {sizeLimit: 64Mi}}
+        {{- if $root.Values.databaseTLS.existingSecret }}
+        - name: db-tls
+          secret: {secretName: {{ $root.Values.databaseTLS.existingSecret | quote }}}
+        {{- end }}
+        {{- if eq $component "web" }}
+        - {name: nginx-tmp, emptyDir: {sizeLimit: 128Mi}}
+        - name: nginx-config
+          configMap: {name: {{ include "aspm.fullname" $root }}-nginx}
+        {{- end }}
+{{- end }}
+{{- end }}

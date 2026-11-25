@@ -79,6 +79,8 @@ class ChartTests(unittest.TestCase):
         docs = render("--set", "hpa.enabled=true", "--set", "ingress.enabled=true", "--set", "monitoring.serviceMonitor.enabled=true")
         kinds = {x["kind"] for x in docs}
         self.assertTrue({"HorizontalPodAutoscaler", "Ingress", "ServiceMonitor"} <= kinds)
+        monitor = next(x for x in docs if x["kind"] == "ServiceMonitor")
+        self.assertEqual(monitor["spec"]["endpoints"][0]["path"], "/django_metrics/metrics")
         web = next(x for x in docs if x["kind"] == "Deployment" and x["metadata"]["name"].endswith("-web"))
         self.assertNotIn("replicas", web["spec"])
         ingress = next(x for x in docs if x["kind"] == "Ingress")

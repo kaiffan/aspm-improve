@@ -36,6 +36,6 @@ spec:
     matchLabels:
       {{- include "aspm.selector" . | nindent 6 }}
       app.kubernetes.io/component: metrics
-  endpoints: [{port: metrics, path: /django_metrics, interval: 30s}]
+  endpoints: [{port: metrics, path: /django_metrics/metrics, interval: 30s}]
 {{- end }}
 {{- end }}

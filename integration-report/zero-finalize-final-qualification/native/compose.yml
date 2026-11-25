@@ -1,0 +1,103 @@
+x-app: &app
+  image: ${APP_IMAGE:?}
+  platform: linux/amd64
+  pull_policy: never
+  labels: &owner
+    org.aspm.zfq.owner: ${QUAL_OWNER:?}
+  environment: &env
+    DD_DATABASE_URL: postgres://zfq:${QUAL_PASSWORD:?}@postgres/${QUAL_DB:?}
+    DD_CELERY_BROKER_URL: redis://valkey:6379/0
+    DD_CACHE_URL: redis://valkey:6379/1
+    DD_SECRET_KEY: ${QUAL_SECRET:?}
+    DD_CREDENTIAL_AES_256_KEY: ${QUAL_AES:?}
+    DD_ALLOWED_HOSTS: localhost,127.0.0.1,uwsgi,nginx
+    DD_CSRF_TRUSTED_ORIGINS: http://127.0.0.1:48115
+    DD_SITE_URL: http://127.0.0.1:48115
+    DD_DEBUG: "False"
+    DD_ASPM_INGESTION_ENABLED: "True"
+    DD_ASPM_API_ONLY: "True"
+    DD_ASPM_SCM_HIERARCHY: "True"
+    DD_ASPM_ARTIFACT_ROOT: /app/aspm-private
+    DD_ASPM_GIT_SHA: ${APP_SHA:?}
+    DD_ASPM_TOKEN_RATE_PER_MINUTE: "1500"
+    DD_UWSGI_NUM_OF_PROCESSES: "4"
+    DD_UWSGI_NUM_OF_THREADS: "4"
+    DD_CELERY_WORKER_CONCURRENCY: "4"
+    DD_CELERY_WORKER_AUTOSCALE_MIN: "4"
+    DD_CELERY_WORKER_AUTOSCALE_MAX: "4"
+    DD_CELERY_WORKER_PREFETCH_MULTIPLIER: "1"
+    DD_CELERY_WORKER_POOL_TYPE: prefork
+    ACCEPTANCE_DATABASE: ${QUAL_DB:?}
+    ACCEPTANCE_ROLE: app
+  volumes:
+    - ${QUAL_HOME:?}/telemetry:/acceptance-telemetry
+    - ${QUAL_PACKAGE:?}/frozen/audit_observer.py:/app/docker/extra_settings/audit_observer.py:ro
+    - ${QUAL_PACKAGE:?}/local_settings.py:/app/docker/extra_settings/local_settings.py:ro
+    - ${QUAL_PACKAGE:?}:/qualification:ro
+    - ${QUAL_PACKAGE:?}/../scripts:/qualification-scripts:ro
+    - evidence:/app/aspm-private
+    - media:/app/media
+  cpus: 4
+  mem_limit: 3g
+services:
+  postgres:
+    image: postgres:18.6-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    platform: linux/amd64
+    labels: *owner
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: zfq
+      POSTGRES_PASSWORD: ${QUAL_PASSWORD:?}
+    command: [postgres, -c, shared_preload_libraries=pg_stat_statements, -c, pg_stat_statements.track_planning=on, -c, track_io_timing=on, -c, shared_buffers=2GB, -c, max_wal_size=2GB]
+    volumes: [pgdata:/var/lib/postgresql]
+    cpus: 4
+    mem_limit: 8g
+    shm_size: 1g
+    healthcheck:
+      test: [CMD, pg_isready, -U, zfq, -d, postgres]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  valkey:
+    image: valkey/valkey:9.1.2-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11
+    platform: linux/amd64
+    labels: *owner
+    command: [valkey-server, --save, "", --appendonly, "no"]
+    tmpfs: [/data]
+    cpus: 0.5
+    mem_limit: 256m
+  uwsgi:
+    <<: *app
+  worker:
+    <<: *app
+    environment:
+      <<: *env
+      ACCEPTANCE_ROLE: worker
+    entrypoint: [/entrypoint-celery-worker.sh]
+  beat:
+    <<: *app
+    entrypoint: [/entrypoint-celery-beat.sh]
+    environment:
+      <<: *env
+      ACCEPTANCE_ROLE: beat
+    cpus: 0.5
+    mem_limit: 512m
+  nginx:
+    image: ${NGINX_IMAGE:?}
+    platform: linux/amd64
+    pull_policy: never
+    labels: *owner
+    environment:
+      DD_UWSGI_HOST: uwsgi
+      DD_UWSGI_PORT: "3031"
+    volumes: [media:/usr/share/nginx/html/media:ro]
+    ports: ["127.0.0.1:48115:8080"]
+    cpus: 1
+    mem_limit: 256m
+volumes:
+  pgdata:
+    labels: *owner
+  evidence:
+    labels: *owner
+  media:
+    labels: *owner

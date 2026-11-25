@@ -1,0 +1,50 @@
+{
+  "job_queue_ms": {
+    "p50": 2326.709,
+    "p95": 4032.973
+  },
+  "job_execution_ms": {
+    "p50": 47.649,
+    "p95": 106.06500000000001
+  },
+  "job_total_ms": {
+    "p50": 2373.5164999999997,
+    "p95": 4075.805
+  },
+  "duration_s": 17.79342150001321,
+  "jobs": 100,
+  "wal_bytes": 17904176,
+  "size_growth": {
+    "database": 7929856,
+    "findings": 2269184,
+    "observations": 1679360,
+    "scans": 147456
+  },
+  "artifact_bytes_growth": 207708,
+  "database_block_reads": 326,
+  "database_cache_hits": 3323299,
+  "database_temp_bytes": 0,
+  "services": {
+    "aspm-zero-finalize-postgres-1": {
+      "cpu_s": 10.353232,
+      "throttled_s": 6.753858,
+      "cgroup_peak_bytes": 442204160,
+      "cgroup_read_bytes": 5001216,
+      "cgroup_written_bytes": 83042304
+    },
+    "zfq-load-http-1": {
+      "cpu_s": 4.063897,
+      "throttled_s": 0.0,
+      "cgroup_peak_bytes": 391778304,
+      "cgroup_read_bytes": 12455936,
+      "cgroup_written_bytes": 1404928
+    },
+    "zfq-load-worker-1": {
+      "cpu_s": 8.47612,
+      "throttled_s": 0.0,
+      "cgroup_peak_bytes": 454803456,
+      "cgroup_read_bytes": 53248,
+      "cgroup_written_bytes": 57344
+    }
+  }
+}

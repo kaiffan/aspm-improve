@@ -1,7 +1,10 @@
 """Read-only native qualification disk/capacity preflight. Never removes data."""
 # ruff: noqa: INP001 -- standalone CLI helpers invoke installed git/helm tools
 import argparse
+import json
+import platform
 import shutil
+import sys
 from pathlib import Path
 
 GIB = 1024 ** 3
@@ -16,8 +19,22 @@ def main():
     paths = [args.path.resolve()]
     if args.docker_root:
         paths.append(args.docker_root.resolve())
-    {str(p): shutil.disk_usage(p).free for p in paths}
-    sum(BUDGET_GIB.values()) * GIB + 6 * GIB
+    free_bytes = {str(path): shutil.disk_usage(path).free for path in paths}
+    reserve_gib = 6
+    required_bytes = (sum(BUDGET_GIB.values()) + reserve_gib) * GIB
+    system = platform.system()
+    machine = platform.machine()
+    json.dump({
+        "host": {"os": system, "architecture": machine},
+        "budget_gib": BUDGET_GIB,
+        "reserve_gib": reserve_gib,
+        "required_bytes": required_bytes,
+        "free_bytes": free_bytes,
+        "disk_pass": min(free_bytes.values()) >= required_bytes,
+        "native_host": system == "Linux" and machine in {"amd64", "x86_64"},
+        "data_deleted": False,
+    }, sys.stdout, indent=2)
+    sys.stdout.write("\n")
 
 
 if __name__ == "__main__":

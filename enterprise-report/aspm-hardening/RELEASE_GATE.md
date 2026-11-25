@@ -33,4 +33,4 @@ Application source `5133e155d102eb0f431560924ea129b2287319ff`. Chart `0.1.0-rc.1
 
 ## OrbStack follow-up
 
-The OrbStack context was enabled after the original qualification. A namespace and dependencies were submitted, and the API server accepted all ten Helm `0.1.0-rc.2` objects in server dry-run. The node reported DiskPressure, so workloads remained pending and the Kubernetes deployment gate stays open. All 37 targeted webhook tests and the independent end-to-end Compose webhook smoke passed. See [attempt, evidence and resume procedure](orbstack/REPORT.md).
+The OrbStack context was enabled after the original qualification. A namespace and dependencies were submitted, and the API server accepted all ten Helm `0.1.0-rc.2` objects in server dry-run. Workloads are pending with `DiskPressure`. Cleanup left 12.85 GiB available, below the 31.99 GiB required by the configured recovery policy. The Kubernetes deployment gate stays open. All 37 targeted webhook tests and the independent end-to-end Compose webhook smoke passed. See [attempt, evidence and resume procedure](orbstack/REPORT.md).

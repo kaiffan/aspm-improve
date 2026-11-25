@@ -1,0 +1,38 @@
+{
+  "context": "orbstack",
+  "kubeletVersion": "v1.36.5+orb1",
+  "diskPressure": "True",
+  "evictionPolicy": {
+    "evictionHard": {
+      "imagefs.available": "5%",
+      "nodefs.available": "5%"
+    },
+    "evictionMinimumReclaim": {
+      "imagefs.available": "10%",
+      "nodefs.available": "10%"
+    },
+    "evictionPressureTransitionPeriod": "5m0s"
+  },
+  "filesystems": {
+    "nodefs": {
+      "time": "2026-11-25T08:40:37Z",
+      "capacityBytes": 228975443968,
+      "availableBytes": 13796380672
+    },
+    "imagefs": {
+      "time": "2026-11-25T08:40:55Z",
+      "capacityBytes": 228975443968,
+      "availableBytes": 13796380672
+    }
+  },
+  "removedVolumes": [
+    "aspm-api-ingestion_private-artifacts",
+    "aspm-api-ingestion_unit-postgres"
+  ],
+  "preservedVolumesVerified": [
+    "aspm-acceptance_postgres-data",
+    "aspm-enterprise-hardening_private-evidence",
+    "aspm-enterprise-hardening_unit-postgres",
+    "django-defectdojo_defectdojo_postgres"
+  ]
+}

@@ -1,17 +1,19 @@
 # ASPM в OrbStack Kubernetes
 
-**Попытка установки остановилась на планировании pod.** Контекст `orbstack` отвечает. В namespace `aspm-lab-orbstack` созданы отдельные Secret, PostgreSQL, Valkey broker, Valkey cache и три PVC. Scheduler оставил pod в `Pending` из-за `node.kubernetes.io/disk-pressure:NoSchedule`. PVC используют `WaitForFirstConsumer`, поэтому тоже остались `Pending`. Helm release не создан. [Журнал попытки](install.log.gz) · [События scheduler](scheduler-events.txt) · [Pod и PVC](kube-pending.txt)
+**Установка остаётся заблокирована на планировании pod.** Контекст `orbstack` отвечает. В namespace `aspm-lab-orbstack` созданы отдельные Secret, PostgreSQL, Valkey broker, Valkey cache и три PVC. Scheduler оставил pod в `Pending` из-за `node.kubernetes.io/disk-pressure:NoSchedule`. PVC используют `WaitForFirstConsumer`, поэтому тоже остались `Pending`. Helm release не создан. [Журнал попытки](install.log.gz) · [События scheduler](scheduler-events.txt) · [Pod и PVC](kube-pending.txt)
 
 | Проверка | Результат |
 |---|---|
 | OrbStack | Kubernetes 1.36.5, один узел ARM64 |
-| nodefs и imagefs | 6,59 GiB свободно из 213,5 GiB. Порог eviction 5%, около 10,68 GiB |
+| nodefs и imagefs после очистки | 12,85 ГиБ свободно из 213,25 ГиБ. Для снятия DiskPressure требуется 31,99 ГиБ |
 | Helm `0.1.0-rc.2` | 12 chart-тестов. 49 ресурсов прошли проверку Kubernetes schema в пяти конфигурациях |
 | OrbStack API server | 10 объектов Helm, включая миграционный Job и HTTP test Pod, приняты в server dry-run |
 | Реальный Helm install, `helm test`, upgrade, rollout и in-cluster webhook delivery | NOT TESTED из-за DiskPressure |
 | Webhook Django/TLS, локальный Docker | 37/37 PASS |
 
-Пороги и выдержка состояния взяты из эффективного конфига kubelet. Наблюдалась нехватка примерно 4,1 GiB до порога. Освободите не меньше 5 GiB дополнительного места, чтобы оставить запас, и дождитесь `DiskPressure=False`. Переход может занять пять минут. После этого `deploy/labs/orbstack/install.sh --resume` повторно использует существующие Secret и PVC. Настройки eviction и чужие данные оставлены без изменений. [Место на узле](kube-disk.json) · [Порог kubelet](kube-disk-policy.json) · [Документация Kubernetes](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/)
+После первой очистки на узле было 6,71 ГиБ свободного места. По согласованию удалены два остановленных контейнера и два локальных тома завершённого синтетического бенчмарка `aspm-api-ingestion`. В Docker они занимали 6,75 ГБ. Результаты и рецепт воспроизведения сохранены в ветке `codex/aspm-api-only-ingestion`, в `docs/aspm-api/validation.md`. Основная PostgreSQL, база ASPM Acceptance и активный Compose-стенд сохранены. [Замер после очистки](disk-after-cleanup.json)
+
+Эффективный конфиг kubelet задаёт 5% для срабатывания и ещё 10 процентных пунктов `evictionMinimumReclaim` для восстановления. До порога восстановления не хватает 19,14 ГиБ. После достижения порога kubelet выдерживает пять минут перед снятием `DiskPressure`. При `DiskPressure=False` проверьте локальные теги PostgreSQL и Valkey из `dependencies.yaml`, которые kubelet может удалить при сборке мусора, и выполните `deploy/labs/orbstack/install.sh --resume`. Этот запуск повторно использует уже созданные Secret и PVC. [Политика восстановления Kubernetes](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#minimum-eviction-reclaim)
 
 ## Что исправлено в Helm
 

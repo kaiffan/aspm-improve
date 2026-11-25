@@ -60,6 +60,10 @@ def dispatch_jobs(**kwargs):
             # The next periodic dispatch retries, including process death before this send.
             logger.warning("ASPM broker dispatch deferred for job %s", job.pk)
 
+    from dojo.webhooks.tasks import dispatch_webhooks  # noqa: PLC0415 -- shared outbox dispatcher
+
+    dispatch_webhooks()
+
 
 class MeasuredReImporter(DefaultReImporter):
 

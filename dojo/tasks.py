@@ -368,3 +368,4 @@ def update_watson_search_index_for_model(model_name, pk_list, *args, **kwargs):
 
 
 from dojo.aspm_ingestion.tasks import dispatch_jobs, process_job  # noqa: E402, F401
+from dojo.webhooks.tasks import deliver_webhook  # noqa: E402, F401

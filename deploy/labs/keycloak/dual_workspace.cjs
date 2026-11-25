@@ -116,6 +116,7 @@ async function main() {
 
     await expert.page.getByRole('link', { name: 'DevSecOps Workspace', exact: true }).click();
     await expert.page.waitForURL(origin + '/workspace/projects');
+    assert.equal(await expert.page.locator('.breadcrumb.main .active a').textContent(), 'Projects');
     await capture(expert.page, 'devsecops-expert-desktop');
   } finally {
     writeFileSync(join(output, 'browser.json'), JSON.stringify(checks, null, 2) + '\n');

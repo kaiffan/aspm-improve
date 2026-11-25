@@ -10,6 +10,7 @@ from django.db.models import OuterRef, Subquery
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
 
 from dojo.aspm_access.models import SsoProductGrant
@@ -21,6 +22,7 @@ from dojo.engagement.models import Engagement
 from dojo.product.models import Product
 from dojo.product.queries import get_authorized_products
 from dojo.scm.models import Repository
+from dojo.utils import add_breadcrumb
 
 
 def _page(request, queryset):
@@ -38,6 +40,7 @@ def _audit(request, obj, action, message):
 def projects(request):
     query = request.GET.get("q", "").strip()[:150]
     products = get_authorized_products("view", user=request.user).filter(name__icontains=query).order_by("name", "pk")
+    add_breadcrumb(title=_("Projects"), request=request)
     return render(request, "dojo/aspm/projects.html", {"projects": _page(request, products), "query": query})
 
 
@@ -47,6 +50,7 @@ def classic(request):
     products = get_authorized_products("view", user=request.user).filter(
         name__icontains=query,
     ).select_related("prod_type").order_by("name", "pk")
+    add_breadcrumb(title=_("Classic Workspace"), request=request)
     return render(request, "dojo/aspm/classic.html", {"products": _page(request, products), "query": query})
 
 
@@ -57,6 +61,7 @@ def test_scan(test):
 
 
 def classic_reader(request, *, children=None, **context):
+    add_breadcrumb(request=request, clear=True)
     return render(request, "dojo/aspm/classic_reader.html", {
         "children": _page(request, children) if children is not None else None,
         **context,

@@ -52,10 +52,10 @@ class IngestionFixture:
         self.wake.start()
         self.addCleanup(self.wake.stop)
 
-    def upload(self, key="pipeline/job/attempt-1", report=None, **changes):
+    def upload(self, key="pipeline/job/attempt-1", report=None, *, filename="report.json", **changes):
         data = {"project_id": self.product.pk, "repository_url": URL, "commit_sha": SHA,
                 "scanner_type": "Generic Findings Import", "idempotency_key": key,
-                "file": SimpleUploadedFile("report.json", generic() if report is None else report, content_type="application/json"), **changes}
+                "file": SimpleUploadedFile(filename, generic() if report is None else report, content_type="application/json"), **changes}
         return self.client.post(reverse("aspm_v1:scans"), data, format="multipart")
 
     def accepted(self, **kwargs):

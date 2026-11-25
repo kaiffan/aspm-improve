@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 import secrets
+import uuid
 
 from django.db import transaction
 from django.db.models import Max
@@ -65,7 +66,7 @@ def wake_dispatcher():
         logger.warning("ASPM outbox wake deferred; periodic dispatcher will recover pending jobs")
 
 
-def accept_scan(token, data, upload):
+def accept_scan(token, data, upload, *, correlation_id=None):
     require_scope(token, "submit")
     if data["project_id"] != token.product_id:
         msg = "Product is outside the token scope."
@@ -102,7 +103,7 @@ def accept_scan(token, data, upload):
             scan, created = ScanRun.objects.get_or_create(
                 product_id=token.product_id, delivery_key=data["idempotency_key"],
                 defaults={"commit": commit, "submitted_by": token.user, "fingerprint": fingerprint,
-                          "scanner": data["scanner_type"], "metadata": metadata, "artifact_path": key,
+                          "scanner": data["scanner_type"], "metadata": {**metadata, "correlation_id": correlation_id or uuid.uuid4().hex}, "artifact_path": key,
                           "artifact_sha256": digest, "artifact_size": size, "original_name": safe_name(upload.name),
                           "timings": {"artifact_storage_seconds": storage_seconds}},
             )

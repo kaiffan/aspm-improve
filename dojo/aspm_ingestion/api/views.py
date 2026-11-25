@@ -25,7 +25,7 @@ from dojo.aspm_ingestion.api.serializer import (
 )
 from dojo.aspm_ingestion.models import GeneratedReport, IngestionToken, ScanRun
 from dojo.aspm_ingestion.services import accept_scan, finalize_commit, request_report, require_scope, retry_scan
-from dojo.aspm_ingestion.storage import private_path
+from dojo.aspm_ingestion.storage import verified_open
 from dojo.product.queries import get_authorized_products
 from dojo.scm.api.serializer import CommitSerializer, RepositorySerializer
 from dojo.scm.models import Commit, Repository
@@ -122,7 +122,7 @@ class ScanUploadView(AspmView):
         serializer.is_valid(raise_exception=True)
         values = dict(serializer.validated_data)
         upload = values.pop("file")
-        scan, created = accept_scan(request.auth, values, upload)
+        scan, created = accept_scan(request.auth, values, upload, correlation_id=getattr(request, "correlation_id", None))
         payload = ScanRunSerializer(scan).data
         payload["acceptance_seconds"] = time.monotonic() - start
         return Response(payload, status=202 if created else 200)
@@ -145,7 +145,7 @@ class ArtifactDownloadView(AspmView):
     @extend_schema(responses={(200, "application/octet-stream"): bytes}, tags=["ASPM ingestion"])
     def get(self, request, pk):
         scan = self.scan(request, pk)
-        response = FileResponse(private_path(scan.artifact_path).open("rb"), as_attachment=True, filename=scan.original_name, content_type="application/octet-stream")
+        response = FileResponse(verified_open(scan.artifact_path, scan.artifact_sha256, scan.artifact_size), as_attachment=True, filename=scan.original_name, content_type="application/octet-stream")
         response["X-Content-Type-Options"] = "nosniff"
         response["Cache-Control"] = "private, no-store"
         response["Content-Security-Policy"] = "sandbox; default-src 'none'"
@@ -214,7 +214,7 @@ class ReportDownloadView(AspmView):
             msg = "format must be html or json."
             raise ValidationError(msg)
         key = report.html_path if output_format == "html" else report.json_path
-        response = FileResponse(private_path(key).open("rb"), as_attachment=True, filename=f"aspm-{report.commit_id}-v{report.version}.{output_format}", content_type="text/html; charset=utf-8" if output_format == "html" else "application/json")
+        response = FileResponse(verified_open(key, report.checksums.get(output_format)), as_attachment=True, filename=f"aspm-{report.commit_id}-v{report.version}.{output_format}", content_type="text/html; charset=utf-8" if output_format == "html" else "application/json")
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
         response["Content-Security-Policy"] = "sandbox; default-src 'none'"

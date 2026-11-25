@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from dojo.aspm_ingestion.logging import private_import_logs
 from dojo.aspm_ingestion.models import FindingObservation, GeneratedReport, IngestionJob, ScanRun
-from dojo.aspm_ingestion.storage import private_path, sync_directories, verify_original
+from dojo.aspm_ingestion.storage import bounded_text_output, private_path, sync_directories, verify_original
 from dojo.celery import app
 from dojo.importers.default_importer import DefaultImporter
 from dojo.importers.default_reimporter import DefaultReImporter
@@ -195,7 +195,7 @@ def generate_report(report):
             severity.update(scan["severity_summary"])
     manifest = {**report.manifest, "severity_summary": dict(severity)}
     try:
-        with json_path.open("x", encoding="utf-8") as json_output, html_path.open("x", encoding="utf-8") as html_output:
+        with bounded_text_output(json_path) as json_output, bounded_text_output(html_path) as html_output:
             pathlib.Path(json_path).chmod(0o600)
             pathlib.Path(html_path).chmod(0o600)
             # Stream observations. Memory stays bounded even for million-row reports.

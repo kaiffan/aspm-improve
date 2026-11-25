@@ -115,6 +115,10 @@ spec:
           imagePullPolicy: {{ $root.Values.nginxImage.pullPolicy }}
           command: [nginx, -g, "daemon off;"]
           ports: [{name: http, containerPort: 8080}]
+          readinessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 2
+            timeoutSeconds: 2
           securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
           resources: {{ toYaml $cfg.nginxResources | nindent 12 }}
           volumeMounts:

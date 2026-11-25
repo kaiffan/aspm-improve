@@ -1,18 +1,29 @@
 {% extends "base.html" %}
 {% load i18n static %}
 {% block content %}
-<section class="panel panel-default aspm-evidence" data-aspm-state-url="{% url 'aspm_commit_state' commit.pk %}" data-aspm-revision="{{ state_revision }}">
-    <div class="panel-heading"><h1>Commit evidence</h1></div>
-    <div class="panel-body">
-        <p><a href="{% url 'view_product' commit.repository.product_id %}">{{ commit.repository.product.name }}</a> → <a href="{% url 'scm_repository_detail' commit.repository_id %}">{{ commit.repository.url }}</a> → <code id="aspm-commit-sha">{{ commit.sha }}</code> <button type="button" class="btn btn-default" data-aspm-copy-target="aspm-commit-sha">Copy SHA</button> <span role="status" data-aspm-copy-status></span></p>
-        <p>These results are historical observations from completed scans. Editing live Findings does not rewrite this commit history.</p>
-        <nav aria-label="Commit evidence"><ul class="nav nav-tabs">
-            <li><a href="?tab=overview{{ nav_params }}">Overview</a></li>
-            <li><a href="?tab=originals{{ nav_params }}">Scanner Reports</a></li>
-            <li><a href="?tab=reports{{ nav_params }}">ASPM Report</a></li>
-            <li><a href="?tab=findings{{ nav_params }}">Findings</a></li>
-            <li><a href="?tab=changes{{ nav_params }}">Changes</a></li>
-        </ul></nav>
+<div class="aspm-workspace-hero">
+    <nav aria-label="{% trans 'Commit breadcrumb' %}" class="aspm-commit-meta">
+        <a href="{% url 'aspm_projects' %}">{% trans "Projects" %}</a>
+        <span aria-hidden="true">/</span><a href="{% url 'scm_repository_list' commit.repository.product_id %}">{{ commit.repository.product.name }}</a>
+        <span aria-hidden="true">/</span><a href="{% url 'scm_repository_detail' commit.repository_id %}">{% trans "Repository" %}</a>
+    </nav>
+    <header class="aspm-page-heading"><div>
+        <h1>{% trans "Commit overview" %}</h1>
+        <p class="aspm-commit-meta"><code id="aspm-commit-sha">{{ commit.sha }}</code>
+            <button type="button" class="btn btn-secondary" data-aspm-copy-target="aspm-commit-sha">{% trans "Copy SHA" %}</button>
+            <span role="status" data-aspm-copy-status></span></p>
+        <p>{{ commit.repository.url }} · {% trans "Branch" %} {{ commit.branch|default:"—" }}</p>
+    </div></header>
+</div>
+<section class="aspm-section aspm-evidence" data-aspm-state-url="{% url 'aspm_commit_state' commit.pk %}" data-aspm-revision="{{ state_revision }}">
+    <div class="aspm-section-body">
+        <nav class="aspm-workspace-tabs" aria-label="{% trans 'Commit evidence' %}">
+            <a href="?tab=overview{{ nav_params }}" {% if section == "overview" %}aria-current="page"{% endif %}>{% trans "Overview" %}</a>
+            <a href="?tab=originals{{ nav_params }}" {% if section == "originals" %}aria-current="page"{% endif %}>{% trans "Scanner Reports" %}</a>
+            <a href="?tab=reports{{ nav_params }}" {% if section == "reports" %}aria-current="page"{% endif %}>{% trans "ASPM Report" %}</a>
+            <a href="?tab=findings{{ nav_params }}" {% if section == "findings" %}aria-current="page"{% endif %}>{% trans "Findings" %}</a>
+            <a href="?tab=changes{{ nav_params }}" {% if section == "changes" %}aria-current="page"{% endif %}>{% trans "Changes" %}</a>
+        </nav>
         <form method="get" class="form-inline">
             <input type="hidden" name="tab" value="{{ section }}">
             <label for="aspm-pipeline">Results from pipeline</label>
@@ -28,7 +39,7 @@
         </p>
         {% if section == 'overview' or section == 'reports' %}
             <h2>Available results</h2>
-            <dl>{% for severity, total in selection.severity_summary.items %}<dt>{{ severity }}</dt><dd>{{ total }}</dd>{% empty %}<dt>Findings</dt><dd>No completed results in this selection.</dd>{% endfor %}</dl>
+            <dl class="aspm-severity-grid">{% for severity, total in selection.severity_summary.items %}{% include "dojo/aspm/severity_total.html" with level=severity|lower label=severity total=total %}{% empty %}<div><dt>{% trans "No completed results in this selection." %}</dt></div>{% endfor %}</dl>
             <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Scanner / scope</th><th>Latest successful ScanRun</th><th>Pipeline / job / CI attempt</th><th>Completed / findings</th></tr></thead><tbody>
                 {% for scan in selection.scans %}<tr><td>{{ scan.scanner }}{% if scan.metadata.environment %} / {{ scan.metadata.environment }}{% endif %} / {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.id }}</td><td>{{ scan.pipeline }} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}</td><td>{{ scan.finished_at }} / {{ scan.finding_count }}</td></tr>{% endfor %}
             </tbody></table></div>
@@ -36,8 +47,7 @@
             <p><a href="?tab=findings{{ nav_params }}">Browse historical CWE / CVE observations →</a></p>
         {% endif %}
         {% if section == 'overview' %}
-            <h2>Overview</h2><p>Scanner results arrive through the CI/CD API. Completed results appear automatically. No finalize is required. Fixed exports preserve their exact selected ScanRuns and never change after later deliveries.</p>
-            <p>Branch: {{ commit.branch|default:"—" }}</p>
+            <h2>{% trans "Processing status" %}</h2>
             <dl>{% for status in scan_statuses %}<dt>{{ status.status }}</dt><dd>{{ status.total }} ScanRun(s)</dd>{% empty %}<dt>ScanRuns</dt><dd>No deliveries received.</dd>{% endfor %}</dl>
         {% elif section == 'originals' %}
             <h2>Scanner Reports</h2>

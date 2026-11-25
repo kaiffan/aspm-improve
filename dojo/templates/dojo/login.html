@@ -7,12 +7,14 @@
 
 {% block content %}
     <div class="login-wrapper">
-        <div class="login-card">
-            <div class="login-logo">
-                {% include "dojo/aspm/brand.html" %}
-            </div>
-            <div class="login-title">{% trans "Welcome back" %}</div>
-            <div class="login-subtitle">{% trans "Sign in to your account" %}</div>
+        <div class="aspm-login-split">
+        <section class="aspm-login-story" aria-labelledby="aspm-login-heading">
+            <div>{% include "dojo/aspm/brand.html" %}</div>
+            <h1 id="aspm-login-heading">{% trans "Application security" %}</h1>
+            <p>{% trans "Review findings, scan evidence, and assessment reports from one workspace." %}</p>
+        </section>
+        <section class="login-card" aria-labelledby="aspm-sign-in">
+            <h2 id="aspm-sign-in" class="login-title">{% trans "Sign in" %}</h2>
 
             {% if "banner_enable"|get_banner_conf %}
                 <div class="alert alert-info mb-4">
@@ -47,6 +49,7 @@
                     {% endif %}
                 {% endif %}
             </form>
+        </section>
         </div>
     </div>
 {% endblock %}

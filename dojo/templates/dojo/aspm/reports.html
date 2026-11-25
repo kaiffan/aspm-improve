@@ -1,29 +1,57 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
-    <header class="aspm-page-heading"><h1>{% trans "Reports" %}</h1></header>
-    <form class="filters aspm-workspace-form" method="get">
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{% trans "Reports" %}</h1>
+        <p>{% trans "Find assessment reports, original scanner outputs, and fixed ASPM exports." %}</p>
+    </div></header></div>
+    <nav class="aspm-workspace-tabs" aria-label="{% trans 'Report type' %}">
+        <a href="?type=generated&amp;q={{ query|urlencode }}" {% if section == "generated" %}aria-current="page"{% endif %}>{% trans "Generated ASPM reports" %}</a>
+        {% if aspm_ingestion_enabled %}<a href="?type=originals&amp;q={{ query|urlencode }}" {% if section == "originals" %}aria-current="page"{% endif %}>{% trans "Original scanner reports" %}</a>{% endif %}
+        <a href="?type=classic&amp;q={{ query|urlencode }}" {% if section == "classic" %}aria-current="page"{% endif %}>{% trans "Classic reports" %}</a>
+    </nav>
+    <form class="filters aspm-workspace-form" method="get" role="search" aria-label="{% trans 'Filter reports' %}">
+        <input type="hidden" name="type" value="{{ section }}">
         <label for="report-project-search">{% trans "Project name" %}</label>
         <input id="report-project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
         <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
     </form>
-    <section class="panel panel-default">
-        <div class="table-responsive">
+    <section class="aspm-section" aria-label="{% trans 'Report results' %}">
+        <header>
+            {% if section == "classic" %}
+                <h2>{% trans "Classic assessment reports" %}</h2><p>{% trans "Open a report for a product, or choose an engagement or test for a narrower assessment." %}</p>
+                {% if aspm_role != "user" %}<a href="{% url 'report_builder' %}">{% trans "Open Report Builder" %}</a>{% endif %}
+            {% elif section == "originals" %}
+                <h2>{% trans "Original scanner reports" %}</h2><p>{% trans "Files as received from the scanner, including deliveries that failed processing." %}</p>
+            {% else %}
+                <h2>{% trans "Generated ASPM reports" %}</h2><p>{% trans "Versioned HTML and JSON exports of selected commit scan results." %}</p>
+            {% endif %}
+        </header>
+        <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Reports table' %}">
             <table class="table">
-                <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Commit" %}</th><th scope="col">{% trans "Version" %}</th><th scope="col">{% trans "Created" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Download" %}</th></tr></thead>
+                <thead><tr><th scope="col">{% trans "Project" %}</th>
+                    {% if section != "classic" %}<th scope="col">{% trans "Commit" %}</th><th scope="col">{% if section == "originals" %}{% trans "Scanner" %}{% else %}{% trans "Version" %}{% endif %}</th><th scope="col">{% trans "Created" %}</th><th scope="col">{% trans "Status" %}</th>{% endif %}
+                    <th scope="col">{% trans "Open or download" %}</th></tr></thead>
                 <tbody>
-                    {% for report in reports %}
-                        <tr>
-                            <th scope="row">{{ report.commit.repository.product.name }}</th>
-                            <td><a href="{% url 'aspm_commit_evidence' report.commit_id %}?tab=reports"><code>{{ report.commit.sha|slice:":12" }}</code></a></td>
-                            <td>{{ report.version }}</td><td><time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at }}</time></td>
-                            <td>{{ report.get_status_display }}</td>
-                            <td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% else %}—{% endif %}</td>
-                        </tr>
-                    {% empty %}<tr><td colspan="6">{% trans "No generated reports match this view." %}</td></tr>{% endfor %}
+                    {% for entry in entries %}
+                        {% if section == "classic" %}
+                            <tr><th scope="row"><a href="{% url 'view_product' entry.pk %}">{{ entry.name }}</a></th><td><a href="{% url 'product_report' entry.pk %}">{% trans "Product report" %}</a> · <a href="{% url 'view_engagements' entry.pk %}">{% trans "Engagements" %}</a></td></tr>
+                        {% elif section == "originals" %}
+                            <tr><th scope="row">{{ entry.product.name }}</th><td><a href="{% url 'aspm_commit_evidence' entry.commit_id %}?tab=originals&amp;run={{ entry.pk }}"><code>{{ entry.commit.sha|slice:":12" }}</code></a></td>
+                            <td>{{ entry.scanner }}</td><td><time datetime="{{ entry.created_at|date:'c' }}">{{ entry.created_at }}</time></td>
+                            <td>{% include "dojo/aspm/status.html" with state=entry.status label=entry.get_status_display %}</td><td><a href="{% url 'aspm_v1:artifact' entry.pk %}">{{ entry.original_name }}</a></td></tr>
+                        {% else %}
+                            <tr><th scope="row">{{ entry.commit.repository.product.name }}</th><td><a href="{% url 'aspm_commit_evidence' entry.commit_id %}?tab=reports"><code>{{ entry.commit.sha|slice:":12" }}</code></a></td>
+                            <td>{{ entry.version }}</td><td><time datetime="{{ entry.created_at|date:'c' }}">{{ entry.created_at }}</time></td>
+                            <td>{% include "dojo/aspm/status.html" with state=entry.status label=entry.get_status_display %}</td>
+                            <td>{% if entry.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' entry.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' entry.pk %}?format=json">JSON</a>{% else %}—{% endif %}</td></tr>
+                        {% endif %}
+                    {% empty %}
+                        <tr><td colspan="{% if section == 'classic' %}2{% else %}6{% endif %}">{% if section == "generated" %}{% trans "No generated reports match this view." %}{% elif section == "originals" %}{% trans "No scanner deliveries match this view." %}{% else %}{% trans "No products match this view." %}{% endif %}</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-        {% include "dojo/paging_snippet.html" with page=reports %}
+        <div class="aspm-pagination">{% include "dojo/paging_snippet.html" with page=entries %}</div>
     </section>
 {% endblock %}

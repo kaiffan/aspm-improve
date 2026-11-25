@@ -85,6 +85,17 @@
         var toggle = document.getElementById('aspm-nav-toggle');
         var backdrop = document.getElementById('aspm-nav-backdrop');
         if (!sidebar || !toggle || !backdrop) return;
+        var desktop = window.matchMedia('(min-width: 1024px)');
+        var desktopLabel = toggle.dataset.desktopLabel;
+        var mobileLabel = toggle.getAttribute('aria-label');
+        var desktopCollapsed = false;
+        try { desktopCollapsed = localStorage.getItem('aspm.sidebarCollapsed') === 'true'; } catch (_) { /* Storage may be unavailable. */ }
+        function syncDesktop() {
+            root.toggleAttribute('data-nav-collapsed', desktopCollapsed);
+            toggle.setAttribute('aria-expanded', String(desktop.matches && !desktopCollapsed));
+            toggle.setAttribute('aria-label', desktop.matches ? desktopLabel : mobileLabel);
+            sidebar.inert = desktop.matches && desktopCollapsed;
+        }
         function close(restoreFocus) {
             root.removeAttribute('data-nav-open');
             toggle.setAttribute('aria-expanded', 'false');
@@ -95,6 +106,12 @@
             return Array.from(sidebar.querySelectorAll('a[href], button, select, [tabindex="0"]')).filter(function (el) { return el.getClientRects().length && !el.disabled; });
         }
         toggle.addEventListener('click', function () {
+            if (desktop.matches) {
+                desktopCollapsed = !desktopCollapsed;
+                try { localStorage.setItem('aspm.sidebarCollapsed', String(desktopCollapsed)); } catch (_) { /* Keep this tab usable. */ }
+                syncDesktop();
+                return;
+            }
             if (root.hasAttribute('data-nav-open')) return close(true);
             root.setAttribute('data-nav-open', '');
             toggle.setAttribute('aria-expanded', 'true');
@@ -113,8 +130,14 @@
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
             }
         });
-        var desktop = window.matchMedia('(min-width: 1024px)');
-        desktop.addEventListener('change', function (event) { if (event.matches) close(false); });
+        desktop.addEventListener('change', function () { close(false); syncDesktop(); });
+        syncDesktop();
+        var route = document.body.dataset.aspmRoute;
+        if (route && !sidebar.querySelector('.aspm-nav-link[aria-current]')) {
+            sidebar.querySelectorAll('.aspm-nav-link[data-nav-routes]').forEach(function (link) {
+                if (link.dataset.navRoutes.split(' ').includes(route)) link.setAttribute('aria-current', 'location');
+            });
+        }
         var path = location.pathname.replace(/\/$/, '');
         sidebar.querySelectorAll('a[href]').forEach(function (link) {
             var href = link.getAttribute('href');

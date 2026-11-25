@@ -21,6 +21,7 @@ from dojo.aspm_ingestion.scanners import SCANNER_FORMATS
 from dojo.engagement.models import Engagement
 from dojo.product.models import Product
 from dojo.product.queries import get_authorized_products
+from dojo.product_type.models import Product_Type
 from dojo.scm.models import Repository
 from dojo.utils import add_breadcrumb
 
@@ -36,22 +37,33 @@ def _audit(request, obj, action, message):
     )
 
 
+def _product_workspace(request, *, title, template, context_name):
+    query = request.GET.get("q", "").strip()[:150]
+    products = get_authorized_products("view", user=request.user)
+    product_types = Product_Type.objects.filter(
+        pk__in=products.order_by().values("prod_type_id"),
+    ).order_by("name", "pk")
+    selected_type = request.GET.get("product_type", "")
+    if selected_type.isascii() and selected_type.isdecimal() and len(selected_type) <= 18:
+        products = products.filter(prod_type_id=int(selected_type))
+    products = products.filter(name__icontains=query).select_related("prod_type").order_by("name", "pk")
+    add_breadcrumb(title=title, top_level=True, request=request)
+    return render(request, template, {
+        context_name: _page(request, products),
+        "query": query,
+        "product_types": product_types,
+        "selected_type": selected_type,
+    })
+
+
 @require_GET
 def projects(request):
-    query = request.GET.get("q", "").strip()[:150]
-    products = get_authorized_products("view", user=request.user).filter(name__icontains=query).order_by("name", "pk")
-    add_breadcrumb(title=_("Projects"), request=request)
-    return render(request, "dojo/aspm/projects.html", {"projects": _page(request, products), "query": query})
+    return _product_workspace(request, title=_("Projects"), template="dojo/aspm/projects.html", context_name="projects")
 
 
 @require_GET
 def classic(request):
-    query = request.GET.get("q", "").strip()[:150]
-    products = get_authorized_products("view", user=request.user).filter(
-        name__icontains=query,
-    ).select_related("prod_type").order_by("name", "pk")
-    add_breadcrumb(title=_("Classic Workspace"), request=request)
-    return render(request, "dojo/aspm/classic.html", {"products": _page(request, products), "query": query})
+    return _product_workspace(request, title=_("Classic Workspace"), template="dojo/aspm/classic.html", context_name="products")
 
 
 def test_scan(test):
@@ -72,13 +84,23 @@ def classic_reader(request, *, children=None, **context):
 def reports(request):
     query = request.GET.get("q", "").strip()[:150]
     products = get_authorized_products("view", user=request.user).filter(name__icontains=query)
-    reports = GeneratedReport.objects.filter(
-        commit__repository__product__in=products,
-    ).select_related("commit__repository__product").only(
-        "id", "version", "status", "created_at",
-        "commit__sha", "commit__repository__url", "commit__repository__product__name",
-    ).order_by("-created_at", "-pk")
-    return render(request, "dojo/aspm/reports.html", {"reports": _page(request, reports), "query": query})
+    section = request.GET.get("type", "generated")
+    if section == "originals" and settings.ASPM_SCM_HIERARCHY and settings.ASPM_INGESTION_ENABLED:
+        entries = ScanRun.objects.filter(product__in=products, commit__repository__product__in=products).select_related("product", "commit").only(
+            "id", "product__name", "commit__sha", "scanner", "status", "created_at", "original_name",
+        ).order_by("-created_at", "-pk")
+    elif section == "classic":
+        entries = products.order_by("name", "pk")
+    else:
+        section = "generated"
+        entries = GeneratedReport.objects.filter(commit__repository__product__in=products).select_related(
+            "commit__repository__product",
+        ).only(
+            "id", "version", "status", "created_at",
+            "commit__sha", "commit__repository__product__name",
+        ).order_by("-created_at", "-pk")
+    add_breadcrumb(title=_("Reports"), top_level=True, request=request)
+    return render(request, "dojo/aspm/reports.html", {"entries": _page(request, entries), "query": query, "section": section})
 
 
 @require_GET

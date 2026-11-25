@@ -1,18 +1,32 @@
-{% load i18n %}
-<a href="{% url 'aspm_reports' %}" class="block px-4 py-2" {% if request.resolver_match.url_name == 'aspm_reports' %}aria-current="page"{% endif %}>{% trans "Commit Reports" %}</a>
-<a href="{% url 'product_type' %}" class="block px-4 py-2">{% trans "Product Types" %}</a>
-{% if aspm_role != "user" %}
-    <a href="{% url 'all_engagements' %}" class="block px-4 py-2">{% trans "Engagements" %}</a>
-    <a href="{% url 'report_builder' %}" class="block px-4 py-2">{% trans "Classic Reports" %}</a>
-    <a href="{% url 'dashboard' %}" class="block px-4 py-2">{% trans "Dashboard" %}</a>
-    <a href="{% url 'all_findings' %}" class="block px-4 py-2">{% trans "Findings" %}</a>
-    <a href="{% url 'open_findings' %}" class="block px-4 py-2">{% trans "Open findings" %}</a>
-    <a href="{% url 'aspm_scanners' %}" class="block px-4 py-2">{% trans "Scanner integrations" %}</a>
+{% load i18n authorization_tags %}
+{% translate "Overview" as overview %}
+{% translate "Projects & repositories" as projects %}
+{% translate "Products & engagements" as classic %}
+{% translate "Findings" as findings %}
+{% translate "Reports" as reports %}
+{% translate "Integrations" as integrations %}
+{% translate "Webhooks" as webhooks %}
+{% translate "Access management" as access %}
+{% translate "System health" as health %}
+{% translate "Settings" as settings %}
+<div class="aspm-nav-group" role="group" aria-label="{% trans 'Workspace' %}">
+    <span class="aspm-nav-heading" aria-hidden="true">{% trans "Workspace" %}</span>
+    {% if aspm_role != "user" %}{% include "dojo/aspm/nav_link.html" with route="dashboard" icon="chart-simple" text=overview %}{% endif %}
+    {% include "dojo/aspm/nav_link.html" with route="aspm_projects" icon="code-branch" text=projects routes="scm_repository_list scm_repository_detail scm_commit_detail scm_commit_compare aspm_commit_evidence" %}
+    {% include "dojo/aspm/nav_link.html" with route="aspm_classic" icon="layer-group" text=classic routes="product product_type view_product_type view_product all_engagements active_engagements engagements_all view_engagements view_engagement view_test" %}
+    {% if aspm_role != "user" %}{% include "dojo/aspm/nav_link.html" with route="all_findings" icon="shield-halved" text=findings routes="open_findings verified_findings closed_findings accepted_findings view_finding" %}{% endif %}
+    {% include "dojo/aspm/nav_link.html" with route="aspm_reports" icon="file-lines" text=reports routes="report_builder product_report engagement_report test_report" %}
+    {% if aspm_role == "expert" %}{% include "dojo/aspm/nav_link.html" with route="aspm_scanners" icon="plug" text=integrations %}{% endif %}
+</div>
+{% if aspm_role == "secops" or aspm_webhooks_can_manage or request.user.is_superuser %}
+    <div class="aspm-nav-group" role="group" aria-label="{% trans 'Administration' %}">
+        <span class="aspm-nav-heading" aria-hidden="true">{% trans "Administration" %}</span>
+        {% include "dojo/aspm/nav_link.html" with route="aspm_scanners" icon="plug" text=integrations routes="aspm_engagement_policy" %}
+        {% if aspm_webhooks_can_manage %}{% include "dojo/aspm/nav_link.html" with route="aspm_webhooks" icon="share-nodes" text=webhooks %}{% endif %}
+        {% if aspm_oidc_enabled and "dojo.manage_sso_mapping"|has_configuration_permission:request %}{% include "dojo/aspm/nav_link.html" with route="aspm_sso_mappings" icon="users-gear" text=access %}{% endif %}
+        {% if aspm_role == "secops" or request.user.is_superuser %}
+            {% include "dojo/aspm/nav_link.html" with route="celery_status" icon="heart-pulse" text=health %}
+            {% include "dojo/aspm/nav_link.html" with route="system_settings" icon="gear" text=settings %}
+        {% endif %}
+    </div>
 {% endif %}
-{% if aspm_role == "secops" %}
-    {% if aspm_webhooks_can_manage %}<a href="{% url 'aspm_webhooks' %}" class="block px-4 py-2">{% trans "Webhooks" %}</a>{% endif %}
-    <a href="{% url 'aspm_sso_mappings' %}" class="block px-4 py-2">{% trans "SSO access mappings" %}</a>
-    <a href="{% url 'celery_status' %}" class="block px-4 py-2">{% trans "Diagnostics" %}</a>
-    <a href="{% url 'system_settings' %}" class="block px-4 py-2">{% trans "Settings" %}</a>
-{% endif %}
-<a href="{% url 'view_profile' %}" class="block px-4 py-2">{% trans "Profile" %}</a>

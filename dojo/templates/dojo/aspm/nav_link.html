@@ -1,0 +1,6 @@
+{% url route as destination %}
+{% if destination %}
+    <a class="aspm-nav-link" href="{{ destination }}" {% if request.path == destination %}aria-current="page"{% endif %}{% if routes %} data-nav-routes="{{ routes }}"{% endif %}>
+        <i class="fa-solid fa-{{ icon }}" aria-hidden="true"></i><span>{{ text }}</span>
+    </a>
+{% endif %}

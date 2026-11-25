@@ -26,6 +26,7 @@ class ApiOnlyScansMiddleware:
 def ingestion_context(request):
     return {
         "aspm_api_only": api_only_scans_enabled(),
+        "aspm_ingestion_enabled": settings.ASPM_INGESTION_ENABLED and settings.ASPM_SCM_HIERARCHY,
         "aspm_oidc_enabled": settings.ASPM_OIDC_ENABLED,
         "aspm_role": role(request.user),
         "aspm_can_manage_engagements": can_manage_engagement_policy(request.user),

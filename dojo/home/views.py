@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -9,10 +10,12 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 
+from dojo.aspm_ingestion.models import GeneratedReport, ScanRun
 from dojo.authorization.authorization import user_has_configuration_permission
 from dojo.engagement.queries import get_authorized_engagements
 from dojo.finding.queries import get_authorized_findings
 from dojo.models import Answered_Survey
+from dojo.product.queries import get_authorized_products
 from dojo.utils import add_breadcrumb, get_punchcard_data
 
 SEVERITY_MAP = {"Critical": "a", "High": "b", "Medium": "c", "Low": "d", "Info": "e"}
@@ -23,6 +26,16 @@ def home(request: HttpRequest) -> HttpResponse:
 
 
 def dashboard(request: HttpRequest) -> HttpResponse:
+    products = get_authorized_products("view", user=request.user)
+    recent_scans = ScanRun.objects.filter(product__in=products, commit__repository__product__in=products).select_related("product").only(
+        "id", "commit_id", "product__name", "scanner", "status", "error_code",
+    ).order_by("-created_at", "-pk")
+    recent_reports = GeneratedReport.objects.filter(commit__repository__product__in=products).select_related(
+        "commit__repository__product",
+    ).only(
+        "id", "status", "version", "commit_id", "commit__repository__product__name",
+    ).order_by("-created_at", "-pk")
+    show_evidence = settings.ASPM_INGESTION_ENABLED and settings.ASPM_SCM_HIERARCHY
     engagements = get_authorized_engagements("view").distinct()
     findings = get_authorized_findings("view")
 
@@ -57,6 +70,9 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 
     add_breadcrumb(request=request, clear=True)
     return render(request, "dojo/dashboard.html", {
+        "recent_projects": products.values("pk", "name").order_by("name", "pk")[:5],
+        "recent_scans": recent_scans[:6] if show_evidence else (),
+        "recent_reports": recent_reports[:5] if show_evidence else (),
         "engagement_count": engagement_count,
         "finding_count": finding_count,
         "mitigated_count": mitigated_count,

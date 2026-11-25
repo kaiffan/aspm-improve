@@ -1,35 +1,38 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
-    <header class="aspm-page-heading">
-        <h1>{% if aspm_role == "user" %}{% trans "My projects" %}{% else %}{% trans "Projects" %}{% endif %}</h1>
-    </header>
-    <form class="filters aspm-workspace-form" method="get">
-        <label for="project-search">{% trans "Project name" %}</label>
-        <input id="project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
-        <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
-    </form>
-    <section class="panel panel-default">
+    <div class="aspm-workspace-hero">
+        <header class="aspm-page-heading"><div>
+            <h1>{% if aspm_role == "user" %}{% trans "My projects" %}{% else %}{% trans "Projects & repositories" %}{% endif %}</h1>
+            <p>{% trans "Open a repository to review commit evidence, or follow the same project into its classic engagements." %}</p>
+        </div></header>
+    </div>
+    {% translate "Project name" as search_label %}
+    {% include "dojo/aspm/product_filters.html" with search_id="project-search" %}
+    <section class="aspm-section" aria-label="{% trans 'Projects' %}">
         {% if projects %}
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Project results' %}">
                 <table class="table">
-                    <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Actions" %}</th></tr></thead>
+                    <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Product type" %}</th><th scope="col">{% trans "Workspace" %}</th></tr></thead>
                     <tbody>
                         {% for project in projects %}
                             <tr>
-                                <th scope="row"><a href="{% url 'scm_repository_list' project.pk %}">{{ project.name }}</a>{% if aspm_can_manage_engagements %} <small>#{{ project.pk }}</small>{% endif %}</th>
-                                <td>
-                                    <a href="{% url 'scm_repository_list' project.pk %}">{% trans "Repositories" %}</a> · <a href="{% url 'view_product' project.pk %}">{% trans "Classic Product" %}</a>
-                                    {% if aspm_can_manage_engagements %} · <a href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}
-                                </td>
+                                {% url 'scm_repository_list' project.pk as repositories_url %}
+                                <th scope="row"><a href="{% if repositories_url %}{{ repositories_url }}{% else %}{% url 'view_product' project.pk %}{% endif %}">{{ project.name }}</a></th>
+                                <td>{{ project.prod_type.name }}</td>
+                                <td><div class="aspm-table-actions">
+                                    {% if repositories_url %}<a class="btn btn-secondary" href="{{ repositories_url }}">{% trans "Repositories" %}</a>{% endif %}
+                                    <a class="btn btn-secondary" href="{% url 'view_engagements' project.pk %}">{% trans "Engagements" %}</a>
+                                    {% if aspm_can_manage_engagements %}<a href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}
+                                </div></td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% include "dojo/paging_snippet.html" with page=projects %}
+            <div class="aspm-pagination">{% include "dojo/paging_snippet.html" with page=projects %}</div>
         {% else %}
-            <p class="panel-body">{% if query %}{% trans "No projects match your search." %}{% else %}{% trans "No projects are available to your account." %}{% endif %}</p>
+            <p class="aspm-section-body">{% if query or selected_type %}{% trans "No projects match your search." %}{% else %}{% trans "No projects are available to your account." %}{% endif %}</p>
         {% endif %}
     </section>
 {% endblock %}

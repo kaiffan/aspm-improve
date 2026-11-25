@@ -1,25 +1,22 @@
 {% extends "base.html" %}
 {% load authorization_tags i18n %}
 {% block content %}
+    <div class="aspm-workspace-hero">
     <header class="aspm-page-heading">
-        <h1>{% trans "Classic Workspace" %}</h1>
+        <div><h1>{% trans "Classic Workspace" %}</h1><p>{% trans "Browse product types, engagements, tests, and findings. Open a product to review its assessment history." %}</p></div>
         <div class="aspm-classic-actions">
             <a class="btn btn-secondary" href="{% url 'product_type' %}">{% trans "Product Types" %}</a>
             {% if aspm_role != "user" %}
                 <a class="btn btn-secondary" href="{% url 'product' %}">{% trans "Products" %}</a>
                 <a class="btn btn-secondary" href="{% url 'all_engagements' %}">{% trans "Engagements" %}</a>
-                <a class="btn btn-secondary" href="{% url 'all_findings' %}">{% trans "Findings" %}</a>
-                <a class="btn btn-secondary" href="{% url 'report_builder' %}">{% trans "Report Builder" %}</a>
             {% endif %}
         </div>
     </header>
-    <form class="filters aspm-workspace-form" method="get">
-        <label for="classic-project-search">{% trans "Product name" %}</label>
-        <input id="classic-project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
-        <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
-    </form>
-    <section class="panel panel-default">
-        <div class="table-responsive">
+    </div>
+    {% translate "Product name" as search_label %}
+    {% include "dojo/aspm/product_filters.html" with search_id="classic-project-search" %}
+    <section class="aspm-section" aria-label="{% trans 'Products' %}">
+        <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Product results' %}">
             <table class="table">
                 <thead><tr><th scope="col">{% trans "Product" %}</th><th scope="col">{% trans "Product Type" %}</th><th scope="col">{% trans "Related pages" %}</th></tr></thead>
                 <tbody>
@@ -33,6 +30,6 @@
                 </tbody>
             </table>
         </div>
-        {% include "dojo/paging_snippet.html" with page=products %}
+        <div class="aspm-pagination">{% include "dojo/paging_snippet.html" with page=products %}</div>
     </section>
 {% endblock %}

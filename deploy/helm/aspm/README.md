@@ -20,7 +20,8 @@ helm upgrade --install aspm deploy/helm/aspm -n aspm-staging --create-namespace 
 helm test aspm -n aspm-staging --logs
 ```
 
-Set `tests.enabled=true` to install the optional Helm test hook. Migrations use a pre-install/upgrade
+Set `tests.enabled=true` to install the optional Helm ClusterIP HTTP test hook. The latest test Pod is
+retained until the next run for diagnosis. See [external PostgreSQL setup](../../../deployment/EXTERNAL_POSTGRESQL_INPUT_REQUIRED.md). Migrations use a pre-install/upgrade
 Job with a PostgreSQL lock. Web/worker/beat init containers block on the entire migration graph and
 private-storage preflight. Jobs use only pre-existing Secrets and have no dependency on release ConfigMaps
 or ServiceAccounts. Failed hooks remain for diagnosis. Beat has one replica, Recreate updates and database

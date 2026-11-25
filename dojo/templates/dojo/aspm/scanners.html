@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
-    <header class="aspm-page-heading"><h1>{% trans "Scanner integrations" %}</h1></header>
-    <p>{% trans "Use a scoped CI credential to submit the original file with the exact scan type. Results appear on the commit after processing." %}</p>
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
+        <h1>{% trans "Scanner integrations" %}</h1>
+        <p>{% trans "Submit scanner files through CI using a scoped credential. Review delivery and processing status by scanner." %}</p>
+    </div></header></div>
     <details class="panel panel-body">
         <summary>{% trans "CI upload example" %}</summary>
         <pre>curl --fail-with-body "$ASPM_URL{% url 'aspm_v1:scans' %}" \
@@ -14,7 +16,7 @@
   -F "scanner_type=$ASPM_SCANNER_TYPE" \
   -F "file=@$ASPM_REPORT_PATH"</pre>
     </details>
-    <div class="table-responsive">
+    <section class="aspm-section"><div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Scanner delivery status' %}">
         <table class="table">
             <thead><tr><th scope="col">{% trans "Scanner" %}</th><th scope="col">{% trans "Format and scan type" %}</th><th scope="col">{% trans "Latest delivery" %}</th><th scope="col">{% trans "Last success" %}</th></tr></thead>
             <tbody>
@@ -24,7 +26,7 @@
                         <td>{{ file_format }}<br><code>{{ scan_type }}</code></td>
                         <td>
                             {% if last %}
-                                <a href="{% url 'aspm_commit_evidence' last.commit_id %}?tab=originals">{{ last.status }}</a>
+                                <a href="{% url 'aspm_commit_evidence' last.commit_id %}?tab=originals">{% include "dojo/aspm/status.html" with state=last.status label=last.get_status_display %}</a>
                                 {% if last.metadata.scanner_version %} · {{ last.metadata.scanner_version }}{% endif %}
                                 {% if last.error_code %}<br><code>{{ last.error_code }}</code>{% endif %}
                             {% else %}{% trans "No deliveries" %}{% endif %}
@@ -34,6 +36,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    </div></section>
     <p class="text-muted">{% trans "Formats are covered by checked-in fixtures. The corporate scanner export versions require separate confirmation." %}</p>
 {% endblock %}

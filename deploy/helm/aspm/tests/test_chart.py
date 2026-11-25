@@ -84,6 +84,39 @@ class ChartTests(unittest.TestCase):
             with self.subTest(profile=profile):
                 self.assertTrue(render("-f", str(CHART / f"values-{profile}.yaml")))
 
+    def test_external_postgresql_overlay_reaches_every_database_client(self):
+        docs = render("-f", str(CHART / "values-external-postgresql.example.yaml"))
+        self.assertFalse(any(doc["kind"] in {"Secret", "StatefulSet"} for doc in docs))
+        checked = []
+        for doc in docs:
+            if doc["kind"] not in {"Deployment", "Job"}:
+                continue
+            pod = doc["spec"]["template"]["spec"]
+            for container in pod.get("initContainers", []) + pod["containers"]:
+                if container["name"] == "nginx":
+                    continue
+                env = {entry["name"]: entry for entry in container["env"]}
+                self.assertEqual(env["DD_DATABASE_URL"]["valueFrom"]["secretKeyRef"], {"name": "aspm-runtime", "key": "database-url"})
+                db_options = json.loads(env["DD_DATABASE_OPTIONS"]["value"])
+                self.assertEqual(db_options, {"connect_timeout": 5, "sslmode": "verify-full", "sslrootcert": "/app/db-tls/ca.crt"})
+                self.assertIn({"name": "db-tls", "mountPath": "/app/db-tls", "readOnly": True}, container["volumeMounts"])
+                checked.append(container["name"])
+            self.assertEqual(next(v["secret"]["secretName"] for v in pod["volumes"] if v["name"] == "db-tls"), "aspm-postgres-ca")
+        self.assertEqual(len(checked), 7)
+
+    def test_http_smoke_uses_service_and_nginx_readiness_matches_target_port(self):
+        docs = render("--set", "service.port=8090", "--set", "tests.enabled=true", "--set", "image.pullPolicy=Never")
+        service, = (doc for doc in docs if doc["kind"] == "Service")
+        pod, = (doc for doc in docs if doc["kind"] == "Pod")
+        hook = pod["spec"]["containers"][0]
+        self.assertIn(f'http://{service["metadata"]["name"]}:8090/login', hook["args"][0])
+        self.assertEqual(hook["imagePullPolicy"], "Never")
+        web, = (doc for doc in docs if doc["kind"] == "Deployment" and doc["metadata"]["name"].endswith("-web"))
+        template = web["spec"]["template"]
+        nginx = next(c for c in template["spec"]["containers"] if c["name"] == "nginx")
+        self.assertEqual(nginx["readinessProbe"]["tcpSocket"]["port"], service["spec"]["ports"][0]["targetPort"])
+        self.assertTrue(all(template["metadata"]["labels"][key] == value for key, value in service["spec"]["selector"].items()))
+
     def test_hpa_tls_and_monitoring_opt_in(self):
         docs = render("--set", "hpa.enabled=true", "--set", "ingress.enabled=true", "--set", "monitoring.serviceMonitor.enabled=true")
         kinds = {x["kind"] for x in docs}

@@ -1,22 +1,21 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
-    <section class="panel panel-default aspm-evidence">
-        <div class="panel-heading"><h2>{% trans "Repository" %}</h2></div>
-        <div class="panel-body">
-            {% if aspm_can_manage_engagements %}<a class="btn btn-secondary" href="{% url 'aspm_engagement_policy' repository.product_id %}?repository={{ repository.pk }}">{% trans "Repository Engagement policy" %}</a>{% endif %}
-            <dl>
-                <dt>{% trans "URL" %}</dt><dd><code>{{ repository.url }}</code></dd>
-                <dt>{% trans "Provider" %}</dt><dd>{{ repository.get_provider_display }}</dd>
-                <dt>{% trans "Default branch" %}</dt><dd>{{ repository.default_branch|default:"—" }}</dd>
-                {% if repository.external_id %}<dt>{% trans "External ID" %}</dt><dd>{{ repository.external_id }}</dd>{% endif %}
+    <div class="aspm-workspace-hero"><header class="aspm-page-heading">
+        <div><h1>{% trans "Repository commits" %}</h1><p><code>{{ repository.url }}</code></p></div>
+        {% if aspm_can_manage_engagements %}<a class="btn btn-secondary" href="{% url 'aspm_engagement_policy' repository.product_id %}?repository={{ repository.pk }}">{% trans "Engagement policy" %}</a>{% endif %}
+    </header></div>
+    <section class="aspm-section aspm-evidence">
+        <div class="aspm-section-body">
+            <dl class="aspm-overview-metrics">
+                <div><dt>{% trans "Provider" %}</dt><dd>{{ repository.get_provider_display }}</dd></div>
+                <div><dt>{% trans "Default branch" %}</dt><dd>{{ repository.default_branch|default:"—" }}</dd></div>
+                {% if repository.external_id %}<div><dt>{% trans "External ID" %}</dt><dd>{{ repository.external_id }}</dd></div>{% endif %}
             </dl>
-            <h3>{% trans "Commits" %}</h3>
             {% if commits %}
-                <div class="table-responsive">
+                <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Commits' %}">
                     <table class="table table-condensed">
                         <thead><tr>
-                            <th scope="col">{% trans "ID" %}</th>
                             <th scope="col">{% trans "SHA" %}</th>
                             <th scope="col">{% trans "Branch" %}</th>
                             <th scope="col">{% trans "Author" %}</th>
@@ -25,7 +24,6 @@
                         <tbody>
                         {% for commit in commits %}
                             <tr>
-                                <td>{{ commit.pk }}</td>
                                 <td><a href="{% url 'scm_commit_detail' commit.pk %}"><code>{{ commit.sha }}</code></a></td>
                                 <td>{{ commit.branch|default:"—" }}</td>
                                 <td>{{ commit.author|default:"—" }}</td>

@@ -24,6 +24,9 @@ Provision `aspm-runtime` with `django-secret-key`, `credential-aes-key`, `databa
 `cache-url`; provision the PostgreSQL CA Secret and the two RWX PVCs before installation.
 The database URL must identify the primary. Advisory locks require a direct or session-pooled connection.
 Configure dependency CIDRs/selectors in `networkPolicy.egress`; the default permits only DNS.
+For Keycloak, set `oidc.enabled`, issuer, exact HTTPS callback URL, client ID and existing Secret reference.
+Set `oidc.existingCaSecret` if the IdP uses a private CA. Allow HTTPS egress to the issuer and ensure the ingress
+overwrites `X-Forwarded-Proto`. Keep callback query strings out of ingress access logs.
 Use verified immutable Django/nginx images from the same application source, pinned by digest in production.
 
 ```sh

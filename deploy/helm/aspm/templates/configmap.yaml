@@ -12,7 +12,8 @@ data:
     events { worker_connections 1024; }
     http {
       include /etc/nginx/mime.types;
-      access_log /dev/stdout;
+      log_format aspm '$remote_addr $request_method $uri $status $body_bytes_sent';
+      access_log /dev/stdout aspm;
       client_body_temp_path /tmp/client-body;
       proxy_temp_path /tmp/proxy;
       uwsgi_temp_path /tmp/uwsgi;

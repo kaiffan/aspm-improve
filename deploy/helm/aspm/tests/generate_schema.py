@@ -36,8 +36,12 @@ def schema(value, key=""):
     if key in EXTENSIBLE:
         return {"type": "object"}
     result = {"type": "object", "additionalProperties": False, "properties": {k: schema(v, k) for k, v in value.items()}, "required": list(value)}
-    if key == "databaseTLS":
+    if key in {"databaseTLS", "oidc"}:
         result["properties"]["existingSecret"].pop("minLength", None)
+    if key == "oidc":
+        result["properties"]["clientAuth"]["enum"] = ["client_secret_basic", "client_secret_post"]
+        result["properties"]["sessionAge"].update(minimum=30, maximum=43200)
+        result["properties"]["groupTtl"].update(minimum=30, maximum=600)
     return result
 
 

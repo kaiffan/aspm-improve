@@ -81,7 +81,7 @@ spec:
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
           {{- if eq $component "web" }}
           command: [uwsgi]
-          args: [--master, --need-app, --die-on-term, --enable-threads, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, {{ $cfg.processes | quote }}, --threads, {{ $cfg.threads | quote }}, --buffer-size, "16384", --reload-mercy, "60"]
+          args: [--master, --need-app, --die-on-term, --enable-threads, --disable-logging, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, {{ $cfg.processes | quote }}, --threads, {{ $cfg.threads | quote }}, --buffer-size, "16384", --reload-mercy, "60"]
           ports: [{name: health, containerPort: 8081}]
           startupProbe: {{ toYaml $cfg.startupProbe | nindent 12 }}
           readinessProbe: {{ toYaml $cfg.readinessProbe | nindent 12 }}
@@ -93,6 +93,9 @@ spec:
           command: [python, manage.py, aspm_beat]
           {{- end }}
           env: {{ include "aspm.env" $root | nindent 12 }}
+          {{- if and (eq $component "web") $root.Values.oidc.enabled }}
+          {{- include "aspm.oidc.env" $root | nindent 12 }}
+          {{- end }}
           securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
           resources: {{ toYaml $cfg.resources | nindent 12 }}
           volumeMounts:
@@ -100,6 +103,9 @@ spec:
             - {name: media, mountPath: /app/media}
             - {name: tmp, mountPath: /tmp}
             - {name: run, mountPath: /var/run/defectdojo}
+            {{- if and (eq $component "web") $root.Values.oidc.enabled $root.Values.oidc.existingCaSecret }}
+            - {name: oidc-ca, mountPath: /app/idp-tls, readOnly: true}
+            {{- end }}
             {{- if $root.Values.databaseTLS.existingSecret }}
             - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
             {{- end }}
@@ -116,6 +122,11 @@ spec:
             - {name: nginx-tmp, mountPath: /tmp}
         {{- end }}
       volumes:
+        {{- if and (eq $component "web") $root.Values.oidc.enabled $root.Values.oidc.existingCaSecret }}
+        - name: oidc-ca
+          secret:
+            secretName: {{ $root.Values.oidc.existingCaSecret | quote }}
+        {{- end }}
         - name: evidence
           persistentVolumeClaim: {claimName: {{ $root.Values.storage.existingClaim | quote }}}
         - name: media

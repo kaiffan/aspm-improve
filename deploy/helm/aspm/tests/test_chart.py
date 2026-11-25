@@ -109,6 +109,31 @@ class ChartTests(unittest.TestCase):
                 result = subprocess.run(["helm", "template", "q", str(CHART), "--set", value], capture_output=True, text=True, check=False)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
 
+    def test_oidc_client_credential_is_web_only(self):
+        docs = render(
+            "--set", "oidc.enabled=true",
+            "--set", "oidc.issuer=https://idp.example.invalid/realms/aspm",
+            "--set", "oidc.callbackUrl=https://aspm.example.invalid/sso/callback",
+            "--set", "oidc.clientId=aspm",
+            "--set", "oidc.existingSecret=aspm-keycloak",
+            "--set", "oidc.existingCaSecret=aspm-keycloak-ca",
+        )
+        oidc = []
+        for doc in docs:
+            if doc["kind"] not in {"Deployment", "Job"}:
+                continue
+            pod = doc["spec"]["template"]["spec"]
+            for container in (*pod["containers"], *pod.get("initContainers", [])):
+                oidc.extend(
+                    (container["name"], value["valueFrom"]["secretKeyRef"])
+                    for value in container.get("env", []) if value["name"] == "DD_ASPM_OIDC_CLIENT_SECRET"
+                )
+        self.assertEqual(oidc, [("web", {"name": "aspm-keycloak", "key": "oidc-client-secret"})])
+        with self.assertRaises(subprocess.CalledProcessError):
+            render("--set", "oidc.enabled=true")
+        with self.assertRaises(subprocess.CalledProcessError):
+            render("--set", "config.DD_ASPM_OIDC_CLIENT_SECRET=invalid")
+
     def test_schema_matches_defaults(self):
         schema = json.loads((CHART / "values.schema.json").read_text())
         jsonschema.Draft7Validator.check_schema(schema)

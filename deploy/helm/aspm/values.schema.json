@@ -119,6 +119,90 @@
         "pattern": "^DD_[A-Z0-9_]+$"
       }
     },
+    "oidc": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "issuer": {
+          "type": "string"
+        },
+        "callbackUrl": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "existingSecret": {
+          "type": "string"
+        },
+        "clientSecretKey": {
+          "type": "string"
+        },
+        "clientAuth": {
+          "type": "string",
+          "enum": [
+            "client_secret_basic",
+            "client_secret_post"
+          ]
+        },
+        "scopes": {
+          "type": "string"
+        },
+        "roleClaim": {
+          "type": "string"
+        },
+        "groupClaim": {
+          "type": "string"
+        },
+        "secopsRole": {
+          "type": "string"
+        },
+        "expertRole": {
+          "type": "string"
+        },
+        "userRole": {
+          "type": "string"
+        },
+        "sessionAge": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 43200
+        },
+        "groupTtl": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 600
+        },
+        "providerLogout": {
+          "type": "boolean"
+        },
+        "existingCaSecret": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "issuer",
+        "callbackUrl",
+        "clientId",
+        "existingSecret",
+        "clientSecretKey",
+        "clientAuth",
+        "scopes",
+        "roleClaim",
+        "groupClaim",
+        "secopsRole",
+        "expertRole",
+        "userRole",
+        "sessionAge",
+        "groupTtl",
+        "providerLogout",
+        "existingCaSecret"
+      ]
+    },
     "databaseTLS": {
       "type": "object",
       "additionalProperties": false,
@@ -514,6 +598,7 @@
     "existingSecret",
     "secretKeys",
     "config",
+    "oidc",
     "databaseTLS",
     "storage",
     "serviceAccount",

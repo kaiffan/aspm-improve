@@ -7,6 +7,9 @@ Provision `aspm-runtime` with `django-secret-key`, `credential-aes-key`, `databa
 `cache-url`; provision the PostgreSQL CA Secret and the two RWX PVCs before installation.
 The database URL must identify the primary. Advisory locks require a direct or session-pooled connection.
 Configure dependency CIDRs/selectors in `networkPolicy.egress`; the default permits only DNS.
+For Keycloak, set `oidc.enabled`, issuer, exact HTTPS callback URL, client ID and existing Secret reference.
+Set `oidc.existingCaSecret` if the IdP uses a private CA. Allow HTTPS egress to the issuer and ensure the ingress
+overwrites `X-Forwarded-Proto`. Keep callback query strings out of ingress access logs.
 Use verified immutable Django/nginx images from the same application source, pinned by digest in production.
 
 ```sh
@@ -55,6 +58,7 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `config.DD_DEBUG` | `str` | `False` |
 | `config.DD_TRACK_MIGRATIONS` | `str` | `True` |
 | `config.DD_ASPM_INGESTION_ENABLED` | `str` | `True` |
+| `config.DD_ASPM_DEFAULT_ENGAGEMENT_POLICY` | `str` | `default` |
 | `config.DD_ASPM_API_ONLY` | `str` | `True` |
 | `config.DD_ASPM_SCM_HIERARCHY` | `str` | `True` |
 | `config.DD_ASPM_WEBHOOKS_ENABLED` | `str` | `False` |
@@ -65,6 +69,23 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `config.DD_SESSION_COOKIE_SECURE` | `str` | `True` |
 | `config.DD_CSRF_COOKIE_SECURE` | `str` | `True` |
 | `config.DD_SECURE_PROXY_SSL_HEADER` | `str` | `True` |
+| `oidc.enabled` | `bool` | `False` |
+| `oidc.issuer` | `str` | `` |
+| `oidc.callbackUrl` | `str` | `` |
+| `oidc.clientId` | `str` | `` |
+| `oidc.existingSecret` | `str` | `` |
+| `oidc.clientSecretKey` | `str` | `oidc-client-secret` |
+| `oidc.clientAuth` | `str` | `client_secret_basic` |
+| `oidc.scopes` | `str` | `openid` |
+| `oidc.roleClaim` | `str` | `aspm_roles` |
+| `oidc.groupClaim` | `str` | `aspm_product_grants` |
+| `oidc.secopsRole` | `str` | `aspm-secops` |
+| `oidc.expertRole` | `str` | `aspm-expert` |
+| `oidc.userRole` | `str` | `aspm-user` |
+| `oidc.sessionAge` | `int` | `3600` |
+| `oidc.groupTtl` | `int` | `300` |
+| `oidc.providerLogout` | `bool` | `True` |
+| `oidc.existingCaSecret` | `str` | `` |
 | `databaseTLS.existingSecret` | `str` | `aspm-postgres-ca` |
 | `storage.existingClaim` | `str` | `aspm-evidence` |
 | `storage.mediaExistingClaim` | `str` | `aspm-media` |

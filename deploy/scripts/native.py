@@ -21,15 +21,16 @@ def load(name, path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--baseline", default=BASELINE, help="Full immutable baseline application SHA")
     parser.add_argument("--candidate", required=True, help="Full immutable application SHA, not a mutable branch")
     parser.add_argument("tool", choices=["build", "campaign", "summarize"])
     args, forwarded = parser.parse_known_args()
-    if len(args.candidate) != 40 or any(c not in "0123456789abcdef" for c in args.candidate):
-        parser.error("A full lowercase 40-character SHA is required")
-    for sha in (BASELINE, args.candidate):
+    for sha in (args.baseline, args.candidate):
+        if len(sha) != 40 or any(c not in "0123456789abcdef" for c in sha):
+            parser.error("A full lowercase 40-character SHA is required")
         subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", sha + "^{commit}"], check=True)
     build = load("build", KIT / "build.py")
-    build.A = BASELINE
+    build.A = args.baseline
     build.B = args.candidate
     module = build if args.tool == "build" else load("enterprise_campaign", KIT / (args.tool + ".py"))
     sys.argv = [str(KIT / (args.tool + ".py")), *forwarded]

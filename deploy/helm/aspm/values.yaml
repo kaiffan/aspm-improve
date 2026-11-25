@@ -25,6 +25,7 @@ config:
   DD_DEBUG: "False"
   DD_TRACK_MIGRATIONS: "True"
   DD_ASPM_INGESTION_ENABLED: "True"
+  DD_ASPM_DEFAULT_ENGAGEMENT_POLICY: default
   DD_ASPM_API_ONLY: "True"
   DD_ASPM_SCM_HIERARCHY: "True"
   DD_ASPM_WEBHOOKS_ENABLED: "False"
@@ -35,6 +36,25 @@ config:
   DD_SESSION_COOKIE_SECURE: "True"
   DD_CSRF_COOKIE_SECURE: "True"
   DD_SECURE_PROXY_SSL_HEADER: "True"
+# Keycloak HTTPS Authorization Code flow. Supply the client credential out of band.
+oidc:
+  enabled: false
+  issuer: ""
+  callbackUrl: ""
+  clientId: ""
+  existingSecret: ""
+  clientSecretKey: oidc-client-secret
+  clientAuth: client_secret_basic
+  scopes: openid
+  roleClaim: aspm_roles
+  groupClaim: aspm_product_grants
+  secopsRole: aspm-secops
+  expertRole: aspm-expert
+  userRole: aspm-user
+  sessionAge: 3600
+  groupTtl: 300
+  providerLogout: true
+  existingCaSecret: ""
 # PostgreSQL verify-full CA. Supply a Secret containing ca.crt.
 databaseTLS:
   existingSecret: aspm-postgres-ca

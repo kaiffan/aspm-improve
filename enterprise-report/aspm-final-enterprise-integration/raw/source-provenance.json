@@ -1,0 +1,57 @@
+{
+  "product": "ASPM 1.0.1 / DefectDojo OSS 3.5.100",
+  "branch": "feature/aspm-final-enterprise-integration",
+  "origin_dev": "71ba3f0e1b8f338384b5c25c396aa2db687909ae",
+  "zero_finalize": "25da29aaff229d3a815e223d8af8bdc4ecca7c5e",
+  "historical_application_sha": "5133e155d102eb0f431560924ea129b2287319ff",
+  "historical_report_sha": "9c54708e1bd12a9cb604bf0db67699cba3c71cb9",
+  "baseline_hardening_tip": "0011c221aba7d968ae0734dc1897a087fd9d55e6",
+  "integrated_source_sha": "7328daa441129bad49abd956e273e624362e655e",
+  "helm_chart_version": "0.1.0-rc.3",
+  "keycloak_version": "26.6.4",
+  "local_test_runtime": "ARM64 Docker, source bind-mounted; no native AMD64 image built",
+  "implementation_commits": [
+    {
+      "sha": "550aaf0fa892bfa1c26fca379c58fe3b6b8ecdf8",
+      "subject": "docs(aspm): audit enterprise integration baseline and gaps"
+    },
+    {
+      "sha": "0c988c25ac5e9ec4b814ce638e29d76104f5401d",
+      "subject": "feat(aspm): pin engagement policy selections while isolating scan tests"
+    },
+    {
+      "sha": "a0a15f9f0dda4d6acfe7256b061051b8e2ad56de",
+      "subject": "test(aspm): qualify target scanner fixtures through ingestion and reporting"
+    },
+    {
+      "sha": "0e0665f233ad9026ddadcd96f53005da99b0c938",
+      "subject": "feat(aspm): add Keycloak sessions and role-specific workspaces"
+    },
+    {
+      "sha": "50c6a53b471f252a3e8962f901cf4d211026f5a3",
+      "subject": "feat(deploy): configure Keycloak and preserve the native A/B campaign"
+    },
+    {
+      "sha": "e35c93906f9aa61468095c5fe452f4d5b69bcdfc",
+      "subject": "test(aspm): add a reproducible Keycloak and worker qualification lab"
+    },
+    {
+      "sha": "fa83e88e508976a4c2ddba1853522dca8524c155",
+      "subject": "fix(ui): preserve workspace form contrast across themes"
+    },
+    {
+      "sha": "7328daa441129bad49abd956e273e624362e655e",
+      "subject": "test(aspm): verify live role revocation and worker restart recovery"
+    }
+  ],
+  "pre_contrast_checkpoint": "e35c93906f9aa61468095c5fe452f4d5b69bcdfc",
+  "evidence_sources": {
+    "django_full": "7328daa441129bad49abd956e273e624362e655e",
+    "javascript": "7328daa441129bad49abd956e273e624362e655e",
+    "browser_and_contrast": "7328daa441129bad49abd956e273e624362e655e",
+    "identity_load_outage_and_query_counts": "7328daa441129bad49abd956e273e624362e655e",
+    "migration_rehearsal": "7328daa441129bad49abd956e273e624362e655e",
+    "helm_chart": "50c6a53b471f252a3e8962f901cf4d211026f5a3",
+    "django_protocol_targeted_and_initial_restore_and_revocation": "e35c93906f9aa61468095c5fe452f4d5b69bcdfc"
+  }
+}

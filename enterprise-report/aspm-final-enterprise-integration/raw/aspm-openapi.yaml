@@ -1,0 +1,793 @@
+openapi: 3.0.3
+info:
+  title: ASPM ingestion API
+  version: '1.0'
+  description: API-only scanner delivery, immutable evidence and versioned commit
+    reports.
+paths:
+  /api/aspm/v1/commits/{id}/finalize/:
+    post:
+      operationId: commits_finalize_create
+      description: Optional legacy operation to pin an explicit set; never required
+        for visibility or export.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizeRequest'
+        required: true
+      security:
+      - aspmServiceToken: []
+      deprecated: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanSet'
+          description: ''
+  /api/aspm/v1/commits/{id}/reports/:
+    get:
+      operationId: commits_reports_list
+      parameters:
+      - in: query
+        name: after
+        schema:
+          type: integer
+        description: Last report version; at most 100 rows per page.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+          description: ''
+    post:
+      operationId: commits_reports_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequestRequest'
+      security:
+      - aspmServiceToken: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+  /api/aspm/v1/commits/{id}/scans/:
+    get:
+      operationId: commits_scans_list
+      parameters:
+      - in: query
+        name: after
+        schema:
+          type: string
+        description: Last ScanRun UUID; at most 100 rows per page.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScanRun'
+          description: ''
+  /api/aspm/v1/openapi/:
+    get:
+      operationId: openapi_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - ar
+          - bn
+          - de
+          - en
+          - es
+          - fa
+          - fr
+          - he
+          - hi
+          - id
+          - it
+          - ja
+          - ko
+          - mr
+          - nl
+          - pl
+          - pt-br
+          - ru
+          - ta
+          - te
+          - th
+          - tl
+          - tr
+          - uk
+          - ur
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - openapi
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/aspm/v1/projects/{id}/repositories/:
+    get:
+      operationId: projects_repositories_list
+      parameters:
+      - in: query
+        name: after
+        schema:
+          type: integer
+        description: Last repository ID; at most 100 rows per page.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Repository'
+          description: ''
+  /api/aspm/v1/reports/{id}/download/:
+    get:
+      operationId: reports_download_retrieve
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - html
+          - json
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            text/html:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/aspm/v1/repositories/{id}/commits/:
+    get:
+      operationId: repositories_commits_list
+      parameters:
+      - in: query
+        name: after
+        schema:
+          type: integer
+        description: Last commit ID; at most 100 rows per page.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commit'
+          description: ''
+  /api/aspm/v1/scans/:
+    post:
+      operationId: scans_create
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        schema:
+          type: string
+      tags:
+      - ASPM ingestion
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScanUploadRequest'
+        required: true
+      security:
+      - aspmServiceToken: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanRun'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanRun'
+          description: ''
+  /api/aspm/v1/scans/{id}/:
+    get:
+      operationId: scans_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanRun'
+          description: ''
+  /api/aspm/v1/scans/{id}/artifact/:
+    get:
+      operationId: scans_artifact_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      - cookieAuth: []
+      - basicAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/aspm/v1/scans/{id}/retry/:
+    post:
+      operationId: scans_retry_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ASPM ingestion
+      security:
+      - aspmServiceToken: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanRun'
+          description: ''
+components:
+  schemas:
+    Commit:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        repository:
+          type: integer
+        sha:
+          type: string
+          maxLength: 64
+        branch:
+          type: string
+          maxLength: 150
+        author:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        committed_at:
+          type: string
+          format: date-time
+          nullable: true
+        parent_shas:
+          type: array
+          items:
+            type: string
+            maxLength: 64
+          maxItems: 1000
+      required:
+      - id
+      - repository
+      - sha
+    FinalizeRequest:
+      type: object
+      properties:
+        expected_scanners:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+          maxItems: 100
+          minItems: 1
+        scan_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Pin this pipeline's deliveries. If omitted, include all accepted
+            runs currently on the commit.
+          maxItems: 1000
+          minItems: 1
+      required:
+      - expected_scanners
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        commit:
+          type: integer
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        scan_set:
+          type: string
+          format: uuid
+          readOnly: true
+        manifest:
+          readOnly: true
+        status:
+          enum:
+          - ACCEPTED
+          - PROCESSING
+          - COMPLETED
+          - FAILED
+          type: string
+          description: |-
+            * `ACCEPTED` - Accepted
+            * `PROCESSING` - Processing
+            * `COMPLETED` - Completed
+            * `FAILED` - Failed
+          x-spec-enum-id: 9f837aecc1c482f4
+          readOnly: true
+        checksums:
+          readOnly: true
+        timings:
+          readOnly: true
+        error_code:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - checksums
+      - commit
+      - created_at
+      - error_code
+      - id
+      - manifest
+      - scan_set
+      - status
+      - timings
+      - version
+    ReportRequestRequest:
+      type: object
+      properties:
+        scan_set_id:
+          type: string
+          format: uuid
+          description: Optional legacy immutable set. No finalize is required.
+        pipeline:
+          type: string
+          minLength: 1
+          description: Context from the commit UI, e.g. pipeline:123.
+          maxLength: 200
+        scan_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 1000
+          minItems: 1
+        expected_scanners:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+          maxItems: 100
+          minItems: 1
+    Repository:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        url:
+          type: string
+          maxLength: 600
+        provider:
+          enum:
+          - github
+          - gitlab
+          - bitbucket
+          - azure
+          - other
+          type: string
+          description: |-
+            * `github` - GitHub
+            * `gitlab` - GitLab
+            * `bitbucket` - Bitbucket
+            * `azure` - Azure Repos
+            * `other` - Other
+          x-spec-enum-id: 5eff499ea433f825
+        default_branch:
+          type: string
+          maxLength: 150
+        external_id:
+          type: string
+          maxLength: 255
+        metadata: {}
+      required:
+      - id
+      - product
+      - url
+    ScanRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        product:
+          type: integer
+          readOnly: true
+        commit:
+          type: integer
+          readOnly: true
+        scanner:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+        status:
+          enum:
+          - ACCEPTED
+          - PROCESSING
+          - COMPLETED
+          - FAILED
+          type: string
+          description: |-
+            * `ACCEPTED` - Accepted
+            * `PROCESSING` - Processing
+            * `COMPLETED` - Completed
+            * `FAILED` - Failed
+          x-spec-enum-id: 9f837aecc1c482f4
+          readOnly: true
+        artifact_sha256:
+          type: string
+          readOnly: true
+        artifact_size:
+          type: integer
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+        test:
+          type: integer
+          readOnly: true
+          nullable: true
+        attempt:
+          type: integer
+          readOnly: true
+        finding_count:
+          type: integer
+          readOnly: true
+        severity_summary:
+          readOnly: true
+        timings:
+          readOnly: true
+        error_code:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - artifact_sha256
+      - artifact_size
+      - attempt
+      - commit
+      - created_at
+      - error_code
+      - finding_count
+      - finished_at
+      - id
+      - metadata
+      - original_name
+      - product
+      - scanner
+      - severity_summary
+      - started_at
+      - status
+      - test
+      - timings
+    ScanSet:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        commit:
+          type: integer
+          readOnly: true
+        scan_ids:
+          readOnly: true
+        expected_scanners:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - commit
+      - created_at
+      - expected_scanners
+      - id
+      - scan_ids
+    ScanUploadRequest:
+      type: object
+      properties:
+        project_id:
+          type: integer
+          minimum: 1
+        repository_id:
+          type: integer
+          minimum: 1
+        repository_url:
+          type: string
+          minLength: 1
+          maxLength: 600
+        commit_sha:
+          type: string
+          minLength: 1
+          maxLength: 64
+        scanner_type:
+          type: string
+          minLength: 1
+          maxLength: 200
+        idempotency_key:
+          type: string
+          minLength: 1
+          description: Required either here or in the Idempotency-Key header.
+          pattern: ^[A-Za-z0-9._:/@+-]{1,200}$
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+        sha256:
+          type: string
+          minLength: 1
+          pattern: ^[a-f0-9]{64}$
+        branch:
+          type: string
+          minLength: 1
+          maxLength: 150
+        environment:
+          type: string
+          minLength: 1
+          maxLength: 150
+        engagement_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        build_id:
+          type: string
+          minLength: 1
+          maxLength: 150
+        pipeline_id:
+          type: string
+          minLength: 1
+          maxLength: 150
+        job_id:
+          type: string
+          minLength: 1
+          maxLength: 150
+        attempt_number:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+        scanner_version:
+          type: string
+          minLength: 1
+          maxLength: 100
+        scan_started:
+          type: string
+          format: date-time
+        scan_finished:
+          type: string
+          format: date-time
+        expected_scanners:
+          description: Optional JSON array of expected scanner types for this pipeline.
+            Omission means unknown coverage.
+        scan_scope:
+          type: string
+          minLength: 1
+          maxLength: 200
+        pipeline_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 1000
+      required:
+      - commit_sha
+      - file
+      - project_id
+      - scanner_type
+  securitySchemes:
+    aspmServiceToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: ASPM <scoped service token>. Issued by a SecOps administrator;
+        sessions and DefectDojo tokens cannot submit scans.
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

@@ -1,0 +1,202 @@
+[
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "secops",
+    "status": 200
+  },
+  {
+    "stage": "secops-engagement-policy",
+    "status": 200
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "Semgrep JSON Report",
+    "status": "COMPLETED",
+    "findings": 1
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "Trivy Scan",
+    "status": "COMPLETED",
+    "findings": 5
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "Dependency Track Finding Packaging Format (FPF) Export",
+    "status": "COMPLETED",
+    "findings": 1
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "KICS Scan",
+    "status": "COMPLETED",
+    "findings": 18
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "Fortify Scan",
+    "status": "COMPLETED",
+    "findings": 2
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "ffuf Scan",
+    "status": "COMPLETED",
+    "findings": 1
+  },
+  {
+    "stage": "ci-worker",
+    "scanner": "Semgrep JSON Report",
+    "status": "COMPLETED",
+    "findings": 1
+  },
+  {
+    "stage": "browser-layout",
+    "page": "secops-engagement",
+    "width": 1440,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "secops-engagement",
+    "width": 820,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "secops-engagement",
+    "width": 390,
+    "theme": "dark",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "expert",
+    "status": 200
+  },
+  {
+    "stage": "expert-triage-immutable-observation",
+    "status": 200
+  },
+  {
+    "stage": "browser-layout",
+    "page": "expert-findings",
+    "width": 1440,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "expert-findings",
+    "width": 820,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "expert-findings",
+    "width": 390,
+    "theme": "dark",
+    "form_contrast_minimum": 4.98
+  },
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "reader-test",
+    "status": 200
+  },
+  {
+    "stage": "role-project-report-artifact",
+    "reader": "reader-test",
+    "projects": [
+      "TEST"
+    ],
+    "reportStatus": 200
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-projects",
+    "width": 1440,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-projects",
+    "width": 820,
+    "theme": "light",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-projects",
+    "width": 390,
+    "theme": "dark",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-report",
+    "width": 1440,
+    "theme": "light",
+    "form_contrast_minimum": 12.42
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-report",
+    "width": 820,
+    "theme": "light",
+    "form_contrast_minimum": 10.86
+  },
+  {
+    "stage": "browser-layout",
+    "page": "user-report",
+    "width": 390,
+    "theme": "dark",
+    "form_contrast_minimum": 14.31
+  },
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "reader-payments",
+    "status": 200
+  },
+  {
+    "stage": "role-project-report-artifact",
+    "reader": "reader-payments",
+    "projects": [
+      "PAYMENTS"
+    ],
+    "reportStatus": 404
+  },
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "reader-both",
+    "status": 200
+  },
+  {
+    "stage": "role-project-report-artifact",
+    "reader": "reader-both",
+    "projects": [
+      "PAYMENTS",
+      "TEST"
+    ],
+    "reportStatus": 200
+  },
+  {
+    "stage": "authorization-code-pkce",
+    "principal": "reader-none",
+    "status": 200
+  },
+  {
+    "stage": "role-project-report-artifact",
+    "reader": "reader-none",
+    "projects": [],
+    "reportStatus": 404
+  },
+  {
+    "stage": "zero-finalize-generated-report",
+    "status": "COMPLETED",
+    "scannerCount": 6
+  }
+]

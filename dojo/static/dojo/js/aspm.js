@@ -154,3 +154,28 @@ window.addEventListener('load', function () {
         new MutationObserver(function () { labelSelections(field); }).observe(field, {childList: true, subtree: true});
     });
 });
+
+/* Copy identifiers and one-time credentials with explicit success/error feedback. */
+(function () {
+    'use strict';
+    document.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-aspm-copy-target]');
+        if (!button) return;
+        var target = document.getElementById(button.dataset.aspmCopyTarget);
+        if (!target) return;
+        var status = button.parentElement.querySelector('[data-aspm-copy-status]');
+        var value = target.value !== undefined ? target.value : target.textContent;
+        function result(ok) { if (status) status.textContent = ok ? 'Copied.' : 'Copy unavailable. Select and copy the value.'; }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(function () { result(true); }, function () { result(false); });
+        } else {
+            try {
+                var selection = window.getSelection(), range = document.createRange();
+                if (target.select) target.select();
+                else { range.selectNodeContents(target); selection.removeAllRanges(); selection.addRange(range); }
+                result(document.execCommand('copy'));
+                button.focus();
+            } catch (_) { result(false); }
+        }
+    });
+})();

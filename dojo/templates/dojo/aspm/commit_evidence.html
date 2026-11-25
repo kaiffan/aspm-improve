@@ -4,7 +4,8 @@
 <section class="panel panel-default aspm-evidence" data-aspm-state-url="{% url 'aspm_commit_state' commit.pk %}" data-aspm-revision="{{ state_revision }}">
     <div class="panel-heading"><h1>Commit evidence</h1></div>
     <div class="panel-body">
-        <p><a href="{% url 'view_product' commit.repository.product_id %}">{{ commit.repository.product.name }}</a> → <a href="{% url 'scm_repository_detail' commit.repository_id %}">{{ commit.repository.url }}</a> → <code>{{ commit.sha }}</code></p>
+        <p><a href="{% url 'view_product' commit.repository.product_id %}">{{ commit.repository.product.name }}</a> → <a href="{% url 'scm_repository_detail' commit.repository_id %}">{{ commit.repository.url }}</a> → <code id="aspm-commit-sha">{{ commit.sha }}</code> <button type="button" class="btn btn-default" data-aspm-copy-target="aspm-commit-sha">Copy SHA</button> <span role="status" data-aspm-copy-status></span></p>
+        <p>These results are historical observations from completed scans. Editing live Findings does not rewrite this commit history.</p>
         <nav aria-label="Commit evidence"><ul class="nav nav-tabs">
             <li><a href="?tab=overview{{ nav_params }}">Overview</a></li>
             <li><a href="?tab=originals{{ nav_params }}">Scanner Reports</a></li>
@@ -28,7 +29,7 @@
         {% if section == 'overview' or section == 'reports' %}
             <h2>Available results</h2>
             <dl>{% for severity, total in selection.severity_summary.items %}<dt>{{ severity }}</dt><dd>{{ total }}</dd>{% empty %}<dt>Findings</dt><dd>No completed results in this selection.</dd>{% endfor %}</dl>
-            <div class="table-responsive"><table class="table"><thead><tr><th>Scanner / scope</th><th>Latest successful ScanRun</th><th>Pipeline / job / CI attempt</th><th>Completed / findings</th></tr></thead><tbody>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Scanner / scope</th><th>Latest successful ScanRun</th><th>Pipeline / job / CI attempt</th><th>Completed / findings</th></tr></thead><tbody>
                 {% for scan in selection.scans %}<tr><td>{{ scan.scanner }} / {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.id }}</td><td>{{ scan.pipeline }} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}</td><td>{{ scan.finished_at }} / {{ scan.finding_count }}</td></tr>{% endfor %}
             </tbody></table></div>
             <p>CWE / CVE sample (first 20 selected observations): {% for cwe, ids in taxonomy_preview %}CWE-{{ cwe|default:"unknown" }} {{ ids|join:", " }}; {% empty %}No completed observations.{% endfor %}</p>
@@ -41,14 +42,14 @@
         {% elif section == 'originals' %}
             <h2>Scanner Reports</h2>
             <form method="get"><input type="hidden" name="tab" value="findings">
-            <div class="table-responsive"><table class="table"><thead><tr><th>Select / scanner / ScanRun</th><th>Pipeline / job / CI attempt</th><th>Received / status / findings</th><th>SHA256 / bytes</th><th>Original</th></tr></thead><tbody>
-            {% for scan in scans %}<tr><td>{% if scan.status == 'COMPLETED' %}<input type="checkbox" name="scan_ids" value="{{ scan.pk }}" aria-label="Select {{ scan.scanner }} {{ scan.pk }}">{% endif %}{{ scan.scanner }}<br><code>{{ scan.pk }}</code></td><td>{% firstof scan.metadata.pipeline_id scan.metadata.build_id "undeclared" %} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}<br>Scope: {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.created_at }}<br>{{ scan.status }} {{ scan.error_code }}<br>Processing attempt: {{ scan.attempt }}{% if scan.status == 'COMPLETED' %}<br>{{ scan.finding_count }} findings{% endif %}</td><td><code>{{ scan.artifact_sha256 }}</code><br>{{ scan.artifact_size }}</td><td><a href="{% url 'aspm_v1:artifact' scan.pk %}">{{ scan.original_name }}</a></td></tr>{% empty %}<tr><td colspan="4">No scans received.</td></tr>{% endfor %}
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Select / scanner / ScanRun</th><th>Pipeline / job / CI attempt</th><th>Received / status / findings</th><th>SHA256 / bytes</th><th>Original</th></tr></thead><tbody>
+            {% for scan in scans %}<tr><td>{% if scan.status == 'COMPLETED' %}<input type="checkbox" name="scan_ids" value="{{ scan.pk }}" aria-label="Select {{ scan.scanner }} {{ scan.pk }}">{% endif %}{{ scan.scanner }}<br><code>{{ scan.pk }}</code></td><td>{% firstof scan.metadata.pipeline_id scan.metadata.build_id "undeclared" %} / {{ scan.metadata.job_id|default:"—" }} / {{ scan.metadata.attempt_number|default:"1" }}<br>Scope: {{ scan.metadata.scan_scope|default:"undeclared" }}</td><td>{{ scan.created_at }}<br>{{ scan.status }} {{ scan.error_code }}<br>Processing attempt: {{ scan.attempt }}{% if scan.status == 'COMPLETED' %}<br>{{ scan.finding_count }} findings{% endif %}</td><td><code>{{ scan.artifact_sha256 }}</code><br>{{ scan.artifact_size }}</td><td><a href="{% url 'aspm_v1:artifact' scan.pk %}">{{ scan.original_name }}</a></td></tr>{% empty %}<tr><td colspan="5">No scans received.</td></tr>{% endfor %}
             </tbody></table></div><button type="submit" class="btn btn-default">View selected runs</button></form>{% include "dojo/paging_snippet.html" with page=scans %}
         {% elif section == 'reports' %}
             <h2>Fixed exports</h2>
             <p>Live results above require no physical export. Generate a new immutable version only when needed.</p>
             {% if can_export and selection.scans and not selection.ambiguous %}<form method="post" action="{% url 'aspm_create_report' commit.pk %}">{% csrf_token %}{% if selection.explicit_ids %}{% for id in selection.explicit_ids %}<input type="hidden" name="scan_ids" value="{{ id }}">{% endfor %}{% else %}<input type="hidden" name="pipeline" value="{{ selection.pipeline }}">{% endif %}<button type="submit" class="btn btn-default">Generate fixed HTML / JSON export</button></form>{% endif %}
-            <div class="table-responsive"><table class="table"><thead><tr><th>Version</th><th>Coverage / status</th><th>Created</th><th>Download</th></tr></thead><tbody>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Version</th><th>Coverage / status</th><th>Created</th><th>Download</th></tr></thead><tbody>
             {% for report in reports %}<tr><td>{{ report.version }}</td><td>{% if report.manifest.complete %}Known complete{% else %}Unknown / incomplete{% endif %} / {{ report.status }}</td><td>{{ report.created_at }}</td><td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No generated reports.</td></tr>{% endfor %}
             </tbody></table></div>{% include "dojo/paging_snippet.html" with page=reports %}
         {% else %}
@@ -64,7 +65,7 @@
             </form>
             {% if base_commit %}<p>Comparing {{ base_commit.sha }} → {{ commit.sha }} using pipeline contexts {{ base_coverage.pipeline|default:"unselected" }} → {{ target_coverage.pipeline|default:"unselected" }}; versions {{ base_coverage.report.version|default:"live" }} → {{ target_coverage.report.version|default:"live" }}. Absence describes the recorded comparable scans.</p>{% endif %}
             {% if coverage_warning %}<p class="alert alert-warning" role="status">{{ coverage_warning }}</p>{% endif %}
-            <div class="table-responsive"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Scrollable results"><table class="table"><thead><tr><th>Finding</th><th>Severity</th><th>CWE / CVE</th><th>Scanner / source</th></tr></thead><tbody>
             {% for observation in observations %}<tr><td>{{ observation.snapshot.title }}<br>{{ observation.snapshot.file_path }}:{{ observation.snapshot.line }}</td><td>{{ observation.severity }}</td><td>{{ observation.snapshot.cwe }} {{ observation.snapshot.vulnerability_ids|join:", " }}</td><td>{{ observation.scan.scanner }}<br>{{ observation.scan_id }}</td></tr>{% empty %}<tr><td colspan="4">No observations in this selection.</td></tr>{% endfor %}
             </tbody></table></div>{% if next_url %}<nav aria-label="Historical findings pages"><a href="{{ next_url }}">Next observations →</a></nav>{% endif %}
         {% endif %}

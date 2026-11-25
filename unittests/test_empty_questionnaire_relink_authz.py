@@ -95,7 +95,7 @@ class EmptyQuestionnaireRelinkAuthorizationTests(DojoTestCase):
     def test_new_engagement_relink_get_denied_without_config_perm(self):
         self.client.force_login(self.attacker)
         response = self.client.get(reverse("engagement_empty_survey", args=(self.victim_survey.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_new_engagement_relink_post_denied_without_config_perm(self):
         self.client.force_login(self.attacker)
@@ -103,14 +103,14 @@ class EmptyQuestionnaireRelinkAuthorizationTests(DojoTestCase):
             reverse("engagement_empty_survey", args=(self.victim_survey.id,)),
             data={"product": self.attacker_product.id},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.victim_survey.refresh_from_db()
         self.assertEqual(self.victim_survey.engagement_id, self.victim_engagement.id)
 
     def test_existing_engagement_relink_get_denied_without_config_perm(self):
         self.client.force_login(self.attacker)
         response = self.client.get(reverse("existing_engagement_empty_survey", args=(self.victim_survey.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     # ------------------------------------------------------------------
     # View-level source check: even with the configuration permission, a user
@@ -122,7 +122,7 @@ class EmptyQuestionnaireRelinkAuthorizationTests(DojoTestCase):
             reverse("engagement_empty_survey", args=(self.victim_survey.id,)),
             data={"product": self.manager_product.id},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.victim_survey.refresh_from_db()
         self.assertEqual(self.victim_survey.engagement_id, self.victim_engagement.id)
 

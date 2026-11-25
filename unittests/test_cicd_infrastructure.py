@@ -315,7 +315,7 @@ class CICDInfrastructureUIListTests(APITestCase):
         self.client.force_login(self.user)
         r = self.client.get(reverse("cicd_infrastructure"))
         # PermissionDenied reaches handler403, which renders 403.html with a 400.
-        self.assertEqual(r.status_code, 400, r.content[:300])
+        self.assertEqual(r.status_code, 403, r.content[:300])
         self.assertNotIn(b"build.example.com", r.content)
 
     def test_user_with_view_permission_can_list(self):

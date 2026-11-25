@@ -134,7 +134,7 @@ class TestLocationReferenceScopedWrites(LegacyAuthMirrorMixin, DojoTestCase):
         # The object path treats Delete as staff only, so this route was already closed
         # to an ordinary member. The bulk route is the one that was reachable.
         response = self._delete(self.shared)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(self._refs(self.shared), {self.product_mine.name, self.product_outside.name})
 
     def test_bulk_delete_stays_denied_without_the_delete_action(self):

@@ -85,18 +85,18 @@ class EditQuestionnaireQuestionsAuthorizationTests(DojoTestCase):
     def test_get_denied_for_create_only_user(self):
         self.client.force_login(self.creator)
         response = self.client.get(self._url())
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_post_denied_for_create_only_user(self):
         self.client.force_login(self.creator)
         response = self.client.post(self._url(), data={"questions": [self.substitute_question.id]})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self._assert_questionnaire_untouched()
 
     def test_post_denied_for_user_without_questionnaire_permissions(self):
         self.client.force_login(self.outsider)
         response = self.client.post(self._url(), data={"questions": [self.substitute_question.id]})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self._assert_questionnaire_untouched()
 
     def test_user_with_change_permission_can_edit_the_question_set(self):

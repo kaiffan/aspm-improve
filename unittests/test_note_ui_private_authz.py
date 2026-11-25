@@ -114,14 +114,14 @@ class NoteUIPrivateAuthzTest(DojoTestCase):
     def test_edit_form_denies_a_non_author_and_leaks_nothing(self, page):
         self.client.force_login(self.colleague)
         response = self.client.get(self._url("edit_note", self.private[page], page))
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(403, response.status_code)
         self.assertNotIn(PRIVATE, response.content.decode())
 
     @parameterized.expand(PAGES)
     def test_history_denies_a_non_author_and_leaks_no_superseded_revision(self, page):
         self.client.force_login(self.colleague)
         response = self.client.get(self._url("note_history", self.private[page], page))
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(403, response.status_code)
         body = response.content.decode()
         self.assertNotIn(PRIVATE, body)
         self.assertNotIn(SUPERSEDED, body)
@@ -153,7 +153,7 @@ class NoteUIPrivateAuthzTest(DojoTestCase):
         response = self.client.post(
             self._url("edit_note", note, page), {"entry": REWRITE, "private": "on"},
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(403, response.status_code)
         note.refresh_from_db()
         self.assertEqual(PRIVATE, note.entry)
         self.assertTrue(note.private)
@@ -163,7 +163,7 @@ class NoteUIPrivateAuthzTest(DojoTestCase):
         note = self.private[page]
         self.client.force_login(self.colleague)
         response = self.client.post(self._url("edit_note", note, page), {"entry": REWRITE})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(403, response.status_code)
         note.refresh_from_db()
         self.assertTrue(note.private)
 
@@ -172,7 +172,7 @@ class NoteUIPrivateAuthzTest(DojoTestCase):
         note = self.private[page]
         self.client.force_login(self.colleague)
         response = self.client.post(self._url("delete_note", note, page), {"id": note.id})
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(403, response.status_code)
         self.assertTrue(Notes.objects.filter(id=note.id).exists())
 
     # ---- a shared note stays editable, and its flag stays the author's -----

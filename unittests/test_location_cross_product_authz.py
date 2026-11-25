@@ -59,10 +59,10 @@ class LocationEndpointViewCrossProductAuthzTest(DojoTestCase):
 
     # A cross-product request is denied by the AuthorizationMiddleware object check
     # (URL_PERMISSIONS maps these views to ("object", Location, ...)). DefectDojo renders
-    # PermissionDenied via dojo.views.custom_unauthorized_view, which returns HTTP 400
-    # app-wide, so the denied status here is 400. The view-level get_authorized_locations
+    # PermissionDenied via dojo.views.custom_unauthorized_view, which returns HTTP 403
+    # app-wide, so the denied status here is 403. The view-level get_authorized_locations
     # lookup is defense-in-depth behind that middleware check.
-    DENIED_STATUS = 400
+    DENIED_STATUS = 403
 
     def test_view_endpoint_cross_product_is_denied(self):
         response = self.client.get(reverse("view_endpoint", kwargs={"location_id": self.location_b.id}))

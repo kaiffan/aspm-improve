@@ -117,7 +117,7 @@ class TestFindingBrowserRecovery(DojoTestCase):
         response = self.client.get(reverse("view_finding", args=(finding.pk,)))
         # The existing HTML denial handler renders 403.html with HTTP 400.
         # Preserve that contract here; API permission status tests remain separate.
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertTemplateUsed(response, "403.html")
         self.assertNotIn(finding.title, response.content.decode())
 

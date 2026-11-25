@@ -68,8 +68,8 @@ class TestProductAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
         url = reverse("add_product_authorized_users", args=(self.product.id,))
         response = self.client.post(url, {"users": [self.target.id]})
         # PermissionDenied is routed through dojo.views.custom_unauthorized_view
-        # (handler403) which renders the 403 template with status=400.
-        self.assertEqual(response.status_code, 400)
+        # (handler403) which renders the 403 template with status=403.
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(self.product.authorized_users.filter(pk=self.target.id).exists())
 
     def test_non_staff_cannot_remove(self):
@@ -78,8 +78,8 @@ class TestProductAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
         url = reverse("delete_product_authorized_user", args=(self.product.id, self.target.id))
         response = self.client.post(url)
         # PermissionDenied is routed through dojo.views.custom_unauthorized_view
-        # (handler403) which renders the 403 template with status=400.
-        self.assertEqual(response.status_code, 400)
+        # (handler403) which renders the 403 template with status=403.
+        self.assertEqual(response.status_code, 403)
         self.assertTrue(self.product.authorized_users.filter(pk=self.target.id).exists())
 
     def test_panel_renders_with_authorized_user_listed(self):
@@ -96,8 +96,8 @@ class TestProductAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
     def test_unauthorized_user_locked_out_of_detail(self):
         self.client.force_login(self.bystander)
         response = self.client.get(reverse("view_product", args=(self.product.id,)))
-        # custom_unauthorized_view (handler403) renders with status=400.
-        self.assertEqual(response.status_code, 400)
+        # custom_unauthorized_view (handler403) renders with status=403.
+        self.assertEqual(response.status_code, 403)
 
     def test_authorized_user_can_view_detail(self):
         self.product.authorized_users.add(self.target)
@@ -145,8 +145,8 @@ class TestProductTypeAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
         url = reverse("add_product_type_authorized_users", args=(self.pt.id,))
         response = self.client.post(url, {"users": [self.target.id]})
         # PermissionDenied is routed through dojo.views.custom_unauthorized_view
-        # (handler403) which renders the 403 template with status=400.
-        self.assertEqual(response.status_code, 400)
+        # (handler403) which renders the 403 template with status=403.
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(self.pt.authorized_users.filter(pk=self.target.id).exists())
 
     def test_non_staff_cannot_remove(self):
@@ -155,8 +155,8 @@ class TestProductTypeAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
         url = reverse("delete_product_type_authorized_user", args=(self.pt.id, self.target.id))
         response = self.client.post(url)
         # PermissionDenied is routed through dojo.views.custom_unauthorized_view
-        # (handler403) which renders the 403 template with status=400.
-        self.assertEqual(response.status_code, 400)
+        # (handler403) which renders the 403 template with status=403.
+        self.assertEqual(response.status_code, 403)
         self.assertTrue(self.pt.authorized_users.filter(pk=self.target.id).exists())
 
     def test_panel_renders_with_authorized_user_listed(self):
@@ -173,7 +173,7 @@ class TestProductTypeAuthorizedUsersUI(AuthorizedUsersUIBaseTestCase):
     def test_unauthorized_user_locked_out_of_detail(self):
         self.client.force_login(self.bystander)
         response = self.client.get(reverse("view_product_type", args=(self.pt.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_authorized_user_can_view_detail(self):
         self.pt.authorized_users.add(self.target)

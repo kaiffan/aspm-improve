@@ -90,7 +90,7 @@ class EmptyQuestionnaireObjectAuthorizationTests(DojoTestCase):
     def test_view_denied_for_unauthorized_engagement(self):
         self.client.force_login(self.manager)
         response = self.client.get(reverse("view_empty_survey", args=(self.victim_survey.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_view_allowed_for_own_engagement(self):
         self.client.force_login(self.manager)
@@ -108,7 +108,7 @@ class EmptyQuestionnaireObjectAuthorizationTests(DojoTestCase):
     def test_delete_page_denied_for_unauthorized_engagement(self):
         self.client.force_login(self.manager)
         response = self.client.get(reverse("delete_empty_questionnaire", args=(self.victim_survey.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_post_denied_for_unauthorized_engagement(self):
         self.client.force_login(self.manager)
@@ -116,7 +116,7 @@ class EmptyQuestionnaireObjectAuthorizationTests(DojoTestCase):
             reverse("delete_empty_questionnaire", args=(self.victim_survey.id,)),
             data={"id": self.victim_survey.id},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertTrue(Answered_Survey.objects.filter(id=self.victim_survey.id).exists())
 
     def test_delete_post_allowed_for_unlinked_questionnaire(self):

@@ -234,8 +234,8 @@ class TestDownloadsThroughStorage(DojoTestCase):
 
     def _assert_permission_denied(self, response):
         # PermissionDenied is rendered by the custom handler403 (dojo.views.custom_unauthorized_view),
-        # which serves 403.html with status 400.
-        self.assertEqual(400, response.status_code)
+        # which serves 403.html with status 403.
+        self.assertEqual(403, response.status_code)
         self.assertTemplateUsed(response, "403.html")
         self.assertNotIn(b"engagement evidence", response.content)
 

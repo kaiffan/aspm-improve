@@ -181,22 +181,22 @@ class V3EndpointRouteAuthorizationTests(DojoTestCase):
     def test_view_endpoint_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("view_endpoint", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_view_endpoint_host_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("view_endpoint_host", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_endpoint_report_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("endpoint_report", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_endpoint_host_report_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("endpoint_host_report", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     # ------------------------------------------------------------------
     # Reports on shared Locations must not surface data from products
@@ -243,7 +243,7 @@ class V3EndpointRouteAuthorizationTests(DojoTestCase):
                 "path": "changed",
             },
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.url_b.refresh_from_db()
         self.assertEqual(self.url_b.host, original_host)
 
@@ -253,7 +253,7 @@ class V3EndpointRouteAuthorizationTests(DojoTestCase):
             reverse("delete_endpoint", args=(self.location_b.id,)),
             data={"id": self.location_b.id},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertTrue(Location.objects.filter(pk=self.location_b.id).exists())
 
     # ------------------------------------------------------------------
@@ -262,12 +262,12 @@ class V3EndpointRouteAuthorizationTests(DojoTestCase):
     def test_add_endpoint_meta_data_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("add_endpoint_meta_data", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_edit_endpoint_meta_data_rejects_cross_product(self):
         self.client.force_login(self.user_a)
         response = self.client.get(reverse("edit_endpoint_meta_data", args=(self.location_b.id,)))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     # ------------------------------------------------------------------
     # The /endpoints/finding/<id>/add route ties URL creation to a Finding,
@@ -284,7 +284,7 @@ class V3EndpointRouteAuthorizationTests(DojoTestCase):
                 "path": "",
             },
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
 
 class AuthorizationMiddlewareKwargContractTests(DojoTestCase):

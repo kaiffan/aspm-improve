@@ -82,7 +82,7 @@ class AnswerQuestionnaireAuthorizationTests(DojoTestCase):
     def test_answer_get_denied_for_unauthorized_user(self):
         self.client.force_login(self.attacker)
         response = self.client.get(self._answer_url())
-        self.assertNotContains(response, VICTIM_ANSWER, status_code=400)
+        self.assertNotContains(response, VICTIM_ANSWER, status_code=403)
 
     def test_answer_post_denied_for_unauthorized_user(self):
         self.client.force_login(self.attacker)
@@ -90,7 +90,7 @@ class AnswerQuestionnaireAuthorizationTests(DojoTestCase):
             self._answer_url(),
             data={f"{self.question.id}-answer": "overwritten-by-attacker"},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.victim_answer.refresh_from_db()
         self.victim_survey.refresh_from_db()
         self.assertEqual(self.victim_answer.answer, VICTIM_ANSWER)

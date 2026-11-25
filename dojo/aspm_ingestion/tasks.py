@@ -88,7 +88,7 @@ def prepare_test(scan):
     # Only metadata creation is transactional. No parsing or file I/O under row locks.
     with transaction.atomic():
         today = timezone.localdate()
-        engagement = Engagement.objects.create(
+        engagement = scan.engagement or Engagement.objects.create(
             product_id=scan.product_id, commit=scan.commit,
             name=f"ASPM {scan.commit.sha[:12]} / {scan.pk}", engagement_type="CI/CD",
             target_start=today, target_end=today + timedelta(days=365), status="In Progress",
@@ -243,7 +243,7 @@ def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
         if not acquired:
             return
         if kind == "scan":
-            scan = ScanRun.objects.select_related("commit__repository", "submitted_by", "test__environment").get(pk=identifier)
+            scan = ScanRun.objects.select_related("commit__repository", "engagement", "submitted_by", "test__environment").get(pk=identifier)
             if scan.status in {ScanRun.Status.COMPLETED, ScanRun.Status.FAILED}:
                 return
             recovered = scan.status == ScanRun.Status.PROCESSING

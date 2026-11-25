@@ -16,6 +16,7 @@ from pathlib import Path
 
 import environ
 from celery.schedules import crontab
+from django.core.exceptions import ImproperlyConfigured
 
 from dojo import __version__
 from dojo.auditlog.settings import (  # noqa: F401 -- re-exported as Django settings
@@ -194,6 +195,7 @@ env = environ.FileAwareEnv(
     DD_ASPM_FINDING_CURSOR=(bool, False),
     DD_ASPM_SCM_HIERARCHY=(bool, True),
     DD_ASPM_INGESTION_ENABLED=(bool, True),
+    DD_ASPM_DEFAULT_ENGAGEMENT_POLICY=(str, "default"),
     DD_ASPM_API_ONLY=(bool, True),
     DD_ASPM_ARTIFACT_ROOT=(str, "/app/aspm-private"),
     DD_ASPM_MAX_SCAN_BYTES=(int, 52428800),
@@ -640,6 +642,10 @@ MAX_AUTOCOMPLETE_WORDS = env("DD_MAX_AUTOCOMPLETE_WORDS")
 ASPM_FINDING_UI_FAST_LISTS = env("DD_ASPM_FINDING_UI_FAST_LISTS")
 ASPM_SCM_HIERARCHY = env("DD_ASPM_SCM_HIERARCHY")
 ASPM_INGESTION_ENABLED = env("DD_ASPM_INGESTION_ENABLED")
+ASPM_DEFAULT_ENGAGEMENT_POLICY = env("DD_ASPM_DEFAULT_ENGAGEMENT_POLICY")
+if ASPM_DEFAULT_ENGAGEMENT_POLICY not in {"default", "repository", "branch", "environment", "explicit"}:
+    msg = "Invalid DD_ASPM_DEFAULT_ENGAGEMENT_POLICY."
+    raise ImproperlyConfigured(msg)
 ASPM_API_ONLY = env("DD_ASPM_API_ONLY")
 ASPM_ARTIFACT_ROOT = env("DD_ASPM_ARTIFACT_ROOT")
 ASPM_MAX_SCAN_BYTES = env("DD_ASPM_MAX_SCAN_BYTES")

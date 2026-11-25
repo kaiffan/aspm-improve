@@ -28,6 +28,40 @@ class IngestionRateWindow(models.Model):
         db_table = "aspm_ingestion_rate"
 
 
+class EngagementStrategy(models.TextChoices):
+    DEFAULT = "default", "Default"
+    REPOSITORY = "repository", "Repository"
+    BRANCH = "branch", "Branch"
+    ENVIRONMENT = "environment", "Environment"
+    EXPLICIT = "explicit", "Explicit"
+
+
+class EngagementPolicy(models.Model):
+    product = models.ForeignKey("dojo.Product", on_delete=models.CASCADE)
+    repository = models.ForeignKey("dojo.Repository", null=True, blank=True, on_delete=models.CASCADE)
+    strategy = models.CharField(max_length=16, choices=EngagementStrategy, default=EngagementStrategy.DEFAULT)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("product",), condition=models.Q(repository__isnull=True), name="aspm_product_engagement_policy"),
+            models.UniqueConstraint(fields=("repository",), condition=models.Q(repository__isnull=False), name="aspm_repo_engagement_policy"),
+        ]
+        permissions = [("manage_engagement_policy", "Can manage ASPM engagement policies")]
+
+
+class ManagedEngagement(models.Model):
+    repository = models.ForeignKey("dojo.Repository", on_delete=models.PROTECT)
+    strategy = models.CharField(max_length=16, choices=EngagementStrategy)
+    scope = models.CharField(max_length=150, blank=True)
+    engagement = models.OneToOneField("dojo.Engagement", on_delete=models.PROTECT)
+    archived_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("repository", "strategy", "scope"), condition=models.Q(archived_at__isnull=True), name="aspm_active_engagement_scope"),
+        ]
+
+
 class ScanRun(models.Model):
     class Status(models.TextChoices):
         ACCEPTED = "ACCEPTED"
@@ -48,6 +82,7 @@ class ScanRun(models.Model):
     artifact_size = models.PositiveBigIntegerField()
     original_name = models.CharField(max_length=200)
     status = models.CharField(max_length=16, choices=Status, default=Status.ACCEPTED)
+    engagement = models.ForeignKey("dojo.Engagement", null=True, blank=True, on_delete=models.PROTECT)
     test = models.OneToOneField("dojo.Test", null=True, blank=True, on_delete=models.PROTECT)
     attempt = models.PositiveIntegerField(default=0)
     recovery_count = models.PositiveIntegerField(default=0)

@@ -19,6 +19,8 @@ class ScanUploadSerializer(serializers.Serializer):
     file = serializers.FileField(write_only=True, allow_empty_file=False)
     sha256 = serializers.RegexField(r"^[a-f0-9]{64}$", required=False)
     branch = serializers.CharField(max_length=150, required=False)
+    environment = serializers.CharField(max_length=150, required=False)
+    engagement_id = serializers.IntegerField(min_value=1, max_value=2**63 - 1, required=False)
     build_id = serializers.CharField(max_length=150, required=False)
     pipeline_id = serializers.CharField(max_length=150, required=False)
     job_id = serializers.CharField(max_length=150, required=False)

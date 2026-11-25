@@ -20,6 +20,7 @@ def scan_contexts(commit):
             When(metadata__build_id__isnull=False, then=Concat(Value("build:"), Cast(KeyTextTransform("build_id", "metadata"), CharField()))),
             default=Concat(Value("legacy:"), Cast("submitted_by_id", CharField())), output_field=CharField(),
         ),
+        environment=Coalesce(Cast(KeyTextTransform("environment", "metadata"), CharField()), Value("")),
         scope=Coalesce(Cast(KeyTextTransform("scan_scope", "metadata"), CharField()), Value("")),
         job=Coalesce(Cast(KeyTextTransform("job_id", "metadata"), CharField()), Value("")),
         ci_attempt=Cast(Coalesce(NullIf(Cast(KeyTextTransform("attempt_number", "metadata"), CharField()), Value("")), Value("1")), output_field=IntegerField()),
@@ -28,7 +29,7 @@ def scan_contexts(commit):
 
 def live_selection(commit, *, pipeline=None, scan_ids=None, expected_scanners=None):
     """
-    Choose one successful run per scanner/scope in one explicit pipeline context.
+    Choose one successful run per scanner/environment/scope in one explicit pipeline context.
 
     CI attempt precedes completion time, acceptance time and UUID in descending order.
     A newer unsuccessful attempt never hides the last success, but prevents complete coverage.
@@ -41,7 +42,7 @@ def live_selection(commit, *, pipeline=None, scan_ids=None, expected_scanners=No
         if not identifiers or len(identifiers) > MAX_SELECTION:
             msg = "Select between 1 and 1000 ScanRuns."
             raise ValidationError(msg)
-        latest = list(qs.filter(pk__in=identifiers).order_by("scanner", "scope", "pk").values(*SCAN_FIELDS, "pipeline", "scope"))
+        latest = list(qs.filter(pk__in=identifiers).order_by("scanner", "environment", "scope", "pk").values(*SCAN_FIELDS, "pipeline", "environment", "scope"))
         if len(latest) != len(identifiers) or any(row["status"] != ScanRun.Status.COMPLETED for row in latest):
             msg = "All selected ScanRuns must be COMPLETED and belong to this commit."
             raise ValidationError(msg)
@@ -50,9 +51,9 @@ def live_selection(commit, *, pipeline=None, scan_ids=None, expected_scanners=No
             msg = "Choose ScanRuns from one pipeline context."
             raise ValidationError(msg)
         pipeline = selected_contexts.pop()
-        slots = {(row["scanner"], row["scope"]) for row in latest}
+        slots = {(row["scanner"], row["environment"], row["scope"]) for row in latest}
         if len(slots) != len(latest):
-            msg = "Select only one run per scanner and scan scope."
+            msg = "Select only one run per scanner, environment and scan scope."
             raise ValidationError(msg)
         completed = latest
     else:
@@ -64,11 +65,11 @@ def live_selection(commit, *, pipeline=None, scan_ids=None, expected_scanners=No
             msg = "Unknown pipeline context for this commit."
             raise ValidationError(msg)
         qs = qs.filter(pipeline=pipeline) if pipeline is not None else qs.none()
-        if qs.values("scanner", "scope", "ci_attempt").annotate(jobs=Count("job", distinct=True)).filter(jobs__gt=1).exists():
+        if qs.values("scanner", "environment", "scope", "ci_attempt").annotate(jobs=Count("job", distinct=True)).filter(jobs__gt=1).exists():
             return _summary([], [], contexts, pipeline, expected_scanners, ambiguous=True)
-        order = ("scanner", "scope", "-ci_attempt", F("finished_at").desc(nulls_last=True), "-created_at", "-pk")
-        latest = list(qs.order_by("scanner", "scope", "-ci_attempt", "-created_at", "-pk").distinct("scanner", "scope").values(*SCAN_FIELDS, "pipeline", "scope")[:MAX_SELECTION + 1])
-        completed = list(qs.filter(status=ScanRun.Status.COMPLETED).order_by(*order).distinct("scanner", "scope").values(*SCAN_FIELDS, "pipeline", "scope")[:MAX_SELECTION + 1])
+        order = ("scanner", "environment", "scope", "-ci_attempt", F("finished_at").desc(nulls_last=True), "-created_at", "-pk")
+        latest = list(qs.order_by("scanner", "environment", "scope", "-ci_attempt", "-created_at", "-pk").distinct("scanner", "environment", "scope").values(*SCAN_FIELDS, "pipeline", "environment", "scope")[:MAX_SELECTION + 1])
+        completed = list(qs.filter(status=ScanRun.Status.COMPLETED).order_by(*order).distinct("scanner", "environment", "scope").values(*SCAN_FIELDS, "pipeline", "environment", "scope")[:MAX_SELECTION + 1])
         if len(latest) > MAX_SELECTION or len(completed) > MAX_SELECTION:
             msg = "More than 1000 scan scopes; select a bounded set of scan_ids."
             raise ValidationError(msg)
@@ -102,5 +103,5 @@ def _summary(completed, latest, contexts, pipeline, expected, *, ambiguous=False
         "incomplete": incomplete, "complete": bool(completed) and known and not incomplete and not ambiguous,
         "coverage": "AMBIGUOUS" if ambiguous else "INCOMPLETE" if incomplete else "KNOWN" if known else "UNKNOWN",
         "finding_count": sum(row["finding_count"] for row in completed), "severity_summary": dict(severity),
-        "scopes": {(row["scanner"], row["scope"]) for row in latest},
+        "scopes": {(row["scanner"], row["environment"], row["scope"]) for row in latest},
     }

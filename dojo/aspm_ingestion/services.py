@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
+from dojo.aspm_ingestion.engagements import resolve_engagement
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, IngestionJob, IngestionToken, ScanRun
 from dojo.aspm_ingestion.selection import SCAN_FIELDS, live_selection
 from dojo.aspm_ingestion.storage import private_path, safe_name, save_original
@@ -17,7 +18,7 @@ from dojo.scm.identity_v1 import repository_provider
 from dojo.scm.models import Commit, Repository
 from dojo.site_url import absolute_url
 
-SCOPES = {"submit", "status", "read", "finalize", "reports"}
+SCOPES = {"submit", "status", "read", "finalize", "reports", "engagement:select"}
 logger = logging.getLogger(__name__)
 
 
@@ -102,7 +103,7 @@ def accept_scan(token, data, upload, *, correlation_id=None):
             Commit.objects.select_for_update().get(pk=commit.pk)
             scan, created = ScanRun.objects.get_or_create(
                 product_id=token.product_id, delivery_key=data["idempotency_key"],
-                defaults={"commit": commit, "submitted_by": token.user, "fingerprint": fingerprint,
+                defaults={"commit": commit, "engagement": lambda: resolve_engagement(token, commit, metadata), "submitted_by": token.user, "fingerprint": fingerprint,
                           "scanner": data["scanner_type"], "metadata": {**metadata, "correlation_id": correlation_id or uuid.uuid4().hex}, "artifact_path": key,
                           "artifact_sha256": digest, "artifact_size": size, "original_name": safe_name(upload.name),
                           "timings": {"artifact_storage_seconds": storage_seconds}},

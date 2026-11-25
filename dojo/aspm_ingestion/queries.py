@@ -2,7 +2,9 @@
 
 from uuid import UUID
 
-from django.db.models import Exists, F, OuterRef
+from django.db.models import CharField, Exists, F, OuterRef, Value
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 
 from dojo.aspm_ingestion.models import FindingObservation, ScanRun
@@ -36,7 +38,7 @@ def finalized_coverage(commit, *, pipeline=None, report_id=None):
         "set": report.scan_set_id, "report": report, "complete": report.manifest["complete"] and len(contexts) == 1,
         "pipeline": contexts[0] if len(contexts) == 1 else None,
         "completed_ids": identifiers,
-        "scopes": {(row["scanner"], row["metadata"].get("scan_scope", "")) for row in completed},
+        "scopes": {(row["scanner"], row["metadata"].get("environment", ""), row["metadata"].get("scan_scope", "")) for row in completed},
     }
 
 
@@ -51,12 +53,18 @@ def compare_observations(base, target, category, severity="", *, base_pipeline=N
         warning = "Pipeline identities differ. UNKNOWN: absence cannot establish that a finding is fixed."
     elif before_coverage["scopes"] != after_coverage["scopes"]:
         warning = "Scan scopes differ. Absence cannot establish that a finding is fixed."
-    elif any(not scope for scanner, scope in before_coverage["scopes"]):
+    elif any(not scope for _, _, scope in before_coverage["scopes"]):
         warning = "Scan scope is not declared. Absence cannot establish that a finding is fixed."
     source, other = (before, after) if category == "fixed" else (after, before)
     if category == "fixed" and warning:
         source = source.none()
-    rows = source.annotate(in_other=Exists(other.filter(identity=OuterRef("identity"), scan__scanner=OuterRef("scan__scanner"), scan__metadata__scan_scope=OuterRef("scan__metadata__scan_scope")))).filter(in_other=category == "unchanged")
+    environment = Coalesce(KeyTextTransform("environment", "scan__metadata"), Value(""), output_field=CharField())
+    corresponding = other.alias(comparison_environment=environment).filter(
+        identity=OuterRef("identity"), scan__scanner=OuterRef("scan__scanner"),
+        scan__metadata__scan_scope=OuterRef("scan__metadata__scan_scope"),
+        comparison_environment=OuterRef("comparison_environment"),
+    )
+    rows = source.alias(comparison_environment=environment).filter(Exists(corresponding) if category == "unchanged" else ~Exists(corresponding))
     if severity in {"Critical", "High", "Medium", "Low", "Info"}:
         rows = rows.filter(severity=severity)
     return rows, warning, before_coverage, after_coverage

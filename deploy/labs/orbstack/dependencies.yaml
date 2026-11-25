@@ -1,0 +1,159 @@
+# Disposable single-node laboratory dependencies. Never apply to a production namespace.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lab-postgres
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests: {storage: 2Gi}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aspm-evidence
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests: {storage: 2Gi}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aspm-media
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests: {storage: 1Gi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {aspm-lab-service: postgres}
+  template:
+    metadata:
+      labels: {aspm-lab-service: postgres}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          image: dd-api-perf-postgres:18.6
+          imagePullPolicy: Never
+          ports: [{name: postgres, containerPort: 5432}]
+          env:
+            - {name: POSTGRES_DB, value: aspm_lab}
+            - {name: POSTGRES_USER, value: aspm_lab}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: aspm-lab-postgres, key: password}
+          readinessProbe:
+            exec:
+              command: [pg_isready, -U, aspm_lab, -d, aspm_lab]
+            periodSeconds: 3
+          volumeMounts:
+            - {mountPath: /var/lib/postgresql, name: data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: lab-postgres}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector: {aspm-lab-service: postgres}
+  ports: [{name: postgres, port: 5432}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {aspm-lab-service: broker}
+  template:
+    metadata:
+      labels: {aspm-lab-service: broker}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: valkey
+          image: dd-api-perf-valkey:local
+          imagePullPolicy: Never
+          ports: [{name: valkey, containerPort: 6379}]
+          readinessProbe:
+            exec: {command: [valkey-cli, ping]}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+spec:
+  selector: {aspm-lab-service: broker}
+  ports: [{name: valkey, port: 6379}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {aspm-lab-service: cache}
+  template:
+    metadata:
+      labels: {aspm-lab-service: cache}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: valkey
+          image: dd-api-perf-valkey:local
+          imagePullPolicy: Never
+          ports: [{name: valkey, containerPort: 6379}]
+          readinessProbe:
+            exec: {command: [valkey-cli, ping]}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache
+spec:
+  selector: {aspm-lab-service: cache}
+  ports: [{name: valkey, port: 6379}]
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provision-volume-owners
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 240
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: owner
+          image: aspm-hardening-local/django:5133e155d1
+          imagePullPolicy: Never
+          securityContext: {runAsUser: 0, allowPrivilegeEscalation: false}
+          command: [sh, -ec, 'chown 1001:1337 /lab-evidence /lab-media; chmod 0700 /lab-evidence /lab-media']
+          volumeMounts:
+            - {name: evidence, mountPath: /lab-evidence}
+            - {name: media, mountPath: /lab-media}
+      volumes:
+        - name: evidence
+          persistentVolumeClaim: {claimName: aspm-evidence}
+        - name: media
+          persistentVolumeClaim: {claimName: aspm-media}

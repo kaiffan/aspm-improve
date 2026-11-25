@@ -1,0 +1,31 @@
+# Apply on top of deploy/helm/aspm/values-dev.yaml. Uses local image tags without pulling.
+image:
+  repository: aspm-hardening-local/django
+  tag: 5133e155d1
+  pullPolicy: Never
+nginxImage:
+  repository: aspm-hardening-local/nginx
+  tag: 5133e155d1
+  pullPolicy: Never
+config:
+  DD_ALLOWED_HOSTS: localhost,127.0.0.1
+  DD_SITE_URL: http://127.0.0.1:18735
+  DD_ASPM_WEBHOOKS_ENABLED: "True"
+web:
+  replicas: 2
+  processes: 1
+  threads: 2
+worker:
+  replicas: 2
+  concurrency: 1
+networkPolicy:
+  egress:
+    - to:
+        - podSelector:
+            matchExpressions:
+              - key: aspm-lab-service
+                operator: In
+                values: [postgres, broker, cache]
+      ports: [{protocol: TCP, port: 5432}, {protocol: TCP, port: 6379}]
+tests:
+  enabled: true

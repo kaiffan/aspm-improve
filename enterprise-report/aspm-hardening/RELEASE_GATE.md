@@ -30,3 +30,7 @@ Application source `5133e155d102eb0f431560924ea129b2287319ff`. Chart `0.1.0-rc.1
 1. Set up a Kubernetes lab with the intended ingress, PostgreSQL and shared CSI. Run actual install/upgrade, replacement of web and worker pods across nodes, broker and PostgreSQL failure/recovery, migration compatibility and restore checks. The smoke entrypoint is `deploy/scripts/kubernetes-smoke.sh`.
 2. Build on native Linux AMD64 and run the frozen 1M Core9/Acceptance A/B campaign. The Mac had 6.3 GiB free and the native campaign requests 51 GiB including reserve. [Capacity preflight](raw/capacity.json) · [Native reproduction](REPRODUCE.md)
 3. Qualify the webhook service with a target TLS receiver, measured delivery latency and recovery under sustained traffic. Finish cross-worker telemetry and report correlation, then review rollout readiness and staged restore evidence.
+
+## OrbStack follow-up
+
+The OrbStack context was enabled after the original qualification. A namespace and dependencies were submitted, and the API server accepted all ten Helm `0.1.0-rc.2` objects in server dry-run. The node reported DiskPressure, so workloads remained pending and the Kubernetes deployment gate stays open. All 37 targeted webhook tests and the independent end-to-end Compose webhook smoke passed. See [attempt, evidence and resume procedure](orbstack/REPORT.md).

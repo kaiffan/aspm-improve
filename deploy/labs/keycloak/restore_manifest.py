@@ -10,12 +10,16 @@ from django.db import connection
 from dojo.aspm_access.models import SsoIdentity, SsoProductGrant
 from dojo.aspm_ingestion.models import EngagementPolicy, FindingObservation, GeneratedReport, ManagedEngagement, ScanRun
 from dojo.finding.models import Finding
+from dojo.models import Engagement, Product, Test
 
-if connection.settings_dict["NAME"] not in {"aspm_final_integration", "aspm_final_restore"}:
+if connection.settings_dict["NAME"] not in {"aspm_final_integration", "aspm_final_restore", "aspm_dual_restore"}:
     msg = "Use the dedicated lab or restore database."
     raise RuntimeError(msg)
 
 checks = [
+    (Product, ("id", "prod_type_id", "name")),
+    (Engagement, ("id", "product_id", "commit_id", "name", "status")),
+    (Test, ("id", "engagement_id", "test_type_id", "title", "commit_hash")),
     (EngagementPolicy, ("id", "product_id", "repository_id", "strategy")),
     (ManagedEngagement, ("id", "repository_id", "strategy", "scope", "engagement_id", "archived_at")),
     (ScanRun, ("id", "product_id", "commit_id", "test_id", "engagement_id", "status", "artifact_path", "artifact_sha256")),
@@ -48,5 +52,9 @@ for name, expected in files:
         msg = "Restored file content does not match its database checksum."
         raise RuntimeError(msg)
 results["files_verified"] = len(files)
+legacy_products = Test.objects.filter(engagement__commit__isnull=True, scanrun__isnull=True).values("engagement__product_id")
+results["products_with_both_workflows"] = ScanRun.objects.filter(
+    product_id__in=legacy_products, test_id__isnull=False,
+).values("product_id").distinct().count()
 
 print(json.dumps(results, sort_keys=True, indent=2))

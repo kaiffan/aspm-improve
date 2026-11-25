@@ -1,0 +1,6 @@
+{% load i18n %}
+<div class="aspm-workspace-nav">
+    {% url 'aspm_projects' as projects_url %}
+    {% if projects_url %}<a href="{{ projects_url }}" class="block px-4 py-2" {% if request.resolver_match.url_name == 'aspm_projects' %}aria-current="page"{% endif %}>{% trans "DevSecOps Workspace" %}</a>{% endif %}
+    <a href="{% url 'aspm_classic' %}" class="block px-4 py-2" {% if request.resolver_match.url_name == 'aspm_classic' %}aria-current="page"{% endif %}>{% trans "Classic Workspace" %}</a>
+</div>

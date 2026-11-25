@@ -22,6 +22,7 @@
 {% endblock %}
 {% block content %}
     {{ block.super }}
+    {% if linked_scan %}{% include "dojo/aspm/linked_scan.html" %}{% endif %}
     <!--Test Header begin -->
     <div class="panel panel-default">
         <div class="panel-heading">

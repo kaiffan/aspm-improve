@@ -13,6 +13,8 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from dojo.aspm_access.permissions import role
+from dojo.aspm_access.workspace import classic_reader
 from dojo.authorization.authorization import user_has_permission_or_403
 from dojo.authorization.roles_permissions import Permissions
 from dojo.forms import (
@@ -55,7 +57,8 @@ def product_type(request):
     ptl = ProductTypeFilter(request.GET, queryset=prod_types)
     pts = get_page_items(request, ptl.qs, 25)
 
-    pts.object_list = prefetch_for_product_type(pts.object_list)
+    product_scope = get_authorized_products("view", user=request.user) if role(request.user) == "user" else None
+    pts.object_list = prefetch_for_product_type(pts.object_list, product_scope=product_scope)
 
     page_name = str(labels.ORG_READ_LIST_LABEL)
     add_breadcrumb(title=page_name, top_level=True, request=request)
@@ -67,17 +70,20 @@ def product_type(request):
         "name_words": name_words})
 
 
-def prefetch_for_product_type(prod_types):
+def prefetch_for_product_type(prod_types, *, product_scope=None):
     # old code can arrive here with prods being a list because the query was already executed
     if not isinstance(prod_types, QuerySet):
         logger.debug("unable to prefetch because query was already executed")
         return prod_types
 
+    products = Product.objects.all() if product_scope is None else product_scope
     prod_subquery = build_count_subquery(
-        Product.objects.filter(prod_type_id=OuterRef("pk")),
+        products.filter(prod_type_id=OuterRef("pk")),
         group_field="prod_type_id",
     )
     base_findings = Finding.objects.filter(test__engagement__product__prod_type_id=OuterRef("pk"))
+    if product_scope is not None:
+        base_findings = base_findings.filter(test__engagement__product__in=product_scope)
     count_subquery = partial(build_count_subquery, group_field="test__engagement__product__prod_type_id")
 
     return prod_types.annotate(
@@ -114,6 +120,8 @@ def view_product_type(request, ptid):
     pt = get_object_or_404(Product_Type, pk=ptid)
     authorized_users = pt.authorized_users.order_by("first_name", "last_name", "username")
     products = get_authorized_products("view").filter(prod_type=pt)
+    if role(request.user) == "user":
+        return classic_reader(request, product_type=pt, children=products.order_by("name", "pk"))
     filter_string_matching = get_system_setting("filter_string_matching", False)
     filter_class = ProductFilterWithoutObjectLookups if filter_string_matching else ProductFilter
     prod_filter = filter_class(request.GET, queryset=products, user=request.user)

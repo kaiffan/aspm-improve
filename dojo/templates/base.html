@@ -204,6 +204,7 @@
 
                 <!-- Nav items -->
                 <nav class="flex-1 py-3 space-y-0.5" aria-label="{% trans 'Main navigation' %}">
+                    {% include "dojo/aspm/workspace_links.html" %}
                     {% if aspm_role %}
                         {% include "dojo/aspm/role_navigation.html" %}
                     {% else %}

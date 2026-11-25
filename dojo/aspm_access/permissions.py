@@ -3,6 +3,7 @@ from dojo.aspm_access.models import SsoProductGrant
 TRIAGE_FIELDS = frozenset({"active", "verified", "false_p", "out_of_scope", "is_mitigated"})
 
 SECOPS_CAPABILITIES = {
+    "dojo.add_product_type",
     "dojo.manage_engagement_policy",
     "dojo.manage_outbound_webhooks",
     "dojo.manage_sso_mapping",
@@ -36,3 +37,9 @@ def granted_product_ids(user):
     return SsoProductGrant.objects.filter(
         issuer=identity["issuer"], group_id__in=identity["groups"],
     ).order_by().values("product_id")
+
+
+def granted_product_types(user):
+    from dojo.product.models import Product  # noqa: PLC0415 -- avoid model initialization cycle
+
+    return Product.objects.filter(pk__in=granted_product_ids(user)).order_by().values("prod_type_id")

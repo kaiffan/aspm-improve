@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <nav class="breadcrumb" aria-label="{% trans 'Classic workspace breadcrumb' %}">
+        <a href="{% url 'aspm_classic' %}">{% trans "Classic Workspace" %}</a>
+        {% if product and engagement %} / <a href="{% url 'view_product' product.pk %}">{{ product.name }}</a>{% endif %}
+        {% if engagement and test %} / <a href="{% url 'view_engagement' engagement.pk %}">{{ engagement.name }}</a>{% endif %}
+        {% if test and finding %} / <a href="{% url 'view_test' test.pk %}">{{ test }}</a>{% endif %}
+    </nav>
+    <header class="aspm-page-heading">
+        <h1>{% firstof finding.title test engagement.name product.name product_type.name %}</h1>
+        <div class="aspm-classic-actions">
+            {% if test %}
+                <a class="btn btn-secondary" href="{% url 'test_report' test.pk %}">{% trans "Test Report" %}</a>
+            {% elif engagement %}
+                <a class="btn btn-secondary" href="{% url 'engagement_report' engagement.pk %}">{% trans "Engagement Report" %}</a>
+            {% elif product %}
+                <a class="btn btn-secondary" href="{% url 'product_report' product.pk %}">{% trans "Product Report" %}</a>
+                <a class="btn btn-secondary" href="{% url 'view_product_metrics' product.pk %}">{% trans "Metrics" %}</a>
+                {% url 'scm_repository_list' product.pk as repositories_url %}
+                {% if repositories_url and product.repositories.exists %}<a class="btn btn-secondary" href="{{ repositories_url }}">{% trans "Repositories" %}</a>{% endif %}
+            {% endif %}
+        </div>
+    </header>
+    {% if linked_scan %}{% include "dojo/aspm/linked_scan.html" %}{% endif %}
+    {% if finding %}
+        <section class="panel panel-body">
+            <dl>
+                <dt>{% trans "Severity" %}</dt><dd><span class="label severity severity-{{ finding.severity|lower }}">{{ finding.severity }}</span></dd>
+                <dt>{% trans "Status" %}</dt><dd>{{ finding.status }}</dd>
+            </dl>
+            <h2>{% trans "Description" %}</h2>
+            <p>{{ finding.description|linebreaksbr }}</p>
+        </section>
+    {% else %}
+        {% if engagement or test %}<p>{% if test %}{{ test.test_type }} · {{ test.target_start|date }} – {{ test.target_end|date }}{% else %}{{ engagement.engagement_type }} · {{ engagement.status }} · {{ engagement.target_start|date }} – {{ engagement.target_end|date }}{% endif %}</p>{% endif %}
+        <section class="panel panel-default">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th scope="col">{% if test %}{% trans "Findings" %}{% elif engagement %}{% trans "Tests" %}{% elif product %}{% trans "Engagements" %}{% else %}{% trans "Products" %}{% endif %}</th>
+                        {% if test %}<th scope="col">{% trans "Severity" %}</th>{% endif %}
+                    </tr></thead>
+                    <tbody>
+                        {% for child in children %}
+                            <tr>
+                                {% if test %}<th scope="row"><a href="{% url 'view_finding' child.pk %}">{{ child.title }}</a></th><td><span class="label severity severity-{{ child.severity|lower }}">{{ child.severity }}</span></td>
+                                {% elif engagement %}<th scope="row"><a href="{% url 'view_test' child.pk %}">{{ child }}</a></th>
+                                {% elif product %}<th scope="row"><a href="{% url 'view_engagement' child.pk %}">{{ child.name }}</a></th>
+                                {% else %}<th scope="row"><a href="{% url 'view_product' child.pk %}">{{ child.name }}</a></th>{% endif %}
+                            </tr>
+                        {% empty %}<tr><td colspan="{% if test %}2{% else %}1{% endif %}">{% trans "No records in this view." %}</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include "dojo/paging_snippet.html" with page=children %}
+        </section>
+    {% endif %}
+{% endblock %}

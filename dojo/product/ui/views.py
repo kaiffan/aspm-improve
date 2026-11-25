@@ -23,6 +23,8 @@ from django.views import View
 from github import Github
 
 import dojo.finding.helper as finding_helper
+from dojo.aspm_access.permissions import role
+from dojo.aspm_access.workspace import classic, classic_reader
 from dojo.authorization.authorization import user_has_permission_or_403
 from dojo.authorization.roles_permissions import Permissions
 from dojo.components.sql_group_concat import Sql_GroupConcat
@@ -160,6 +162,8 @@ def annotate_product_location_counts(prods):
 
 
 def product(request):
+    if role(request.user) == "user":
+        return classic(request)
     prods = get_authorized_products("view")
     # perform all stuff for filtering and pagination first, before annotation/prefetching
     # otherwise the paginator will perform all the annotations/prefetching already only to count the total number of records
@@ -262,6 +266,10 @@ def iso_to_gregorian(iso_year, iso_week, iso_day):
 def view_product(request, pid):
     prod_query = Product.objects.all().select_related("product_manager", "technical_contact", "team_manager", "sla_configuration")
     prod = get_object_or_404(prod_query, id=pid)
+    if role(request.user) == "user":
+        return classic_reader(
+            request, product=prod, children=Engagement.objects.filter(product=prod).order_by("-updated", "-pk"),
+        )
     authorized_users = prod.authorized_users.order_by("first_name", "last_name", "username")
     personal_notifications_form = ProductNotificationsForm(
         instance=Notifications.objects.filter(user=request.user).filter(product=prod).first())
@@ -630,6 +638,10 @@ def async_burndown_metrics(request, pid):
 
 def view_engagements(request, pid):
     prod = get_object_or_404(Product, id=pid)
+    if role(request.user) == "user":
+        return classic_reader(
+            request, product=prod, children=Engagement.objects.filter(product=prod).order_by("-updated", "-pk"),
+        )
     default_page_num = 10
     recent_test_day_count = 7
     filter_string_matching = get_system_setting("filter_string_matching", False)

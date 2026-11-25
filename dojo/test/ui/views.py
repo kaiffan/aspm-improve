@@ -22,6 +22,8 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
 import dojo.finding.helper as finding_helper
+from dojo.aspm_access.permissions import role
+from dojo.aspm_access.workspace import classic_reader, test_scan
 from dojo.authorization.authorization import user_has_global_permission_or_403, user_has_permission_or_403
 from dojo.endpoint.queries import get_import_form_endpoints
 from dojo.engagement.queries import get_authorized_engagements
@@ -166,6 +168,7 @@ class ViewTest(View):
         # Set the current context
         context = {
             "test": test,
+            "linked_scan": test_scan(test),
             "prod": test.engagement.product,
             "product_tab": product_tab,
             "title_words": get_words_for_field(Finding, "title"),
@@ -221,6 +224,12 @@ class ViewTest(View):
         test = self.get_test(test_id)
         # Make sure the user is authorized
         user_has_permission_or_403(request.user, test, "view")
+        if role(request.user) == "user":
+            return classic_reader(
+                request, product=test.engagement.product, engagement=test.engagement, test=test,
+                linked_scan=test_scan(test),
+                children=Finding.objects.filter(test=test).order_by("numerical_severity", "pk"),
+            )
         # Quick perms check to determine if the user has access to add a note to the test
         user_has_permission_or_403(request.user, test, "add")
         # Set up the initial context

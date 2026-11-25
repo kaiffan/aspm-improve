@@ -18,7 +18,22 @@ READ_ROUTES = frozenset({
     "product-list", "product-detail", "repository-list", "repository-detail", "commit-list", "commit-detail",
     "api_v3:assets_list", "api_v3:assets_detail",
 })
-EXPERT_READ_ROUTES = READ_ROUTES | {
+CLASSIC_READ_ROUTES = frozenset({
+    "aspm_classic", "product_type", "view_product_type", "product", "view_product", "view_engagement",
+    "view_engagements", "view_test", "view_finding", "product_report", "engagement_report", "test_report",
+    "product_findings_report", "view_product_metrics", "async_burndown_metrics",
+    "engagement-list", "engagement-detail", "test-list", "test-detail",
+    "test_imports-list", "test_imports-detail", "product-stats",
+    "api_v3:engagements_list", "api_v3:engagements_detail", "api_v3:tests_list", "api_v3:tests_detail",
+})
+CLASSIC_REPORT_API = {"product-generate-report", "engagement-generate-report", "test-generate-report"}
+
+EXPERT_READ_ROUTES = READ_ROUTES | CLASSIC_READ_ROUTES | {
+    "engagement", "all_engagements", "active_engagements", "engagements_all",
+    "report_builder", "product_type_report", "report_findings", "quick_report",
+    "product_type-list", "product_type-detail", "api_v3:organizations_list", "api_v3:organizations_detail",
+    "download_finding_pic",
+
     "dashboard", "all_findings", "open_findings", "verified_findings", "closed_findings", "accepted_findings",
     "product_all_findings", "product_open_findings", "product_false_positive_findings",
     "view_finding", "view_test", "view_product", "close_finding", "verify_finding", "finding-list", "finding-detail",
@@ -36,6 +51,37 @@ EXPERT_ACTIONS = {
     "finding-reopen": {"POST"},
     "finding-verify": {"POST"},
     "finding-notes": {"GET", "HEAD", "POST"},
+    "new_eng_for_prod": {"GET", "POST"},
+    "new_eng_for_prod_cicd": {"GET", "POST"},
+    "add_tests": {"GET", "POST"},
+    "edit_engagement": {"GET", "POST"},
+    "edit_test": {"GET", "POST"},
+    "add_findings": {"GET", "POST"},
+    "view_engagement": {"POST"},
+    "view_test": {"POST"},
+    "view_finding": {"POST"},
+    "engagement-list": {"POST"},
+    "engagement-detail": {"PUT", "PATCH"},
+    "test-list": {"POST"},
+    "test-detail": {"PUT", "PATCH"},
+    "finding-list": {"POST"},
+    "importscan-list": {"POST"},
+    "reimportscan-list": {"POST"},
+    "custom_report": {"POST"},
+    "product_type-generate-report": {"POST"},
+    "api_v3:engagements_list": {"POST"},
+    "api_v3:engagements_create": {"POST"},
+    "api_v3:engagements_detail": {"PUT", "PATCH"},
+    "api_v3:engagements_update": {"PATCH"},
+    "api_v3:engagements_replace": {"PUT"},
+    "api_v3:tests_list": {"POST"},
+    "api_v3:tests_create": {"POST"},
+    "api_v3:tests_detail": {"PUT", "PATCH"},
+    "api_v3:tests_update": {"PATCH"},
+    "api_v3:tests_replace": {"PUT"},
+    "api_v3:findings_create": {"POST"},
+    "api_v3:findings_list": {"POST"},
+    "api_v3:import": {"POST"},
 }
 AUTH_ROUTES = {"aspm_oidc_login", "aspm_oidc_callback", "aspm_oidc_logout"}
 
@@ -72,7 +118,11 @@ class ManagedSessionMiddleware(MiddlewareMixin):
             return HttpResponseForbidden()
         if access["role"] == "secops":
             return None
-        read = EXPERT_READ_ROUTES if access["role"] == "expert" else READ_ROUTES
+        if request.method in {"GET", "HEAD"}:
+            route = getattr(view_func, "redirect_view_name", route)
+        if request.method == "POST" and route in CLASSIC_REPORT_API:
+            return None
+        read = EXPERT_READ_ROUTES if access["role"] == "expert" else READ_ROUTES | CLASSIC_READ_ROUTES
         if request.method in {"GET", "HEAD", "OPTIONS"} and route in read:
             return None
         if access["role"] == "expert" and request.method in EXPERT_ACTIONS.get(route, ()):

@@ -38,6 +38,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 import dojo.risk_acceptance.helper as ra_helper
+from dojo.aspm_access.permissions import role
+from dojo.aspm_access.workspace import classic_reader
 from dojo.authorization.authorization import user_has_permission_or_403
 from dojo.endpoint.queries import get_import_form_endpoints
 from dojo.endpoint.utils import save_endpoints_to_add
@@ -461,7 +463,9 @@ class ViewEngagement(View):
         eng = get_object_or_404(Engagement, id=eid)
         # Make sure the user is authorized
         user_has_permission_or_403(request.user, eng, "view")
-        tests = eng.test_set.all().order_by("test_type__name", "-updated")
+        tests = eng.test_set.all().order_by("test_type__name", "-updated", "pk")
+        if role(request.user) == "user":
+            return classic_reader(request, product=eng.product, engagement=eng, children=tests.select_related("test_type"))
         default_page_num = 10
         tests_filter = self.get_filtered_tests(request, tests, eng)
         paged_tests = get_page_items(request, tests_filter.qs, default_page_num)

@@ -9,6 +9,7 @@ urlpatterns = [
 ]
 
 urlpatterns += [
+    path("workspace/classic", workspace.classic, name="aspm_classic"),
     path("workspace/projects", workspace.projects, name="aspm_projects"),
     path("workspace/reports", workspace.reports, name="aspm_reports"),
     path("workspace/scanners", workspace.scanners, name="aspm_scanners"),

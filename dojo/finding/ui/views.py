@@ -29,6 +29,8 @@ from imagekit.processors import ResizeToFill
 
 import dojo.finding.helper as finding_helper
 import dojo.risk_acceptance.helper as ra_helper
+from dojo.aspm_access.permissions import role
+from dojo.aspm_access.workspace import classic_reader
 from dojo.authorization.authorization import user_has_global_permission_or_403, user_has_permission_or_403
 from dojo.endpoint.queries import get_authorized_endpoints
 from dojo.finding.deduplication import (
@@ -447,7 +449,7 @@ class ViewFinding(View):
 
     def get_dojo_user(self, request: HttpRequest):
         user = request.user
-        return get_object_or_404(Dojo_User, id=user.id)
+        return user if role(user) else get_object_or_404(Dojo_User, id=user.id)
 
     def get_previous_and_next_findings(self, finding: Finding):
         # Get the whole list of findings in the current test
@@ -681,6 +683,11 @@ class ViewFinding(View):
 
     def get(self, request: HttpRequest, finding_id: int):
         # Get the initial objects
+        if role(request.user) == "user":
+            finding = get_object_or_404(
+                get_authorized_findings("view", user=request.user).select_related("test__engagement__product"), pk=finding_id,
+            )
+            return classic_reader(request, product=finding.test.engagement.product, engagement=finding.test.engagement, test=finding.test, finding=finding)
         finding = self.get_finding(finding_id)
         user = self.get_dojo_user(request)
         # Make sure the user is authorized
@@ -704,7 +711,7 @@ class ViewFinding(View):
         # Make sure the user is authorized
         user_has_permission_or_403(user, finding, "view")
         # Quick perms check to determine if the user has access to add a note to the finding
-        user_has_permission_or_403(user, finding, "add")
+        user_has_permission_or_403(user, finding, "edit" if role(user) == "expert" else "add")
         # Set up the initial context
         context = self.get_initial_context(request, finding, user)
         # Determine the validity of the form

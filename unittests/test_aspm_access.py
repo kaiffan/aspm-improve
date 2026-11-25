@@ -8,17 +8,19 @@ from uuid import UUID
 import jwt
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 from dojo.aspm_access.backend import BACKEND
 from dojo.aspm_access.middleware import FLOW_KEY, SESSION_KEY
 from dojo.aspm_access.models import SsoIdentity, SsoProductGrant
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, ScanRun
-from dojo.models import Finding
+from dojo.models import Engagement, Finding, Test
 from dojo.scm.models import Commit, Repository
-from unittests.test_aspm_ingestion import IngestionFixture
+from unittests.test_aspm_ingestion import IngestionFixture, generic
 
 ISSUER = "https://idp.example.com/realms/qualification"
 GROUP_TEST = UUID("30000000-0000-4000-8000-000000000001")
@@ -171,7 +173,7 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         finding = reverse("finding-detail", args=(self.finding.pk,))
         self.assertEqual(user.patch(finding, {"false_p": True}, content_type="application/json").status_code, 403)
         self.assertEqual(user.post(reverse("aspm_create_report", args=(self.scan.commit_id,))).status_code, 403)
-        self.assertEqual(user.get(reverse("view_test", args=(self.scan.test_id,))).status_code, 403)
+        self.assertEqual(user.get(reverse("view_test", args=(self.scan.test_id,))).status_code, 200)
         self.assertEqual(expert.get(reverse("product-detail", args=(self.hidden.pk,))).status_code, 200)
         self.assertEqual(expert.patch(finding, {"title": "New title"}, content_type="application/json").status_code, 403)
         response = expert.patch(finding, {"false_p": True}, content_type="application/json")
@@ -184,6 +186,89 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         self.finding.refresh_from_db()
         self.assertTrue(self.finding.false_p)
         self.assertFalse(self.scan.observations.get().snapshot["false_p"])
+
+    def test_reader_classic_scope_links_and_reports(self):
+        reader, _ = self._session("user", (GROUP_TEST,))
+        date = timezone.localdate()
+        hidden = Engagement.objects.create(product=self.hidden, name="Hidden sibling assessment", target_start=date, target_end=date)
+        hidden_test = Test.objects.create(
+            engagement=hidden, test_type=self.scan.test.test_type, target_start=timezone.now(), target_end=timezone.now(),
+        )
+        landing = reader.get(reverse("aspm_classic"))
+        self.assertContains(landing, self.product.name)
+        self.assertNotContains(landing, self.hidden.name)
+        for path in (reverse("product"), "/product"):
+            listing = reader.get(path, follow=True)
+            self.assertContains(listing, self.product.name)
+            self.assertNotContains(listing, self.hidden.name)
+        types = reader.get(reverse("view_product_type", args=(self.product.prod_type_id,)))
+        self.assertContains(types, self.product.name)
+        self.assertNotContains(types, self.hidden.name)
+        classic = reader.get(reverse("view_test", args=(self.scan.test_id,)))
+        self.assertContains(classic, "View originating ScanRun and commit")
+        evidence = reader.get(reverse("aspm_commit_evidence", args=(self.scan.commit_id,)), {"tab": "originals", "run": str(self.scan.pk)})
+        self.assertContains(evidence, reverse("view_test", args=(self.scan.test_id,)))
+        self.assertContains(evidence, reverse("view_engagement", args=(self.scan.test.engagement_id,)))
+        self.assertEqual(reader.get(reverse("view_test", args=(hidden_test.pk,))).status_code, 404)
+        for url in (reverse("test-detail", args=(hidden_test.pk,)), reverse("api_v3:tests_detail", args=(hidden_test.pk,))):
+            self.assertEqual(reader.get(url).status_code, 404)
+        self.assertEqual(reader.get(reverse("test_report", args=(hidden_test.pk,))).status_code, 403)
+        report = reader.get(reverse("test_report", args=(self.scan.test_id,)), {"_generate": "1", "report_type": "HTML"})
+        self.assertContains(report, self.finding.title)
+        self.assertEqual(reader.post(reverse("test-detail", args=(self.scan.test_id,))).status_code, 403)
+        self.assertEqual(reader.post(reverse("importscan-list"), {}).status_code, 403)
+
+    def test_expert_classic_import_reimport_and_manual_finding_share_product(self):
+        expert, _ = self._session("expert")
+        date = timezone.localdate().isoformat()
+        result = expert.post(reverse("engagement-list"), {
+            "name": "Pentest without Git", "product": self.product.pk, "target_start": date, "target_end": date,
+        }, content_type="application/json")
+        self.assertEqual(result.status_code, 201, result.content[:1200])
+        engagement = result.json()["id"]
+        payload = {"mode": "import", "scan_type": self.scan.scanner, "engagement": engagement}
+        first = expert.post(reverse("api_v3:import"), {**payload, "file": SimpleUploadedFile("scan.json", generic("Classic finding"))})
+        self.assertEqual(first.status_code, 200, first.content[:1200])
+        test = Test.objects.get(engagement_id=engagement)
+        second = expert.post(reverse("reimportscan-list"), {
+            "test": test.pk, "scan_type": self.scan.scanner, "deduplication_execution_mode": "sync",
+            "file": SimpleUploadedFile("scan.json", generic("Classic finding")),
+        })
+        self.assertEqual(second.status_code, 201, second.content[:1200])
+        manual = expert.post(reverse("finding-list"), {
+            "test": test.pk, "title": "Manual assessment", "severity": "Low", "description": "Manual test fixture",
+            "numerical_severity": "S3", "found_by": [], "active": True, "verified": False,
+        }, content_type="application/json")
+        self.assertEqual(manual.status_code, 201, manual.content[:1200])
+        self.assertIsNone(test.engagement.commit_id)
+        self.assertFalse(ScanRun.objects.filter(test=test).exists())
+        self.assertEqual(test.engagement.product_id, self.scan.product_id)
+        self.assertNotContains(expert.get(reverse("view_test", args=(test.pk,))), "View originating ScanRun and commit")
+        self.assertEqual(expert.get(reverse("aspm_classic")).status_code, 200)
+        self.assertEqual(expert.get(reverse("product_type")).status_code, 200)
+        self.assertEqual(expert.get(reverse("system_settings")).status_code, 403)
+
+    def test_secops_classic_creation_uses_existing_endpoints(self):
+        secops, _ = self._session("secops")
+        options = {"content_type": "application/json"}
+        product_type = secops.post(reverse("product_type-list"), {"name": "Risk assessments"}, **options)
+        self.assertEqual(product_type.status_code, 201, product_type.content[:1200])
+        product = secops.post(reverse("product-list"), {
+            "name": "Infrastructure", "description": "Legacy team fixture", "prod_type": product_type.json()["id"],
+        }, **options)
+        self.assertEqual(product.status_code, 201, product.content[:1200])
+        date = timezone.localdate().isoformat()
+        engagement = secops.post(reverse("engagement-list"), {
+            "name": "Network review", "product": product.json()["id"], "target_start": date, "target_end": date,
+        }, **options)
+        self.assertEqual(engagement.status_code, 201, engagement.content[:1200])
+        moment = timezone.now().isoformat()
+        test = secops.post(reverse("test-list"), {
+            "engagement": engagement.json()["id"], "test_type": self.scan.test.test_type_id,
+            "target_start": moment, "target_end": moment,
+        }, **options)
+        self.assertEqual(test.status_code, 201, test.content[:1200])
+        self.assertEqual(secops.get(reverse("view_test", args=(test.json()["id"],))).status_code, 200)
 
     def test_expiry_deactivation_and_existing_managed_tokens(self):
         client, _ = self._session("secops", checked=int(time.time()) - 300)

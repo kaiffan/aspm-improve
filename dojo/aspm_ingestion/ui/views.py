@@ -1,6 +1,7 @@
 import hashlib
 import json
 from urllib.parse import urlencode
+from uuid import UUID
 
 from django.core.paginator import Paginator
 from django.db.models import Count, Max
@@ -79,8 +80,19 @@ def commit_evidence(request, commit_id, *, section=None):
             params["after"] = rows[49].pk
             next_url = "?" + params.urlencode()
         rows = rows[:50]
+    scans = None
+    if section == "originals":
+        queryset = commit.scan_runs.select_related("test__engagement").order_by("-created_at", "-pk")
+        if run := request.GET.get("run"):
+            try:
+                run_id = UUID(run)
+            except ValueError:
+                return HttpResponseBadRequest("Invalid ScanRun identifier.")
+            get_object_or_404(queryset.only("id", "test_id", "test__engagement_id"), pk=run_id)
+            queryset = queryset.filter(pk=run_id)
+        scans = Paginator(queryset, 25).get_page(request.GET.get("page"))
     nav_params = request.GET.copy()
-    for key in ("tab", "after", "page"):
+    for key in ("tab", "after", "page", "run"):
         nav_params.pop(key, None)
     scan_statuses = scan_state(commit)
     return render(request, "dojo/aspm/commit_evidence.html", {
@@ -94,7 +106,7 @@ def commit_evidence(request, commit_id, *, section=None):
         "can_export": section == "reports" and can_generate_report(request.user, commit.repository.product_id),
         "commit": commit, "section": section, "base_commit": base, "category": category,
         "coverage_warning": coverage_warning, "base_coverage": base_coverage, "target_coverage": target_coverage,
-        "scans": Paginator(commit.scan_runs.order_by("-created_at"), 25).get_page(request.GET.get("page")) if section == "originals" else None,
+        "scans": scans,
         "reports": Paginator(commit.aspm_reports.order_by("-version"), 25).get_page(request.GET.get("page")) if section == "reports" else None,
         "observations": rows, "next_url": next_url,
         "scan_statuses": scan_statuses,

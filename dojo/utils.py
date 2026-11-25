@@ -2534,4 +2534,5 @@ def redirect_view(to: str):
     """"View" that redirects to the view named in 'to.'"""
     def _redirect(request, **kwargs):
         return django_redirect(to, **kwargs)
+    _redirect.redirect_view_name = to
     return _redirect

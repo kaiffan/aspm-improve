@@ -190,7 +190,7 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
         self.assertEqual(self.upload().status_code, 401)
         self.assertEqual(ScanRun.objects.count(), 1)
 
-    def test_user_session_cannot_submit_but_can_read_authorized_project(self):
+    def test_native_principal_uses_classic_import_without_aspm_submit_scope(self):
         scan = self.accepted()
         user = get_user_model().objects.create_user(username="human", password=None)
         user.set_password("test-human-password")
@@ -199,13 +199,12 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
         self.client.credentials()
         self.client.force_authenticate(user=user)
         self.assertEqual(self.upload(key="human").status_code, 403)
-        self.assertEqual(self.client.post(reverse("importscan-list"), {}, format="multipart").status_code, 403)
-        user.set_unusable_password()  # SSO humans also have unusable passwords; that is not machine enrollment.
-        user.save()
         legacy_payload = {"scan_type": "Generic Findings Import", "product_name": self.product.name,
-                          "engagement_name": "SSO upload must be denied", "auto_create_context": True,
+                          "engagement_name": "Legacy native integration", "auto_create_context": True,
                           "file": SimpleUploadedFile("scan.json", generic()), "deduplication_execution_mode": "sync"}
-        self.assertEqual(self.client.post(reverse("importscan-list"), legacy_payload, format="multipart").status_code, 403)
+        response = self.client.post(reverse("importscan-list"), legacy_payload, format="multipart")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(ScanRun.objects.count(), 1)
         self.assertEqual(self.client.get(reverse("aspm_v1:scan-detail", args=[scan.pk])).status_code, 200)
         self.product.authorized_users.remove(user.pk)
         self.assertEqual(self.client.get(reverse("aspm_v1:scan-detail", args=[scan.pk])).status_code, 404)

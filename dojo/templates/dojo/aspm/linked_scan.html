@@ -1,0 +1,5 @@
+{% load i18n %}
+<p class="aspm-related-object">
+    <a href="{% url 'aspm_commit_evidence' linked_scan.commit_id %}?tab=originals&amp;run={{ linked_scan.pk }}#scan-{{ linked_scan.pk }}">{% trans "View originating ScanRun and commit" %}</a>
+    <span>{{ linked_scan.scanner }} · {{ linked_scan.status }}</span>
+</p>

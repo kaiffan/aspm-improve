@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load authorization_tags i18n %}
+{% block content %}
+    <header class="aspm-page-heading">
+        <h1>{% trans "Classic Workspace" %}</h1>
+        <div class="aspm-classic-actions">
+            <a class="btn btn-secondary" href="{% url 'product_type' %}">{% trans "Product Types" %}</a>
+            {% if aspm_role != "user" %}
+                <a class="btn btn-secondary" href="{% url 'product' %}">{% trans "Products" %}</a>
+                <a class="btn btn-secondary" href="{% url 'all_engagements' %}">{% trans "Engagements" %}</a>
+                <a class="btn btn-secondary" href="{% url 'all_findings' %}">{% trans "Findings" %}</a>
+                <a class="btn btn-secondary" href="{% url 'report_builder' %}">{% trans "Report Builder" %}</a>
+            {% endif %}
+        </div>
+    </header>
+    <form class="filters aspm-workspace-form" method="get">
+        <label for="classic-project-search">{% trans "Product name" %}</label>
+        <input id="classic-project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
+        <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
+    </form>
+    <section class="panel panel-default">
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th scope="col">{% trans "Product" %}</th><th scope="col">{% trans "Product Type" %}</th><th scope="col">{% trans "Related pages" %}</th></tr></thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <th scope="row"><a href="{% url 'view_product' product.pk %}">{{ product.name }}</a></th>
+                            <td>{% if aspm_role == "user" or product.prod_type|has_object_permission:"view" %}<a href="{% url 'view_product_type' product.prod_type_id %}">{{ product.prod_type }}</a>{% else %}{{ product.prod_type }}{% endif %}</td>
+                            <td><a href="{% url 'view_engagements' product.pk %}">{% trans "Engagements" %}</a> · <a href="{% url 'view_product_metrics' product.pk %}">{% trans "Metrics" %}</a> · <a href="{% url 'product_report' product.pk %}">{% trans "Report" %}</a></td>
+                        </tr>
+                    {% empty %}<tr><td colspan="3">{% trans "No products match this view." %}</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "dojo/paging_snippet.html" with page=products %}
+    </section>
+{% endblock %}

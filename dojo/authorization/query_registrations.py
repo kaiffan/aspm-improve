@@ -16,7 +16,7 @@ from crum import get_current_user
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import F, Q
 
-from dojo.aspm_access.permissions import granted_product_ids, role
+from dojo.aspm_access.permissions import granted_product_ids, granted_product_types, role
 from dojo.authorization.query_filters import register_auth_filter
 from dojo.authorization.roles_permissions import Action, permission_to_action
 from dojo.location.models import Location, LocationFindingReference, LocationProductReference
@@ -140,7 +140,9 @@ def _filter_by_authorized_products(queryset, product_path, permission, user=None
     if access == "secops":
         return queryset
     if access == "expert":
-        return queryset if action == Action.View else queryset.none()
+        if action == Action.View or (action in {Action.Add, Action.Edit, Action.Import} and queryset.model in {Test, Engagement}):
+            return queryset
+        return queryset.none()
     if access == "user":
         return queryset.filter(**{f"{product_path}__id__in": granted_product_ids(user)}) if action == Action.View else queryset.none()
     if _is_unrestricted(user, action):
@@ -186,6 +188,8 @@ def _get_authorized_product_types(permission, user=None):
     access = role(user)
     if access == "secops" or (access == "expert" and permission_to_action(permission) == Action.View):
         return Product_Type.objects.all().order_by("name")
+    if access == "user" and permission_to_action(permission) == Action.View:
+        return Product_Type.objects.filter(pk__in=granted_product_types(user)).order_by("name")
     if access is not None:
         return Product_Type.objects.none()
     if _is_unrestricted(user, permission_to_action(permission)):
@@ -439,6 +443,8 @@ def _get_authorized_findings(permission, queryset=None, user=None):
     access = role(user)
     if access == "secops" or (access == "expert" and action in {Action.View, Action.Edit}):
         return qs
+    if access == "user" and action == Action.View:
+        return qs.filter(test__engagement__product_id__in=granted_product_ids(user))
     if access is not None:
         return qs.none()
     if _is_unrestricted(user, action):

@@ -20,7 +20,7 @@ module's symbols at startup so the same code paths route through Pro.
 from django.core.exceptions import PermissionDenied
 from django.db.models import Model
 
-from dojo.aspm_access.permissions import granted_product_ids, has_capability, role
+from dojo.aspm_access.permissions import granted_product_ids, granted_product_types, has_capability, role
 from dojo.authorization.models import Dojo_Group_Member, Product_Member, Product_Type_Member
 from dojo.authorization.query_registrations import (
     authorized_product_id_set,
@@ -111,9 +111,16 @@ def user_has_permission(user: Dojo_User, obj: Model, permission) -> bool:
         if access == "secops":
             return True
         if access == "expert":
-            return action == Action.View or (action == Action.Edit and isinstance(obj, Finding))
+            return (
+                action == Action.View
+                or (action == Action.Add and isinstance(obj, (Product, Engagement, Test)))
+                or (action == Action.Edit and isinstance(obj, (Engagement, Test, Finding)))
+                or (action == Action.Import and isinstance(obj, (Engagement, Test)))
+            )
         if action != Action.View:
             return False
+        if isinstance(obj, Product_Type):
+            return granted_product_types(user).filter(prod_type_id=obj.pk).exists()
         if isinstance(obj, Engagement):
             obj = obj.product
         elif isinstance(obj, Test):

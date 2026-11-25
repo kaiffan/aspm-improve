@@ -42,6 +42,28 @@ def projects(request):
 
 
 @require_GET
+def classic(request):
+    query = request.GET.get("q", "").strip()[:150]
+    products = get_authorized_products("view", user=request.user).filter(
+        name__icontains=query,
+    ).select_related("prod_type").order_by("name", "pk")
+    return render(request, "dojo/aspm/classic.html", {"products": _page(request, products), "query": query})
+
+
+def test_scan(test):
+    if not settings.ASPM_SCM_HIERARCHY:
+        return None
+    return ScanRun.objects.filter(test=test, product_id=test.engagement.product_id).only("pk", "commit_id", "scanner", "status").first()
+
+
+def classic_reader(request, *, children=None, **context):
+    return render(request, "dojo/aspm/classic_reader.html", {
+        "children": _page(request, children) if children is not None else None,
+        **context,
+    })
+
+
+@require_GET
 def reports(request):
     query = request.GET.get("q", "").strip()[:150]
     products = get_authorized_products("view", user=request.user).filter(name__icontains=query)

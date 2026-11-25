@@ -19,7 +19,7 @@
                             <tr>
                                 <th scope="row"><a href="{% url 'scm_repository_list' project.pk %}">{{ project.name }}</a>{% if aspm_can_manage_engagements %} <small>#{{ project.pk }}</small>{% endif %}</th>
                                 <td>
-                                    <a href="{% url 'scm_repository_list' project.pk %}">{% trans "Repositories" %}</a>
+                                    <a href="{% url 'scm_repository_list' project.pk %}">{% trans "Repositories" %}</a> · <a href="{% url 'view_product' project.pk %}">{% trans "Classic Product" %}</a>
                                     {% if aspm_can_manage_engagements %} · <a href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}
                                 </td>
                             </tr>

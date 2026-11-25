@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-25",
+  "context": "orbstack",
+  "namespace": "aspm-lab-orbstack",
+  "disk_pressure": false,
+  "chart": "0.1.0-rc.4",
+  "chart_package_sha256": "f1d40a53b096f7781385f7f9422d3b9636df0c8344cddf064df664046c73b571",
+  "helm_version": "4.2.0",
+  "application_source": "c5ed33b99c9a33afa1dcc3c220956d9424679180",
+  "image_platform": "linux/arm64",
+  "django_image_id": "sha256:dd437cd9fc4faddded4cbc879d89550390f4615fa39224f6ca546153b402cc1f",
+  "nginx_image_id": "sha256:506e2cdc39dd092b2646445873e20800e0e50918d61d5826ae326c6acce2fa3e",
+  "chart_tests_passed": 14,
+  "helm_history": [
+    {
+      "revision": 1,
+      "updated": "2026-11-25T21:41:34.517011+03:00",
+      "status": "superseded",
+      "chart": "aspm-0.1.0-rc.3",
+      "app_version": "1.0.1-enterprise-rc",
+      "description": "Release \"aspm\" failed: failed pre-install: resource Job/aspm-lab-orbstack/aspm-aspm-migrate not ready. status: Failed, message: Job Failed. failed: 1/1"
+    },
+    {
+      "revision": 2,
+      "updated": "2026-11-25T21:44:13.819+03:00",
+      "status": "superseded",
+      "chart": "aspm-0.1.0-rc.4",
+      "app_version": "1.0.1-enterprise-rc",
+      "description": "Upgrade complete"
+    },
+    {
+      "revision": 3,
+      "updated": "2026-11-25T21:54:07.48284+03:00",
+      "status": "superseded",
+      "chart": "aspm-0.1.0-rc.4",
+      "app_version": "1.0.1-enterprise-rc",
+      "description": "Upgrade complete"
+    },
+    {
+      "revision": 4,
+      "updated": "2026-11-25T21:54:34.254233+03:00",
+      "status": "deployed",
+      "chart": "aspm-0.1.0-rc.4",
+      "app_version": "1.0.1-enterprise-rc",
+      "description": "Rollback to 2"
+    }
+  ],
+  "dual_workspace_smoke": {
+    "status": "PASS",
+    "classic_workspace": 200,
+    "devsecops_workspace": 200,
+    "legacy_import": 201,
+    "legacy_reimport": 201,
+    "classic_report": 200,
+    "upload_form": 404,
+    "commit_scan": "COMPLETED",
+    "same_product": true,
+    "zero_finalize": true,
+    "bidirectional_links": true,
+    "classic_test": 2,
+    "git_test": 3,
+    "commit": 1,
+    "scan_run": "5dc1c298-ee78-4cee-a067-035d8ee06a5d"
+  },
+  "webhook_smoke": {
+    "status": "PASS",
+    "origin": "http://127.0.0.1:8080",
+    "seconds": 166.94,
+    "admin": 200,
+    "project_viewer": 403,
+    "private_ip_rejected_on_create": true,
+    "one_time_secret_and_rotation": true,
+    "real_scan_completed": true,
+    "matching_severity_delivery_attempted": true,
+    "nonmatching_severity_filtered": true,
+    "dns_failure_attempts": 2,
+    "attempts_after_replay": 4,
+    "same_delivery_on_replay": true,
+    "manual_test_event": true,
+    "disabled_test_rejected": true,
+    "archived_history_preserved": true,
+    "delivery_outcome": "dns_failed on a reserved .invalid hostname; no external receiver contacted"
+  },
+  "rollout_fingerprint_sha256": "12bb103666449053c86691f37fbea8664dec2956b49cf5b5cac1babd237f514f",
+  "fingerprint_equal_after_upgrade_and_rollback": true,
+  "login_via_port_forward": 200,
+  "served_css_matches_source": true,
+  "helm_http_hook": {
+    "status": "FAIL",
+    "error": "Connection refused from test pod to ClusterIP"
+  }
+}

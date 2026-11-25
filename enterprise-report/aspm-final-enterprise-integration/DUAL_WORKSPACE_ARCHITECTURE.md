@@ -15,4 +15,4 @@ Classic и DevSecOps работают в одном приложении, исп
 
 Один Helm release обслуживает оба пространства через один web, worker, beat и migration job. Он использует общие PostgreSQL, Keycloak, Celery, Redis/Valkey и приватное хранилище. Существующие webhooks, правила мониторинга и API остаются частью той же установки. Ссылки между пространствами используют маршруты Django, поэтому оба доступны через существующий ingress.
 
-Локальная проверка Kubernetes выполнялась в режиме server-side dry-run. На единственном узле лаборатории наблюдались `DiskPressure=True` и `node.kubernetes.io/disk-pressure:NoSchedule`. Для живой проверки релиза требуются пригодные для планирования узлы и staging. [Результаты регрессии](CLASSIC_AND_DEVSECOPS_REGRESSION.md)
+После снятия `DiskPressure` оба пространства проверены в живом релизе локального Kubernetes. В отчёте по Helm есть результаты upgrade, rollback и отдельный статус сетевого HTTP-hook. [Проверка развёртывания](HELM_INTEGRATION.md) · [Матрица регрессии](CLASSIC_AND_DEVSECOPS_REGRESSION.md)

@@ -11,7 +11,7 @@
 | Corporate UI | Responsive Chromium smoke. Formal WCAG 2.2 AA audit remains open. |
 | Full Django, JS and schema regression | PASS on the candidate. 8,350 Django passed, 553 inherited skips. 17 JavaScript passed. |
 | Helm schema, rendering and Kubernetes API dry run | PASS locally |
-| Kubernetes staging install, upgrade and rollback | NOT TESTED |
+| Kubernetes staging install, upgrade and rollback | Passed on isolated OrbStack with the same application image and schema. The HTTP hook is blocked by an in-cluster connection refusal. Target staging with TLS and corporate Keycloak remains unverified. |
 | Core9 and Acceptance A/B | NOT TESTED |
 | Native Linux/AMD64 and Ryzen VM | NOT TESTED |
 | Backup and restore | PASS locally. Target storage restore remains open. |

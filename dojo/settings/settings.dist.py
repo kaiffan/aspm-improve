@@ -995,6 +995,7 @@ INSTALLED_APPS = (
 # MIDDLEWARE
 # ------------------------------------------------------------------------------
 DJANGO_MIDDLEWARE_CLASSES = [
+    "dojo.operations.middleware.OperationsMiddleware",
     "dojo.aspm_ingestion.middleware.ApiOnlyScansMiddleware",
     "django.middleware.common.CommonMiddleware",
     "dojo.middleware.APITrailingSlashMiddleware",
@@ -2447,3 +2448,12 @@ if DEBUG:
 
 # Persistent transactional outbox recovery; tasks use the existing default worker queue.
 CELERY_BEAT_SCHEDULE["aspm-ingestion-outbox"] = {"task": "dojo.aspm_ingestion.dispatch_jobs", "schedule": 30.0}
+
+# ASPM operational settings. PostgreSQL options are structured and credentials remain in Secrets.
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DD_DATABASE_CONN_MAX_AGE", default=0)
+DATABASES["default"].setdefault("OPTIONS", {}).update(json.loads(env("DD_DATABASE_OPTIONS", default="{}")))
+ASPM_STORAGE_MIN_FREE_BYTES = env.int("DD_ASPM_STORAGE_MIN_FREE_BYTES", default=1073741824)
+ASPM_MAX_REPORT_BYTES = env.int("DD_ASPM_MAX_REPORT_BYTES", default=536870912)
+ASPM_WEBHOOKS_ENABLED = env.bool("DD_ASPM_WEBHOOKS_ENABLED", default=False)
+ASPM_WEBHOOK_MAX_PENDING = env.int("DD_ASPM_WEBHOOK_MAX_PENDING", default=10000)
+ASPM_WEBHOOK_MAX_PAYLOAD_BYTES = env.int("DD_ASPM_WEBHOOK_MAX_PAYLOAD_BYTES", default=65536)

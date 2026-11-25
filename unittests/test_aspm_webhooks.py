@@ -13,7 +13,7 @@ from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.http import HttpResponse
-from django.test import Client, RequestFactory, SimpleTestCase, TransactionTestCase, override_settings
+from django.test import Client, RequestFactory, SimpleTestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
@@ -33,6 +33,7 @@ from dojo.webhooks.tasks import deliver_webhook, dispatch_webhooks
 from dojo.webhooks.transport import DeliveryError, resolve_public, send, signature
 from dojo.webhooks.validation import matches, validate_endpoint, validate_rules
 from unittests.test_aspm_ingestion import IngestionFixture
+from unittests.test_dedupe_delete_commit_race import _CommittedFindingsMixin
 
 
 @override_settings(ASPM_WEBHOOKS_ENABLED=True)
@@ -337,15 +338,23 @@ class WebhookTests(IngestionFixture, APITestCase):
 
 
 @override_settings(ASPM_WEBHOOKS_ENABLED=True)
-class WebhookConcurrentFindingTests(IngestionFixture, TransactionTestCase):
+class WebhookConcurrentFindingTests(_CommittedFindingsMixin, SimpleTestCase):
     def setUp(self):
-        self.setup_ingestion()
-        self.admin = get_user_model().objects.create_user(username="race-hook-admin", is_superuser=True, password=None)
+        super().setUp()
+        self.admin = self.user
+        self.admin.is_superuser = True
+        self.admin.save(update_fields=["is_superuser"])
+        self.addCleanup(self.remove_webhook_fixtures)
         save_subscription(actor=self.admin, values={"product": self.product, "name": "Race feed", "endpoint": "https://consumer.example.com/hooks", "enabled": True, "events": ["finding.updated", "finding.severity_changed", "finding.false_positive_changed"], "filters": {}, "timeout_seconds": 5, "max_attempts": 3, "rate_per_minute": 60})
 
+    def remove_webhook_fixtures(self):
+        WebhookSubscription.objects.filter(product=self.product).update(enabled=False)
+        WebhookEvent.objects.filter(product=self.product).delete()
+        WebhookAudit.objects.filter(subscription__product=self.product).delete()
+        WebhookSubscription.objects.filter(product=self.product).delete()
+
     def test_concurrent_independent_updates_capture_actual_changes(self):
-        scan = self.complete(self.accepted())
-        finding = Finding.objects.get(test_id=scan.test_id)
+        finding = self._create_findings("Concurrent webhook Finding")[0]
         barrier = Barrier(2)
 
         def update(values):

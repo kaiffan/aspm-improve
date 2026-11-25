@@ -19,7 +19,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -40,6 +40,7 @@ from dojo.api_v2.views import (
     get_request_boolean,
     report_generate_response,
 )
+from dojo.aspm_access.permissions import TRIAGE_FIELDS, role
 from dojo.authorization import api_permissions as permissions
 from dojo.db_utils import is_foreign_key_conflict
 from dojo.filters import order_with_pk_tiebreak
@@ -178,6 +179,9 @@ class FindingViewSet(
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
+        if role(request.user) == "expert" and (not partial or not set(request.data) <= TRIAGE_FIELDS):
+            msg = "Expert access permits Finding status updates only."
+            raise PermissionDenied(msg)
         # Authorize before locking, then reload and reauthorize current state.
         # Only validation and database mutation need the lock. External effects
         # and response serialization run after the transaction has released it.

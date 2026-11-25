@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <header class="aspm-page-heading">
+        <h1>{% if aspm_role == "user" %}{% trans "My projects" %}{% else %}{% trans "Projects" %}{% endif %}</h1>
+    </header>
+    <form class="filters aspm-workspace-form" method="get">
+        <label for="project-search">{% trans "Project name" %}</label>
+        <input id="project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
+        <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
+    </form>
+    <section class="panel panel-default">
+        {% if projects %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Actions" %}</th></tr></thead>
+                    <tbody>
+                        {% for project in projects %}
+                            <tr>
+                                <th scope="row"><a href="{% url 'scm_repository_list' project.pk %}">{{ project.name }}</a>{% if aspm_can_manage_engagements %} <small>#{{ project.pk }}</small>{% endif %}</th>
+                                <td>
+                                    <a href="{% url 'scm_repository_list' project.pk %}">{% trans "Repositories" %}</a>
+                                    {% if aspm_can_manage_engagements %} · <a href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include "dojo/paging_snippet.html" with page=projects %}
+        {% else %}
+            <p class="panel-body">{% if query %}{% trans "No projects match your search." %}{% else %}{% trans "No projects are available to your account." %}{% endif %}</p>
+        {% endif %}
+    </section>
+{% endblock %}

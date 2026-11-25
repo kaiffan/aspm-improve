@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <header class="aspm-page-heading"><h1>{% trans "Profile" %}</h1></header>
+    <dl class="panel panel-body">
+        <dt>{% trans "Account" %}</dt><dd>{{ request.user.username }}</dd>
+        <dt>{% trans "Access role" %}</dt><dd>{{ access_role|upper }}</dd>
+        <dt>{% trans "Sign-in provider" %}</dt><dd>Keycloak</dd>
+    </dl>
+{% endblock %}

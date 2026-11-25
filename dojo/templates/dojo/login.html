@@ -20,6 +20,9 @@
                 </div>
             {% endif %}
 
+            {% if aspm_oidc_enabled %}
+                <a class="btn btn-primary login-btn" href="{% url 'aspm_oidc_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">{% trans "Sign in with Keycloak" %}</a>
+            {% endif %}
             <form method="POST" autocomplete="off"> {% csrf_token %}
                 {% include "dojo/form_fields.html" with form=form %}
 

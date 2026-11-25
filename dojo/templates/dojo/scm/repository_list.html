@@ -2,8 +2,9 @@
 {% load i18n %}
 {% block content %}
     <section class="panel panel-default aspm-evidence">
-        <div class="panel-heading"><h2>{% trans "Repositories" %}</h2></div>
+        <div class="panel-heading"><h2>{{ project.name }} · {% trans "Repositories" %}</h2></div>
         <div class="panel-body">
+            {% if aspm_can_manage_engagements %}<a class="btn btn-secondary" href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}
             {% if repositories %}
                 <div class="table-responsive">
                     <table class="table table-condensed">

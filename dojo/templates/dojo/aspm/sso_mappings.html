@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <header class="aspm-page-heading"><h1>{% trans "SSO access mappings" %}</h1></header>
+    <section class="panel panel-body">
+        <h2>{% trans "Grant project read access" %}</h2>
+        <p>{% trans "Use the stable entitlement UUID assigned to the group in Keycloak." %}</p>
+        <form method="post" class="aspm-workspace-form">{% csrf_token %}{{ form.as_p }}
+            <button type="submit" class="btn btn-primary">{% trans "Add mapping" %}</button>
+        </form>
+    </section>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th scope="col">{% trans "Entitlement ID" %}</th><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Access" %}</th></tr></thead>
+            <tbody>
+                {% for grant in grants %}
+                    <tr>
+                        <td><code>{{ grant.group_id }}</code></td><td>{{ grant.product.name }}</td>
+                        <td>
+                            <form method="post">{% csrf_token %}
+                                <input type="hidden" name="action" value="revoke">
+                                <button class="btn btn-secondary" name="grant" value="{{ grant.pk }}">{% trans "Revoke read access" %}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="3">{% trans "No project mappings configured." %}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "dojo/paging_snippet.html" with page=grants %}
+{% endblock %}

@@ -4,6 +4,7 @@
     <section class="panel panel-default aspm-evidence">
         <div class="panel-heading"><h2>{% trans "Repository" %}</h2></div>
         <div class="panel-body">
+            {% if aspm_can_manage_engagements %}<a class="btn btn-secondary" href="{% url 'aspm_engagement_policy' repository.product_id %}?repository={{ repository.pk }}">{% trans "Repository Engagement policy" %}</a>{% endif %}
             <dl>
                 <dt>{% trans "URL" %}</dt><dd><code>{{ repository.url }}</code></dd>
                 <dt>{% trans "Provider" %}</dt><dd>{{ repository.get_provider_display }}</dd>

@@ -50,6 +50,7 @@ from dojo.api_v3.filtering import (
 from dojo.api_v3.include import apply_includes
 from dojo.api_v3.pagination import list_envelope, paginate
 from dojo.api_v3.writes import bind_payload, split_extras
+from dojo.aspm_access.permissions import TRIAGE_FIELDS, role
 from dojo.authorization.authorization import user_has_permission
 from dojo.authorization.roles_permissions import Permissions
 from dojo.finding.api_v3.schemas import (
@@ -269,7 +270,10 @@ def build_findings_router(
         if not user_has_permission(request.user, finding, Permissions.Finding_Edit):
             raise PermissionDenied  # 403: visible but not editable
 
-        changes, extras = split_extras(payload.dict(exclude_unset=True), FindingUpdate)
+        supplied = payload.dict(exclude_unset=True)
+        if role(request.user) == "expert" and not set(supplied) <= TRIAGE_FIELDS:
+            raise PermissionDenied
+        changes, extras = split_extras(supplied, FindingUpdate)
         push_to_jira = changes.pop("push_to_jira", False)
         vulnerability_ids = changes.pop("vulnerability_ids", None)
         cwes = changes.pop("cwes", None)

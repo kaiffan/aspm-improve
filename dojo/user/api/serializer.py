@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 
+from dojo.aspm_access.backend import managed_account
 from dojo.models import Dojo_User, UserContactInfo
 from dojo.user.authentication import token_expires_at
 from dojo.user.utils import get_configuration_permissions_codenames
@@ -283,6 +284,9 @@ class ForcedResetAuthTokenSerializer(AuthTokenSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        if managed_account(attrs["user"]):
+            msg = "This account signs in through Keycloak."
+            raise serializers.ValidationError(msg, code="authorization")
         if Dojo_User.force_password_reset(attrs["user"]):
             msg = "A password reset is required before this account can obtain an API token."
             raise serializers.ValidationError(msg, code="authorization")

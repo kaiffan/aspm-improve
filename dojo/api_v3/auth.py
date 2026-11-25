@@ -21,6 +21,7 @@ from django.conf import settings
 from ninja.security import APIKeyHeader
 from rest_framework.authtoken.models import Token
 
+from dojo.aspm_access.backend import managed_account
 from dojo.models import Dojo_User
 from dojo.user.authentication import token_is_expired
 
@@ -46,11 +47,11 @@ class TokenAuth(APIKeyHeader):
         if len(parts) != 2 or parts[0].lower() != _TOKEN_PREFIX:
             return None
         try:
-            token = Token.objects.select_related("user", "user__usercontactinfo").get(key=parts[1])
+            token = Token.objects.select_related("user", "user__usercontactinfo", "user__aspm_sso_identity").get(key=parts[1])
         except Token.DoesNotExist:
             return None
         user = token.user
-        if not user.is_active or token_is_expired(token) or Dojo_User.force_password_reset(user):
+        if not user.is_active or managed_account(user) or token_is_expired(token) or Dojo_User.force_password_reset(user):
             return None
         # Set request.user so downstream authorized-queryset helpers (I8) resolve the right user
         # exactly as they do for session auth.

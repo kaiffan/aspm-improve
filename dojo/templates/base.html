@@ -167,6 +167,15 @@
             {% endblock %}
         </style>
         <link rel="stylesheet" href="{% static 'dojo/css/aspm.css' %}?v={% static_v 'dojo/css/aspm.css' %}">
+        {% if ASPM.primary or ASPM.secondary or ASPM.accent %}
+            <style>
+                :root {
+                    {% if ASPM.primary %}--aspm-lime: {{ ASPM.primary }}; --aspm-ink: {{ ASPM.on_primary }}; --color-dd-on-primary: {{ ASPM.on_primary }}; --color-dd-primary-800: {{ ASPM.primary }};{% endif %}
+                    {% if ASPM.secondary %}--aspm-violet: {{ ASPM.secondary }};{% endif %}
+                    {% if ASPM.accent %}--aspm-orange: {{ ASPM.accent }};{% endif %}
+                }
+            </style>
+        {% endif %}
     </head>
 
     <body x-data="{ mobileMenu: false }"
@@ -186,7 +195,7 @@
                 <!-- Logo -->
                 <div class="dd-logo-bar flex items-center h-[var(--dd-topbar-height)] px-4 flex-shrink-0">
                     {% block header_logo %}
-                        <a href="{% url 'home' %}" class="flex items-center min-w-0">
+                        <a href="{% if aspm_role %}{% url 'aspm_projects' %}{% else %}{% url 'home' %}{% endif %}" class="flex items-center min-w-0">
                             {% include "dojo/aspm/brand.html" %}
                         </a>
                     {% endblock %}
@@ -195,6 +204,9 @@
 
                 <!-- Nav items -->
                 <nav class="flex-1 py-3 space-y-0.5" aria-label="{% trans 'Main navigation' %}">
+                    {% if aspm_role %}
+                        {% include "dojo/aspm/role_navigation.html" %}
+                    {% else %}
                     {% block sidebar-items %}
                     <!-- Dashboard -->
                     <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-2 transition-colors">
@@ -427,6 +439,7 @@
                         <span class="truncate">{% trans "Support" %}</span>
                     </a>
                     {% endblock %}
+                    {% endif %}
                 </nav>
             </aside>
             <button id="aspm-nav-backdrop" class="aspm-nav-backdrop" type="button" aria-label="{% trans 'Close navigation' %}" hidden></button>
@@ -445,11 +458,11 @@
             <!-- ===== Topbar ===== -->
             <header id="aspm-topbar" class="sticky top-0 z-30 bg-frame border-b border-border h-[var(--dd-topbar-height)] flex items-center px-4 gap-4 flex-shrink-0">
                 <button id="aspm-nav-toggle" class="aspm-nav-toggle" type="button" aria-controls="dd-sidebar" aria-expanded="false" aria-label="{% trans 'Open navigation' %}"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
-                <a class="aspm-workspace-label" href="{% url 'dashboard' %}" aria-label="{{ ASPM.name }}">{{ ASPM.name }} <span class="aspm-workspace-meta">{% trans "Workspace" %}</span></a>
+                <a class="aspm-workspace-label" href="{% if aspm_role %}{% url 'aspm_projects' %}{% else %}{% url 'dashboard' %}{% endif %}" aria-label="{{ ASPM.name }}">{{ ASPM.name }} <span class="aspm-workspace-meta">{% trans "Workspace" %}</span></a>
                 <!-- Search -->
-                <form id="custom_search_form" method="get" action="{% url 'simple_search' %}" class="ms-auto w-full max-w-md">
+                <form id="custom_search_form" method="get" action="{% if aspm_role %}{% url 'aspm_projects' %}{% else %}{% url 'simple_search' %}{% endif %}" class="ms-auto w-full max-w-md">
                     <div class="flex">
-                        <input id="simple_search" type="text" name="query" value="{{ clean_query }}"
+                        <input id="simple_search" type="text" name="{% if aspm_role %}q{% else %}query{% endif %}" value="{{ clean_query }}"
                                class="flex-1 rounded-s-md border border-e-0 border-gray-300 px-3 py-1.5 text-sm bg-white focus:border-dd-interactive-700 focus:ring-dd-interactive-700"
                                placeholder="{% trans "Search" %}..." aria-label="{% trans 'Search' %}">
                         <button id="simple_search_submit" type="submit" class="btn btn-primary rounded-s-none" aria-label="{% trans 'Search' %}">
@@ -461,7 +474,7 @@
                 <div class="flex items-center gap-2">
                     {% include "dojo/aspm/theme_switcher.html" %}
                     <!-- Alerts dropdown -->
-                    {% if not 'DISABLE_ALERT_COUNTER'|setting_enabled %}
+                    {% if not aspm_role and not 'DISABLE_ALERT_COUNTER'|setting_enabled %}
                     <div x-data="{ alertsOpen: false }" @keydown.escape.window="alertsOpen = false" class="relative">
                         <button @click="alertsOpen = !alertsOpen; if(alertsOpen) htmx.trigger('#alerts-dropdown', 'loadAlerts')"
                                 :aria-expanded="alertsOpen" aria-controls="alerts-dropdown"
@@ -508,7 +521,7 @@
                                     <a href="{% url 'view_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fa-solid fa-user fa-fw"></i> {{ request.user.username }}
                                     </a>
-                                    {% if API_TOKENS_ENABLED %}
+                                    {% if API_TOKENS_ENABLED and not aspm_role %}
                                         <a href="{% url 'api_v2_key' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                             <i class="fa-solid fa-key fa-fw"></i> {% trans "API v2 Key" %}
                                         </a>
@@ -532,9 +545,15 @@
                             {% endblock %}
                             {% if request.user.is_authenticated %}
                                 <div class="border-t border-gray-200 my-1"></div>
+                                {% if aspm_role %}
+                                    <form action="{% url 'aspm_oidc_logout' %}" method="post">{% csrf_token %}
+                                        <button class="btn btn-secondary w-full" type="submit">{% trans "Logout" %}</button>
+                                    </form>
+                                {% else %}
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fa-solid fa-right-from-bracket fa-fw"></i> {% trans "Logout" %}
                                 </a>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -583,7 +602,7 @@
                 <div class="container-fluid">
                     <!-- start of tabs -->
                     {% block tab_bar %}
-                        {% if product_tab.tab %}
+                        {% if product_tab.tab and aspm_role != "user" %}
                             <div class="row">
                                 <div class="col-md-12">
                                     <h3 class="no-margin-top" style="padding-bottom: 5px;">

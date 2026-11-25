@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
+from dojo.aspm_access.backend import managed_account
 from dojo.aspm_ingestion.engagements import resolve_engagement
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, IngestionJob, IngestionToken, ScanRun
 from dojo.aspm_ingestion.selection import SCAN_FIELDS, live_selection
@@ -28,7 +29,7 @@ class Conflict(APIException):
 
 
 def issue_token(*, user, product, repository=None, scopes, expires_at, label):
-    if user.is_superuser or user.is_staff or user.has_usable_password() or not user.is_active:
+    if user.is_superuser or user.is_staff or user.has_usable_password() or not user.is_active or managed_account(user):
         msg = "Use an active dedicated service account with an unusable password and no staff privileges."
         raise ValidationError(msg)
     if repository and repository.product_id != product.pk:

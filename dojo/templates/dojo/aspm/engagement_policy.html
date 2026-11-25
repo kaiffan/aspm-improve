@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <nav class="breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+        <a href="{% url 'aspm_projects' %}">{% trans "Projects" %}</a> /
+        <a href="{% url 'scm_repository_list' product.pk %}">{{ product.name }}</a>
+    </nav>
+    <header class="aspm-page-heading"><h1>{% trans "Engagement policy" %}</h1></header>
+    <section class="panel panel-body">
+        <form method="get" class="aspm-workspace-form">
+            <label for="policy-repository">{% trans "Policy scope" %}</label>
+            <select id="policy-repository" name="repository">
+                <option value="">{% trans "Project default" %}</option>
+                {% for item in repositories %}
+                    <option value="{{ item.pk }}"{% if item.pk == repository.pk %} selected{% endif %}>{{ item.url }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-secondary" type="submit">{% trans "Open scope" %}</button>
+        </form>
+        <p>{% if current %}{% trans "An override is configured for this scope." %}{% else %}{% trans "This scope inherits its policy." %}{% endif %}</p>
+        <form method="post" class="aspm-workspace-form">{% csrf_token %}{{ form.as_p }}
+            <button type="submit" class="btn btn-primary">{% trans "Save policy" %}</button>
+            {% if current %}<button type="submit" class="btn btn-secondary" name="action" value="inherit" formnovalidate>{% trans "Remove override" %}</button>{% endif %}
+        </form>
+    </section>
+    <section class="panel panel-body">
+        <h2>{% trans "Managed Engagements" %}</h2>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th scope="col">{% trans "Repository" %}</th><th scope="col">{% trans "Strategy and scope" %}</th><th scope="col">{% trans "Engagement" %}</th><th scope="col">{% trans "Latest assigned Test" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
+                <tbody>
+                    {% for binding in assignments %}
+                        <tr>
+                            <td><a href="{% url 'scm_repository_detail' binding.repository_id %}">{{ binding.repository.url }}</a></td>
+                            <td>{{ binding.get_strategy_display }} {{ binding.scope }}</td>
+                            <td>{{ binding.engagement.name }} <small>#{{ binding.engagement_id }}</small></td>
+                            <td>{% if binding.last_test %}<a href="{% url 'view_test' binding.last_test %}">#{{ binding.last_test }}</a>{% else %}—{% endif %}</td>
+                            <td>
+                                {% if binding.archived_at %}{{ binding.archived_at }}
+                                {% else %}
+                                    <form method="post">{% csrf_token %}
+                                        <input type="hidden" name="action" value="archive">
+                                        <button class="btn btn-secondary" name="binding" value="{{ binding.pk }}">{% trans "Archive assignment" %}</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}<tr><td colspan="5">{% trans "No managed Engagements in this scope." %}</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "dojo/paging_snippet.html" with page=assignments %}
+    </section>
+    {% if audit %}
+        <section class="panel panel-body"><h2>{% trans "Policy history" %}</h2>
+            <ul>{% for entry in audit %}<li>{{ entry.action_time }} · {{ entry.user }} · {{ entry.change_message }}</li>{% endfor %}</ul>
+        </section>
+    {% endif %}
+{% endblock %}

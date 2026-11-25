@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from dojo.aspm_access.permissions import role
 from dojo.aspm_ingestion.permissions import api_only_scans_enabled
 from dojo.models import Engagement
 from dojo.product.queries import get_authorized_products
@@ -22,7 +23,9 @@ def _page(request, queryset):
     return Paginator(queryset, PAGE_SIZE).get_page(request.GET.get("page"))
 
 
-def _project_context(product, title):
+def _project_context(product, title, user):
+    if role(user) == "user":
+        return {"title": title}
     return {
         "product_tab": Product_Tab(product, title=title, tab="repositories"),
         "title": title,
@@ -33,8 +36,9 @@ def repository_list(request, product_id):
     product = get_object_or_404(get_authorized_products("view", user=request.user), pk=product_id)
     title = _("Repositories")
     return render(request, "dojo/scm/repository_list.html", {
-        **_project_context(product, title),
-        "custom_breadcrumb": {product.name: reverse("view_product", args=(product.pk,))},
+        **_project_context(product, title, request.user),
+        "custom_breadcrumb": {_("Projects"): reverse("aspm_projects")} if role(request.user) else {product.name: reverse("view_product", args=(product.pk,))},
+        "project": product,
         "repositories": _page(request, product.repositories.order_by("url", "pk")),
     })
 
@@ -42,17 +46,17 @@ def repository_list(request, product_id):
 def repository_detail(request, repository_id):
     repository = get_object_or_404(authorized_repositories(request.user), pk=repository_id)
     return render(request, "dojo/scm/repository_detail.html", {
-        **_project_context(repository.product, repository.url),
+        **_project_context(repository.product, repository.url, request.user),
         "repository": repository,
         "commits": _page(request, repository.commits.order_by(*COMMIT_ORDER)),
-        "custom_breadcrumb": _repository_breadcrumbs(repository),
+        "custom_breadcrumb": _repository_breadcrumbs(repository, request.user),
     })
 
 
-def _repository_breadcrumbs(repository):
+def _repository_breadcrumbs(repository, user=None):
     product = repository.product
     return {
-        product.name: reverse("view_product", args=(product.pk,)),
+        product.name: reverse("scm_repository_list" if role(user) == "user" else "view_product", args=(product.pk,)),
         _("Repositories"): reverse("scm_repository_list", args=(product.pk,)),
     }
 
@@ -65,7 +69,7 @@ def _commit_breadcrumbs(commit):
 
 
 def commit_detail(request, commit_id):
-    if api_only_scans_enabled():
+    if api_only_scans_enabled() or role(request.user):
         from dojo.aspm_ingestion.ui.views import commit_evidence  # noqa: PLC0415 -- historical evidence surface
 
         return commit_evidence(request, commit_id)
@@ -73,7 +77,7 @@ def commit_detail(request, commit_id):
     product = commit.repository.product
     engagements = Engagement.objects.filter(commit=commit, product=product).order_by("-pk")
     return render(request, "dojo/scm/commit_detail.html", {
-        **_project_context(product, commit.sha[:12]),
+        **_project_context(product, commit.sha[:12], request.user),
         "commit": commit,
         "engagements": _page(request, engagements),
         "recent_commits": commit.repository.commits.exclude(pk=commit.pk).order_by(*COMMIT_ORDER)[:PAGE_SIZE],
@@ -87,7 +91,7 @@ def commit_compare(request, commit_id):
     if not form.is_valid():
         return HttpResponseBadRequest(_("Choose a valid base commit and comparison category."))
     base = get_object_or_404(commit.repository.commits.exclude(pk=commit.pk), pk=form.cleaned_data["base"])
-    if api_only_scans_enabled():
+    if api_only_scans_enabled() or role(request.user):
         from dojo.aspm_ingestion.ui.views import commit_evidence  # noqa: PLC0415 -- optional historical evidence layer
 
         return commit_evidence(request, commit_id, section="changes")
@@ -97,7 +101,7 @@ def commit_compare(request, commit_id):
     )
     params = {"base": base.pk, "category": category}
     return render(request, "dojo/scm/commit_compare.html", {
-        **_project_context(commit.repository.product, _("Compare commits")),
+        **_project_context(commit.repository.product, _("Compare commits"), request.user),
         "commit": commit,
         "base_commit": base,
         "findings": findings,

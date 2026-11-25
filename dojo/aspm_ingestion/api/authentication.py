@@ -19,7 +19,7 @@ class ServiceTokenAuthentication(BaseAuthentication):
         digest = hashlib.sha256(header[1]).hexdigest()
         token = IngestionToken.objects.select_related("user", "repository").filter(
             digest=digest, revoked_at__isnull=True, expires_at__gt=timezone.now(), user__is_active=True,
-            user__is_superuser=False, user__is_staff=False,
+            user__is_superuser=False, user__is_staff=False, user__aspm_sso_identity__isnull=True,
         ).first()
         if token is None or token.user.has_usable_password():
             msg = "Invalid or expired ASPM credential."

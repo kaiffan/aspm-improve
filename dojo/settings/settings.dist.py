@@ -595,6 +595,7 @@ LOGIN_URL = env("DD_LOGIN_URL")
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
+    "dojo.aspm_access.backend.KeycloakBackend",
 )
 
 # Make Argon2 the default password hasher by listing it first
@@ -621,10 +622,30 @@ GITHUB_STAR_PROMPT_ENABLED = env("DD_GITHUB_STAR_PROMPT_ENABLED")
 # ASPM product metadata is separate from the upstream DefectDojo version.
 ASPM_BRAND_NAME = env("DD_ASPM_BRAND_NAME", default="ASPM")
 ASPM_BRAND_MARK = env("DD_ASPM_BRAND_MARK", default="dojo/img/aspm-mark.svg")
+ASPM_BRAND_PRIMARY = env.str("DD_ASPM_BRAND_PRIMARY", default="")
+ASPM_BRAND_SECONDARY = env.str("DD_ASPM_BRAND_SECONDARY", default="")
+ASPM_BRAND_ACCENT = env.str("DD_ASPM_BRAND_ACCENT", default="")
 ASPM_FAVICON = env("DD_ASPM_FAVICON", default="dojo/img/aspm-mark.svg")
 ASPM_GIT_SHA = env("DD_ASPM_GIT_SHA", default="")
 ASPM_BUILD_TIMESTAMP = env("DD_ASPM_BUILD_TIMESTAMP", default="")
 ASPM_SHOW_UPSTREAM_PROMOTIONS = env.bool("DD_ASPM_SHOW_UPSTREAM_PROMOTIONS", default=False)
+ASPM_OIDC_ENABLED = env.bool("DD_ASPM_OIDC_ENABLED", default=False)
+ASPM_OIDC_ISSUER = env.str("DD_ASPM_OIDC_ISSUER", default="")
+ASPM_OIDC_CALLBACK_URL = env.str("DD_ASPM_OIDC_CALLBACK_URL", default="")
+ASPM_OIDC_CLIENT_ID = env.str("DD_ASPM_OIDC_CLIENT_ID", default="")
+ASPM_OIDC_CLIENT_SECRET = env.str("DD_ASPM_OIDC_CLIENT_SECRET", default="")
+ASPM_OIDC_CLIENT_AUTH = env.str("DD_ASPM_OIDC_CLIENT_AUTH", default="client_secret_basic")
+ASPM_OIDC_CA_BUNDLE = env.str("DD_ASPM_OIDC_CA_BUNDLE", default="")
+ASPM_OIDC_SCOPES = env.list("DD_ASPM_OIDC_SCOPES", default=["openid"])
+ASPM_OIDC_ROLE_CLAIM = env.str("DD_ASPM_OIDC_ROLE_CLAIM", default="aspm_roles")
+ASPM_OIDC_GROUP_CLAIM = env.str("DD_ASPM_OIDC_GROUP_CLAIM", default="aspm_product_grants")
+ASPM_OIDC_SECOPS_ROLE = env.str("DD_ASPM_OIDC_SECOPS_ROLE", default="aspm-secops")
+ASPM_OIDC_EXPERT_ROLE = env.str("DD_ASPM_OIDC_EXPERT_ROLE", default="aspm-expert")
+ASPM_OIDC_USER_ROLE = env.str("DD_ASPM_OIDC_USER_ROLE", default="aspm-user")
+ASPM_OIDC_SESSION_AGE = env.int("DD_ASPM_OIDC_SESSION_AGE", default=3600)
+ASPM_OIDC_GROUP_TTL = env.int("DD_ASPM_OIDC_GROUP_TTL", default=300)
+ASPM_OIDC_PROVIDER_LOGOUT = env.bool("DD_ASPM_OIDC_PROVIDER_LOGOUT", default=True)
+
 
 DOCUMENTATION_URL = env("DD_DOCUMENTATION_URL")
 
@@ -653,6 +674,7 @@ ASPM_TOKEN_RATE_PER_MINUTE = env("DD_ASPM_TOKEN_RATE_PER_MINUTE")
 ENABLE_AUDITLOG = env("DD_ENABLE_AUDITLOG")
 
 LOGIN_EXEMPT_URLS = (
+    rf"^{URL_PREFIX}sso/(?:login|callback)$",
     rf"^{URL_PREFIX}api/aspm/v1/",
     rf"^{URL_PREFIX}static/",
     rf"^{URL_PREFIX}webhook/([\w-]+)$",
@@ -1012,6 +1034,7 @@ DJANGO_MIDDLEWARE_CLASSES = [
     "django.middleware.security.SecurityMiddleware",
     "django_permissions_policy.PermissionsPolicyMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "dojo.aspm_access.middleware.ManagedSessionMiddleware",
     "dojo.middleware.LanguagePreferenceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django_htmx.middleware.HtmxMiddleware",

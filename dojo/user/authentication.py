@@ -10,6 +10,7 @@ from rest_framework.authentication import BasicAuthentication, TokenAuthenticati
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, Throttled, ValidationError
 
+from dojo.aspm_access.backend import managed_account
 from dojo.authorization.authorization import user_is_superuser_or_global_owner
 from dojo.models import Dojo_User, UserContactInfo
 from dojo.notifications.helper import create_notification
@@ -58,7 +59,11 @@ class ExpiringTokenAuthentication(TokenAuthentication):
     """Token auth that also rejects expired tokens and accounts that owe a forced password reset."""
 
     def authenticate_credentials(self, key):
-        user, token = super().authenticate_credentials(key)
+        token = self.get_model().objects.select_related("user", "user__aspm_sso_identity").filter(key=key).first()
+        if token is None or not token.user.is_active or managed_account(token.user):
+            msg = "Invalid token."
+            raise AuthenticationFailed(msg)
+        user = token.user
         if token_is_expired(token):
             msg = "API token has expired."
             raise AuthenticationFailed(msg)
@@ -99,7 +104,7 @@ class DojoBasicAuthentication(BasicAuthentication):
             if block:
                 limited(increment=True)
             raise
-        if Dojo_User.force_password_reset(user):
+        if managed_account(user) or Dojo_User.force_password_reset(user):
             msg = "A password reset is required before this account can use the API."
             raise AuthenticationFailed(msg)
         return user, auth
@@ -127,7 +132,7 @@ def revoke_api_token(user) -> None:
 
 
 def reset_token_for_user(*, acting_user: Dojo_User, target_user: Dojo_User, allow_self_reset: bool = False) -> None:
-    if not settings.API_TOKENS_ENABLED:
+    if not settings.API_TOKENS_ENABLED or managed_account(target_user):
         msg = "API tokens are disabled."
         raise PermissionDenied(msg)
 

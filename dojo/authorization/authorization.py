@@ -20,6 +20,7 @@ module's symbols at startup so the same code paths route through Pro.
 from django.core.exceptions import PermissionDenied
 from django.db.models import Model
 
+from dojo.aspm_access.permissions import granted_product_ids, has_capability, role
 from dojo.authorization.models import Dojo_Group_Member, Product_Member, Product_Type_Member
 from dojo.authorization.query_registrations import (
     authorized_product_id_set,
@@ -61,6 +62,8 @@ def user_has_configuration_permission(user: Dojo_User, permission: str):
         return False
     if user.is_anonymous:
         return False
+    if role(user) is not None:
+        return has_capability(user, permission)
     if user.is_superuser or user.is_staff:
         return True
     return user.has_perm(permission)
@@ -100,6 +103,24 @@ def user_has_permission(user: Dojo_User, obj: Model, permission) -> bool:
     """
     if not user or getattr(user, "is_anonymous", False):
         return False
+    access = role(user)
+    if access is not None:
+        action = permission_to_action(permission)
+        if obj is None or action == Action.SuperuserOnly:
+            return False
+        if access == "secops":
+            return True
+        if access == "expert":
+            return action == Action.View or (action == Action.Edit and isinstance(obj, Finding))
+        if action != Action.View:
+            return False
+        if isinstance(obj, Engagement):
+            obj = obj.product
+        elif isinstance(obj, Test):
+            obj = obj.engagement.product
+        elif isinstance(obj, Finding):
+            obj = obj.test.engagement.product
+        return isinstance(obj, Product) and granted_product_ids(user).filter(product_id=obj.pk).exists()
     if user.is_superuser:
         return True
 

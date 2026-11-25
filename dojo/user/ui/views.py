@@ -32,6 +32,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied as RFPermissionDenied
 from rest_framework.exceptions import ValidationError as RFValidationError
 
+from dojo.aspm_access.backend import managed_account
+from dojo.aspm_access.permissions import role as aspm_role
 from dojo.authorization.authorization import user_is_superuser_or_global_owner
 from dojo.decorators import dojo_ratelimit
 from dojo.forms import (
@@ -93,6 +95,9 @@ class DojoLoginView(LoginView):
         return context
 
     def form_valid(self, form):
+        if managed_account(form.get_user()):
+            form.add_error(None, _("This account signs in through Keycloak."))
+            return self.form_invalid(form)
         last_login = None
         with contextlib.suppress(Exception):
             username = form.cleaned_data.get("username")
@@ -250,6 +255,10 @@ def alerts_partial(request):
 
 
 def view_profile(request):
+    if aspm_role(request.user):
+        if request.method != "GET":
+            raise PermissionDenied
+        return render(request, "dojo/aspm/sso_profile.html", {"access_role": aspm_role(request.user)})
     user = get_object_or_404(Dojo_User, pk=request.user.id)
     form = DojoUserForm(instance=user)
 
@@ -285,6 +294,8 @@ def view_profile(request):
 
 
 def change_password(request):
+    if managed_account(request.user):
+        raise PermissionDenied
     user = get_object_or_404(Dojo_User, pk=request.user.id)
     form = ChangePasswordForm(user=user)
 

@@ -723,5 +723,6 @@ admin.site.register(DojoMeta)
 # Announcement + UserAnnouncement admin registered in dojo/announcement/admin.py
 # BannerConf admin registered in dojo/banner/admin.py
 
+import dojo.aspm_access.models  # noqa: E402, F401
 import dojo.aspm_ingestion.models  # noqa: E402, F401
 import dojo.webhooks.models  # noqa: E402, F401

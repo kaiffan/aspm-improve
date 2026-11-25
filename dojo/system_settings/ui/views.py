@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.views import View
 
+from dojo.aspm_access.permissions import role
 from dojo.system_settings.models import System_Settings
 from dojo.system_settings.ui.forms import SystemSettingsForm
 from dojo.utils import add_breadcrumb
@@ -19,7 +20,7 @@ class SystemSettingsView(View):
         self,
         request: HttpRequest,
     ) -> None:
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and role(request.user) != "secops":
             raise PermissionDenied
 
     def get_settings_object(self) -> System_Settings:
@@ -119,7 +120,7 @@ class CeleryStatusView(View):
         self,
         request: HttpRequest,
     ) -> HttpResponse:
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and role(request.user) != "secops":
             raise PermissionDenied
         add_breadcrumb(title="Celery status", top_level=False, request=request)
         return render(request, "dojo/celery_status.html")

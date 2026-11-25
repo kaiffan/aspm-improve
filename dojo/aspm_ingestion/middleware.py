@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.http import HttpResponseNotFound
 
+from dojo.aspm_access.permissions import role
+from dojo.aspm_ingestion.engagements import can_manage_engagement_policy
 from dojo.aspm_ingestion.permissions import api_only_scans_enabled
 from dojo.webhooks.permissions import can_manage_webhooks
 
@@ -22,4 +24,10 @@ class ApiOnlyScansMiddleware:
 
 
 def ingestion_context(request):
-    return {"aspm_api_only": api_only_scans_enabled(), "aspm_webhooks_can_manage": settings.ASPM_WEBHOOKS_ENABLED and can_manage_webhooks(request.user)}
+    return {
+        "aspm_api_only": api_only_scans_enabled(),
+        "aspm_oidc_enabled": settings.ASPM_OIDC_ENABLED,
+        "aspm_role": role(request.user),
+        "aspm_can_manage_engagements": can_manage_engagement_policy(request.user),
+        "aspm_webhooks_can_manage": settings.ASPM_WEBHOOKS_ENABLED and can_manage_webhooks(request.user),
+    }

@@ -5,13 +5,14 @@ from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from dojo.aspm_access.permissions import has_capability
 from dojo.aspm_ingestion.models import EngagementPolicy, EngagementStrategy, ManagedEngagement
 from dojo.engagement.models import Engagement
 from dojo.scm.models import Repository
 
 
 def can_manage_engagement_policy(user):
-    return bool(user.is_authenticated and user.is_active and user.has_perm("dojo.manage_engagement_policy"))
+    return has_capability(user, "dojo.manage_engagement_policy")
 
 
 def _policy(repository):

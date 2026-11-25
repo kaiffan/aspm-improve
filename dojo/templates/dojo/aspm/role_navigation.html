@@ -1,0 +1,18 @@
+{% load i18n %}
+<a href="{% url 'aspm_projects' %}" class="flex items-center gap-3 px-4 py-2" {% if request.resolver_match.url_name == 'aspm_projects' %}aria-current="page"{% endif %}>
+    {% if aspm_role == "user" %}{% trans "My projects" %}{% else %}{% trans "All projects" %}{% endif %}
+</a>
+<a href="{% url 'aspm_reports' %}" class="block px-4 py-2" {% if request.resolver_match.url_name == 'aspm_reports' %}aria-current="page"{% endif %}>{% trans "Reports" %}</a>
+{% if aspm_role != "user" %}
+    <a href="{% url 'dashboard' %}" class="block px-4 py-2">{% trans "Dashboard" %}</a>
+    <a href="{% url 'all_findings' %}" class="block px-4 py-2">{% trans "Findings" %}</a>
+    <a href="{% url 'open_findings' %}" class="block px-4 py-2">{% trans "Open findings" %}</a>
+    <a href="{% url 'aspm_scanners' %}" class="block px-4 py-2">{% trans "Scanner integrations" %}</a>
+{% endif %}
+{% if aspm_role == "secops" %}
+    {% if aspm_webhooks_can_manage %}<a href="{% url 'aspm_webhooks' %}" class="block px-4 py-2">{% trans "Webhooks" %}</a>{% endif %}
+    <a href="{% url 'aspm_sso_mappings' %}" class="block px-4 py-2">{% trans "SSO access mappings" %}</a>
+    <a href="{% url 'celery_status' %}" class="block px-4 py-2">{% trans "Diagnostics" %}</a>
+    <a href="{% url 'system_settings' %}" class="block px-4 py-2">{% trans "Settings" %}</a>
+{% endif %}
+<a href="{% url 'view_profile' %}" class="block px-4 py-2">{% trans "Profile" %}</a>

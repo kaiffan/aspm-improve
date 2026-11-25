@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <header class="aspm-page-heading"><h1>{% trans "Reports" %}</h1></header>
+    <form class="filters aspm-workspace-form" method="get">
+        <label for="report-project-search">{% trans "Project name" %}</label>
+        <input id="report-project-search" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
+        <button type="submit" class="btn btn-secondary">{% trans "Search" %}</button>
+    </form>
+    <section class="panel panel-default">
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Commit" %}</th><th scope="col">{% trans "Version" %}</th><th scope="col">{% trans "Created" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Download" %}</th></tr></thead>
+                <tbody>
+                    {% for report in reports %}
+                        <tr>
+                            <th scope="row">{{ report.commit.repository.product.name }}</th>
+                            <td><a href="{% url 'aspm_commit_evidence' report.commit_id %}?tab=reports"><code>{{ report.commit.sha|slice:":12" }}</code></a></td>
+                            <td>{{ report.version }}</td><td><time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at }}</time></td>
+                            <td>{{ report.get_status_display }}</td>
+                            <td>{% if report.status == 'COMPLETED' %}<a href="{% url 'aspm_v1:report-download' report.pk %}?format=html">HTML</a> · <a href="{% url 'aspm_v1:report-download' report.pk %}?format=json">JSON</a>{% else %}—{% endif %}</td>
+                        </tr>
+                    {% empty %}<tr><td colspan="6">{% trans "No generated reports match this view." %}</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "dojo/paging_snippet.html" with page=reports %}
+    </section>
+{% endblock %}

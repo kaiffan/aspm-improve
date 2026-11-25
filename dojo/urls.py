@@ -30,6 +30,7 @@ from dojo.api_v2.views import (
     SonarqubeIssueViewSet,
 )
 from dojo.api_v2.views import DojoSpectacularAPIView as SpectacularAPIView
+from dojo.aspm_access.urls import urlpatterns as aspm_access_urls
 from dojo.aspm_ingestion.ui.urls import urlpatterns as ingestion_ui_urls
 from dojo.asset.api.urls import add_asset_urls
 from dojo.asset.urls import urlpatterns as asset_urls
@@ -198,6 +199,7 @@ ur += sla_urls
 ur += system_settings_urls
 ur += notifications_urls
 ur += webhook_ui_urls
+ur += aspm_access_urls
 ur += object_urls
 ur += benchmark_urls
 ur += notes_urls

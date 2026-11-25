@@ -10,12 +10,17 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from rest_framework.exceptions import APIException
 
+from dojo.aspm_access.permissions import role
 from dojo.aspm_ingestion.api.serializer import ReportRequestSerializer
 from dojo.aspm_ingestion.queries import compare_observations, completed_observations
 from dojo.aspm_ingestion.selection import live_selection
 from dojo.aspm_ingestion.services import request_report
 from dojo.product.queries import get_authorized_products
 from dojo.scm.queries import authorized_commits
+
+
+def can_generate_report(user, product_id):
+    return role(user) in {"expert", "secops"} or get_authorized_products("edit", user=user).filter(pk=product_id).exists()
 
 
 @require_GET
@@ -86,7 +91,7 @@ def commit_evidence(request, commit_id, *, section=None):
         "taxonomy_preview": list(observations.order_by("pk").values_list("snapshot__cwe", "snapshot__vulnerability_ids")[:20]) if section in {"overview", "reports"} else [],
         "selection": selection, "state_revision": state_revision(commit, scans=scan_statuses),
         "nav_params": "&" + nav_params.urlencode() if nav_params else "",
-        "can_export": section == "reports" and get_authorized_products("edit", user=request.user).filter(pk=commit.repository.product_id).exists(),
+        "can_export": section == "reports" and can_generate_report(request.user, commit.repository.product_id),
         "commit": commit, "section": section, "base_commit": base, "category": category,
         "coverage_warning": coverage_warning, "base_coverage": base_coverage, "target_coverage": target_coverage,
         "scans": Paginator(commit.scan_runs.order_by("-created_at"), 25).get_page(request.GET.get("page")) if section == "originals" else None,
@@ -120,8 +125,8 @@ def commit_state(request, commit_id):
 @require_POST
 def create_report(request, commit_id):
     commit = get_object_or_404(authorized_commits(request.user), pk=commit_id)
-    if not get_authorized_products("edit", user=request.user).filter(pk=commit.repository.product_id).exists():
-        return HttpResponseForbidden("Product edit permission is required to generate an export.")
+    if not can_generate_report(request.user, commit.repository.product_id):
+        return HttpResponseForbidden("Report export permission is required.")
     data = {key: request.POST[key] for key in ("pipeline",) if request.POST.get(key)}
     if request.POST.getlist("scan_ids"):
         data = {"scan_ids": request.POST.getlist("scan_ids")}

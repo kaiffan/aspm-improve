@@ -17,6 +17,15 @@ spec:
   {{- with .Values.imagePullSecrets }}
   imagePullSecrets: {{ toYaml . | nindent 4 }}
   {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
   containers:
     - name: http
       image: {{ include "aspm.image" .Values.image | quote }}

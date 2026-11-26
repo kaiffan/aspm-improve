@@ -63,6 +63,22 @@ class ChartTests(unittest.TestCase):
         self.assertEqual(job["spec"]["backoffLimit"], 0)
         self.assertIn("aspm_migrate", job["spec"]["template"]["spec"]["containers"][0]["command"])
 
+    def test_placement_applies_to_hook_pods(self):
+        docs = render(
+            "--set", "tests.enabled=true",
+            "--set-json", 'nodeSelector={"kubernetes.io/arch":"amd64"}',
+            "--set-json", 'tolerations=[{"key":"aspm","operator":"Exists"}]',
+            "--set-json", 'affinity={"nodeAffinity":{}}',
+        )
+        hooks = {doc["kind"]: doc for doc in docs if "helm.sh/hook" in doc["metadata"].get("annotations", {})}
+        self.assertEqual(set(hooks), {"Job", "Pod"})
+        for kind, hook in hooks.items():
+            with self.subTest(kind=kind):
+                spec = hook["spec"]["template"]["spec"] if kind == "Job" else hook["spec"]
+                self.assertEqual(spec["nodeSelector"], {"kubernetes.io/arch": "amd64"})
+                self.assertEqual(spec["tolerations"], [{"key": "aspm", "operator": "Exists"}])
+                self.assertEqual(spec["affinity"], {"nodeAffinity": {}})
+
     def test_storage_threshold_uses_decimal_integer_environment_values(self):
         for args, expected in (((), "1073741824"), (("--set", "storage.minimumFreeBytes=5368709120"), "5368709120")):
             with self.subTest(expected=expected):

@@ -1,0 +1,276 @@
+---
+# Source: traefik/templates/rbac/serviceaccount.yaml
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: aspm-lab-traefik
+  namespace: aspm-lab-ingress
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+automountServiceAccountToken: false
+---
+# Source: traefik/templates/rbac/role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aspm-lab-traefik
+  namespace: aspm-lab-ingress
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  # Required while https://github.com/traefik/traefik/issues/7097#issuecomment-1983581843
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+---
+# Source: traefik/templates/rbac/rolebinding.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aspm-lab-traefik
+  namespace: aspm-lab-ingress
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: aspm-lab-traefik
+subjects:
+  - kind: ServiceAccount
+    name: aspm-lab-traefik
+    namespace: aspm-lab-ingress
+---
+# Source: traefik/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspm-lab-traefik
+  namespace: aspm-lab-ingress
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+  ports:
+  - port: 80
+    name: web
+    targetPort: web
+    protocol: TCP
+  - port: 443
+    name: websecure
+    targetPort: websecure
+    protocol: TCP
+---
+# Source: traefik/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspm-lab-traefik
+  namespace: aspm-lab-ingress
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+      app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  minReadySeconds: 0
+
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9100"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/version: v3.7.19
+        helm.sh/chart: traefik-42.4.1
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - args:
+        - --global.checkNewVersion=false
+        - --global.aliasHeadersStrategy=reject
+        - --entryPoints.metrics.address=:9100/tcp
+        - --entryPoints.traefik.address=:8080/tcp
+        - --entryPoints.web.address=:8000/tcp
+        - --entryPoints.websecure.address=:8443/tcp
+        - --api.dashboard=false
+        - --ping=true
+        - --metrics.prometheus=true
+        - --metrics.prometheus.entrypoint=metrics
+        - --providers.kubernetesingress
+        - --providers.kubernetesingress.allowExternalNameServices=true
+        - --providers.kubernetesingress.allowEmptyServices=true
+        - --providers.kubernetesingress.ingressClass=aspm-ha-lab
+        - --providers.kubernetesingress.disableClusterScopeResources=true
+        - --providers.kubernetesingress.nativeLBByDefault=true
+        - --providers.kubernetesingress.namespaces=aspm-lab-ingress
+        - --entryPoints.web.transport.lifeCycle.requestAcceptGraceTimeout=5s
+        - --entryPoints.websecure.http.tls=true
+        - --entryPoints.websecure.transport.lifeCycle.requestAcceptGraceTimeout=5s
+        - --log.level=INFO
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: USER
+          value: traefik
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.cpu
+        - name: GOMEMLIMIT
+          value: 230MiB
+        image: docker.io/traefik@sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4
+        imagePullPolicy: IfNotPresent
+        lifecycle: null
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ping
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: aspm-lab-traefik
+        ports:
+        - containerPort: 9100
+          name: metrics
+          protocol: TCP
+        - containerPort: 8080
+          name: traefik
+          protocol: TCP
+        - containerPort: 8000
+          name: web
+          protocol: TCP
+        - containerPort: 8443
+          name: websecure
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 1
+          httpGet:
+            path: /ping
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /tmp
+          name: tmp
+      hostNetwork: false
+      securityContext:
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: aspm-lab-traefik
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - emptyDir: {}
+        name: data
+      - emptyDir: {}
+        name: tmp

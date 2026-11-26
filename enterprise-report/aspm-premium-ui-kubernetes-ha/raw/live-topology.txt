@@ -1,0 +1,46 @@
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS         IMAGES                                                                                      SELECTOR
+deployment.apps/aspm-aspm-beat     1/1     1            1           19h   beat               aspm-dual-lab/django:d6da4a7e2472                                                           app.kubernetes.io/component=beat,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-web      2/2     2            2           19h   web,nginx          aspm-dual-lab/django:d6da4a7e2472,aspm-dual-lab/nginx:d6da4a7e2472                          app.kubernetes.io/component=web,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-worker   3/3     3            3           19h   worker             aspm-dual-lab/django:d6da4a7e2472                                                           app.kubernetes.io/component=worker,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-lab-traefik   1/1     1            1           31s   aspm-lab-traefik   docker.io/traefik@sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4   app.kubernetes.io/instance=aspm-lab-traefik-aspm-lab-orbstack,app.kubernetes.io/name=traefik
+deployment.apps/broker             1/1     1            1           30h   valkey             aspm-dual-lab/valkey:local                                                                  aspm-lab-service=broker
+deployment.apps/cache              1/1     1            1           30h   valkey             aspm-dual-lab/valkey:local                                                                  aspm-lab-service=cache
+deployment.apps/postgres           1/1     1            1           30h   postgres           aspm-dual-lab/postgres:18-local                                                             aspm-lab-service=postgres
+
+NAME                                    READY   STATUS      RESTARTS   AGE     IP               NODE       NOMINATED NODE   READINESS GATES
+pod/aspm-aspm-beat-c564fb5fd-wdnnk      1/1     Running     0          2m13s   192.168.194.73   orbstack   <none>           <none>
+pod/aspm-aspm-http-test                 0/1     Completed   0          7s      192.168.194.78   orbstack   <none>           <none>
+pod/aspm-aspm-web-69777fc6b4-nvcck      2/2     Running     0          2m24s   192.168.194.70   orbstack   <none>           <none>
+pod/aspm-aspm-web-69777fc6b4-sglsr      2/2     Running     0          2m      192.168.194.74   orbstack   <none>           <none>
+pod/aspm-aspm-worker-759f74795d-4ddhg   1/1     Running     0          50s     192.168.194.76   orbstack   <none>           <none>
+pod/aspm-aspm-worker-759f74795d-6tjh4   1/1     Running     0          92s     192.168.194.75   orbstack   <none>           <none>
+pod/aspm-aspm-worker-759f74795d-h9hh8   1/1     Running     0          2m24s   192.168.194.72   orbstack   <none>           <none>
+pod/aspm-ha-observer                    1/1     Running     0          4m6s    192.168.194.68   orbstack   <none>           <none>
+pod/aspm-lab-traefik-5dd64bf468-tqhf9   1/1     Running     0          31s     192.168.194.77   orbstack   <none>           <none>
+pod/broker-6dc86788c5-nmqds             1/1     Running     0          19h     192.168.194.7    orbstack   <none>           <none>
+pod/cache-68749498d8-wbq2q              1/1     Running     0          19h     192.168.194.8    orbstack   <none>           <none>
+pod/postgres-7ffddbf75c-dbwv4           1/1     Running     0          19h     192.168.194.11   orbstack   <none>           <none>
+pod/provision-volume-owners-jkhlv       0/1     Completed   0          19h     192.168.194.12   orbstack   <none>           <none>
+
+NAME                       TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)          AGE   SELECTOR
+service/aspm-aspm          ClusterIP   192.168.194.159   <none>        80/TCP           19h   app.kubernetes.io/component=web,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+service/aspm-lab-traefik   ClusterIP   192.168.194.223   <none>        80/TCP,443/TCP   31s   app.kubernetes.io/instance=aspm-lab-traefik-aspm-lab-orbstack,app.kubernetes.io/name=traefik
+service/broker             ClusterIP   192.168.194.163   <none>        6379/TCP         30h   aspm-lab-service=broker
+service/cache              ClusterIP   192.168.194.181   <none>        6379/TCP         30h   aspm-lab-service=cache
+service/postgres           ClusterIP   192.168.194.180   <none>        5432/TCP         30h   aspm-lab-service=postgres
+
+NAME                                                    ADDRESSTYPE   PORTS       ENDPOINTS                       AGE
+endpointslice.discovery.k8s.io/aspm-aspm-r65sf          IPv4          8080        192.168.194.70,192.168.194.74   19h
+endpointslice.discovery.k8s.io/aspm-lab-traefik-bbf8d   IPv4          8443,8000   192.168.194.77                  31s
+endpointslice.discovery.k8s.io/broker-fdgwn             IPv4          6379        192.168.194.7                   30h
+endpointslice.discovery.k8s.io/cache-v4wh8              IPv4          6379        192.168.194.8                   30h
+endpointslice.discovery.k8s.io/postgres-49d4b           IPv4          5432        192.168.194.11                  30h
+
+NAME                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+persistentvolumeclaim/aspm-evidence   Bound    pvc-28a05a75-5621-402d-ae7b-f0ed325f53a6   2Gi        RWO            local-path     <unset>                 30h   Filesystem
+persistentvolumeclaim/aspm-media      Bound    pvc-7d1aa256-5ce0-403f-857f-b99d0c1a803f   1Gi        RWO            local-path     <unset>                 30h   Filesystem
+persistentvolumeclaim/lab-postgres    Bound    pvc-80216c7b-db49-431e-8924-0aaac02bb8b7   2Gi        RWO            local-path     <unset>                 30h   Filesystem
+
+NAME                                          MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+poddisruptionbudget.policy/aspm-aspm-web      1               N/A               1                     2m24s
+poddisruptionbudget.policy/aspm-aspm-worker   2               N/A               1                     2m24s

@@ -26,3 +26,30 @@ For a local browser on a running release, forward the Service to `127.0.0.1:1873
 kubectl --context orbstack -n aspm-lab-orbstack port-forward \
   --address 127.0.0.1 service/aspm-aspm 18735:80
 ```
+
+## Premium UI and HA lab
+
+The optional HA overlay runs two web pods with paired nginx and Django containers, three worker pods, and one fenced Beat. Keep the current lab Helm values in a private file to retain its Secret names and storage claims. Use the same Git SHA for both images. The build helper overlays Python and the two updated ASPM assets on qualified lab bases.
+
+```sh
+export ASPM_LAB_DJANGO_BASE=aspm-dual-lab/django:c5ed33b99c9a
+export ASPM_LAB_NGINX_BASE=aspm-dual-lab/nginx:c5ed33b99c9a
+bash deploy/labs/orbstack/build-candidate.sh <application-sha>
+helm --kube-context orbstack -n aspm-lab-orbstack upgrade aspm deploy/helm/aspm \
+  -f /secure/existing-lab-values.yaml -f deploy/labs/orbstack/values-ha.yaml \
+  --set-string image.tag=<12-character-sha> --set-string nginxImage.tag=<12-character-sha> \
+  --wait --rollback-on-failure --timeout 7m
+helm --kube-context orbstack -n aspm-lab-orbstack test aspm --logs --timeout 2m
+```
+
+For TLS routing, provision a localhost certificate in the dedicated aspm-lab-ingress namespace. Install pinned official Traefik chart 42.4.1 with the supplied values and --skip-crds. Apply the lab Ingress and its ExternalName Service there. Apply values-ha-ingress.yaml as the final ASPM overlay to select the gateway pods in the ingress NetworkPolicy. Verify the certificate using the lab certificate as a client CA.
+
+```sh
+helm --kube-context orbstack -n aspm-lab-ingress upgrade --install aspm-lab-traefik traefik \
+  --repo https://traefik.github.io/charts --version 42.4.1 --skip-crds \
+  -f deploy/labs/orbstack/traefik-ha-values.yaml --wait --timeout 3m
+kubectl --context orbstack -n aspm-lab-ingress apply -f deploy/labs/orbstack/ha-ingress.yaml
+kubectl --context orbstack -n aspm-lab-ingress port-forward --address 127.0.0.1 svc/aspm-lab-traefik 18736:443
+```
+
+The [qualification report](../../../enterprise-report/aspm-premium-ui-kubernetes-ha/REPRODUCE.md) records tested image digests, rollback, traffic measurements and isolated worker recovery.

@@ -1,0 +1,19 @@
+TLS verified 0, login HTTP 200
+80c05bee51a749f69c0caffe221ac2a63b7001d24e2290517d59b5bbd1a50da2  -
+80c05bee51a749f69c0caffe221ac2a63b7001d24e2290517d59b5bbd1a50da2  dojo/static/dojo/css/aspm.css
+e76cafc203498864bb9193b098e35f209212e3d23a1d468217cbc04db0ea3bb0  -
+e76cafc203498864bb9193b098e35f209212e3d23a1d468217cbc04db0ea3bb0  dojo/static/dojo/js/aspm.js
+Public health HTTP 404
+Public metrics HTTP 404
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS         IMAGES                                                                                      SELECTOR
+deployment.apps/aspm-lab-traefik   1/1     1            1           12m   aspm-lab-traefik   docker.io/traefik@sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4   app.kubernetes.io/instance=aspm-lab-traefik-aspm-lab-ingress,app.kubernetes.io/name=traefik
+
+NAME                                    READY   STATUS    RESTARTS   AGE   IP               NODE       NOMINATED NODE   READINESS GATES
+pod/aspm-lab-traefik-85dbbcd99d-nf4hm   1/1     Running   0          10m   192.168.194.86   orbstack   <none>           <none>
+
+NAME                                CLASS    HOSTS       ADDRESS   PORTS     AGE
+ingress.networking.k8s.io/aspm-ha   <none>   localhost             80, 443   12m
+
+NAME                        TYPE           CLUSTER-IP        EXTERNAL-IP                                     PORT(S)          AGE   SELECTOR
+service/aspm-lab-traefik    ClusterIP      192.168.194.230   <none>                                          80/TCP,443/TCP   12m   app.kubernetes.io/instance=aspm-lab-traefik-aspm-lab-ingress,app.kubernetes.io/name=traefik
+service/aspm-lab-upstream   ExternalName   <none>            aspm-aspm.aspm-lab-orbstack.svc.cluster.local   80/TCP           12m   <none>

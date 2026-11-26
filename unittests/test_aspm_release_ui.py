@@ -34,9 +34,8 @@ class TestASPMBranding(SimpleTestCase):
         palettes = get_branding()["palettes"]
         self.assertEqual(palettes["light"]["on_sidebar"], "#000000")
         self.assertEqual(palettes["dark"]["on_surface"], "#ffffff")
-        with override_settings(ASPM_BRAND_DARK_SURFACE="red; color: red"):
-            with self.assertRaises(ImproperlyConfigured):
-                get_branding()
+        with override_settings(ASPM_BRAND_DARK_SURFACE="red; color: red"), self.assertRaises(ImproperlyConfigured):
+            get_branding()
 
     @override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=False)
     def test_promos_are_not_fetched_and_read_only_warning_is_preserved(self):

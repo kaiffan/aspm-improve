@@ -1,0 +1,41 @@
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                                               SELECTOR
+deployment.apps/aspm-aspm-beat     1/1     1            1           20h   beat         aspm-dual-lab/django:6e88953f3cd8                                    app.kubernetes.io/component=beat,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-web      2/2     2            2           20h   web,nginx    aspm-dual-lab/django:6e88953f3cd8,aspm-dual-lab/nginx:6e88953f3cd8   app.kubernetes.io/component=web,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-worker   3/3     3            3           20h   worker       aspm-dual-lab/django:6e88953f3cd8                                    app.kubernetes.io/component=worker,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/broker             1/1     1            1           31h   valkey       aspm-dual-lab/valkey:local                                           aspm-lab-service=broker
+deployment.apps/cache              1/1     1            1           31h   valkey       aspm-dual-lab/valkey:local                                           aspm-lab-service=cache
+deployment.apps/postgres           1/1     1            1           31h   postgres     aspm-dual-lab/postgres:18-local                                      aspm-lab-service=postgres
+
+NAME                                    READY   STATUS      RESTARTS   AGE   IP                NODE       NOMINATED NODE   READINESS GATES
+pod/aspm-aspm-beat-79f5cdd6f9-479jj     1/1     Running     0          28m   192.168.194.92    orbstack   <none>           <none>
+pod/aspm-aspm-http-test                 0/1     Completed   0          9s    192.168.194.112   orbstack   <none>           <none>
+pod/aspm-aspm-web-6896dff9fb-g5x4c      2/2     Running     0          19m   192.168.194.106   orbstack   <none>           <none>
+pod/aspm-aspm-web-6896dff9fb-vdf8c      2/2     Running     0          19m   192.168.194.109   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76cd965c45-ddwm2   1/1     Running     0          19m   192.168.194.107   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76cd965c45-ncpz5   1/1     Running     0          19m   192.168.194.105   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76cd965c45-xm7wl   1/1     Running     0          16m   192.168.194.111   orbstack   <none>           <none>
+pod/broker-6dc86788c5-nmqds             1/1     Running     0          20h   192.168.194.7     orbstack   <none>           <none>
+pod/cache-68749498d8-wbq2q              1/1     Running     0          20h   192.168.194.8     orbstack   <none>           <none>
+pod/postgres-7ffddbf75c-dbwv4           1/1     Running     0          20h   192.168.194.11    orbstack   <none>           <none>
+pod/provision-volume-owners-jkhlv       0/1     Completed   0          20h   192.168.194.12    orbstack   <none>           <none>
+
+NAME                TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+service/aspm-aspm   ClusterIP   192.168.194.159   <none>        80/TCP     20h   app.kubernetes.io/component=web,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+service/broker      ClusterIP   192.168.194.163   <none>        6379/TCP   31h   aspm-lab-service=broker
+service/cache       ClusterIP   192.168.194.181   <none>        6379/TCP   31h   aspm-lab-service=cache
+service/postgres    ClusterIP   192.168.194.180   <none>        5432/TCP   31h   aspm-lab-service=postgres
+
+NAME                                             ADDRESSTYPE   PORTS   ENDPOINTS                         AGE
+endpointslice.discovery.k8s.io/aspm-aspm-r65sf   IPv4          8080    192.168.194.106,192.168.194.109   20h
+endpointslice.discovery.k8s.io/broker-fdgwn      IPv4          6379    192.168.194.7                     31h
+endpointslice.discovery.k8s.io/cache-v4wh8       IPv4          6379    192.168.194.8                     31h
+endpointslice.discovery.k8s.io/postgres-49d4b    IPv4          5432    192.168.194.11                    31h
+
+NAME                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+persistentvolumeclaim/aspm-evidence   Bound    pvc-28a05a75-5621-402d-ae7b-f0ed325f53a6   2Gi        RWO            local-path     <unset>                 31h   Filesystem
+persistentvolumeclaim/aspm-media      Bound    pvc-7d1aa256-5ce0-403f-857f-b99d0c1a803f   1Gi        RWO            local-path     <unset>                 31h   Filesystem
+persistentvolumeclaim/lab-postgres    Bound    pvc-80216c7b-db49-431e-8924-0aaac02bb8b7   2Gi        RWO            local-path     <unset>                 31h   Filesystem
+
+NAME                                          MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+poddisruptionbudget.policy/aspm-aspm-web      1               N/A               1                     44m
+poddisruptionbudget.policy/aspm-aspm-worker   2               N/A               1                     44m

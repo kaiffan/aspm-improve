@@ -80,9 +80,34 @@ class ChartTests(unittest.TestCase):
                     self.assertFalse(any(x["kind"] in {"Service", "Ingress", "HorizontalPodAutoscaler", "PodDisruptionBudget"} for x in docs))
 
     def test_profiles(self):
-        for profile in ("dev", "staging", "production.example"):
+        for profile in ("dev", "staging", "production.example", "local", "ha", "high-throughput"):
             with self.subTest(profile=profile):
                 self.assertTrue(render("-f", str(CHART / f"values-{profile}.yaml")))
+
+    def test_ha_schedules_and_protects_each_component(self):
+        docs = render("-f", str(CHART / "values-ha.yaml"))
+        by_kind = {kind: {doc["metadata"]["name"].rsplit("-", 1)[-1]: doc["spec"] for doc in docs if doc["kind"] == kind}
+                   for kind in ("Deployment", "PodDisruptionBudget")}
+        for component, replicas, min_available in (("web", 2, 1), ("worker", 3, 2)):
+            deployment = by_kind["Deployment"][component]
+            disruption = by_kind["PodDisruptionBudget"][component]
+            self.assertEqual(deployment["replicas"], replicas)
+            self.assertEqual(disruption["minAvailable"], min_available)
+            self.assertEqual(disruption["selector"], deployment["selector"])
+            spread = deployment["template"]["spec"]["topologySpreadConstraints"]
+            self.assertCountEqual([rule["topologyKey"] for rule in spread], ["kubernetes.io/hostname", "topology.kubernetes.io/zone"])
+            self.assertTrue(all(rule["labelSelector"] == deployment["selector"] for rule in spread))
+        self.assertEqual(by_kind["Deployment"]["beat"]["strategy"], {"type": "Recreate"})
+
+    def test_high_throughput_scales_web_and_opt_in_workers(self):
+        profile = ("-f", str(CHART / "values-high-throughput.yaml"))
+        for worker_autoscaling in (False, True):
+            docs = render(*profile, "--set", f"worker.hpa.enabled={str(worker_autoscaling).lower()}")
+            hpas = {doc["spec"]["scaleTargetRef"]["name"] for doc in docs if doc["kind"] == "HorizontalPodAutoscaler"}
+            for deployment in (doc for doc in docs if doc["kind"] == "Deployment"):
+                with self.subTest(name=deployment["metadata"]["name"]):
+                    self.assertEqual("replicas" not in deployment["spec"], deployment["metadata"]["name"] in hpas)
+            self.assertEqual(len(hpas), 2 if worker_autoscaling else 1)
 
     def test_external_postgresql_overlay_reaches_every_database_client(self):
         docs = render("-f", str(CHART / "values-external-postgresql.example.yaml"))
@@ -114,7 +139,7 @@ class ChartTests(unittest.TestCase):
         web, = (doc for doc in docs if doc["kind"] == "Deployment" and doc["metadata"]["name"].endswith("-web"))
         template = web["spec"]["template"]
         nginx = next(c for c in template["spec"]["containers"] if c["name"] == "nginx")
-        self.assertEqual(nginx["readinessProbe"]["tcpSocket"]["port"], service["spec"]["ports"][0]["targetPort"])
+        self.assertEqual(nginx["readinessProbe"]["httpGet"]["port"], service["spec"]["ports"][0]["targetPort"])
         self.assertTrue(all(template["metadata"]["labels"][key] == value for key, value in service["spec"]["selector"].items()))
 
     def test_hpa_tls_and_monitoring_opt_in(self):

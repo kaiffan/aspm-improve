@@ -12,6 +12,20 @@
                 <div><dt>{% trans "Default branch" %}</dt><dd>{{ repository.default_branch|default:"—" }}</dd></div>
                 {% if repository.external_id %}<div><dt>{% trans "External ID" %}</dt><dd>{{ repository.external_id }}</dd></div>{% endif %}
             </dl>
+            <form class="aspm-result-form" method="get">
+                <label for="repository-branch">{% trans "Branch" %}
+                    <input class="form-control" id="repository-branch" type="search" name="branch" value="{{ branch }}" maxlength="255" placeholder="{% trans 'Exact branch name' %}">
+                </label>
+                <button class="btn btn-secondary" type="submit">{% trans "Filter" %}</button>
+                {% if branch %}<a href="{{ request.path }}">{% trans "Clear branch filter" %}</a>{% endif %}
+            </form>
+            {% if show_scan_activity %}
+                <dl class="aspm-overview-metrics">
+                    <div><dt>{% trans "Latest delivery" %}</dt><dd>{% if latest_scan %}<a href="{% url 'aspm_commit_evidence' latest_scan.commit_id %}?tab=originals&amp;run={{ latest_scan.pk }}">{{ latest_scan.scanner }}</a> {% include "dojo/aspm/status.html" with state=latest_scan.status label=latest_scan.get_status_display %}{% else %}{% trans "No CI deliveries" %}{% endif %}</dd></div>
+                    <div><dt>{% trans "Last completed scan" %}</dt><dd>{{ last_completed|default:"—" }}</dd></div>
+                    <div><dt>{% trans "Latest ASPM export" %}</dt><dd>{% if latest_report %}<a href="{% url 'aspm_commit_evidence' latest_report.commit_id %}?tab=reports">v{{ latest_report.version }}</a> {% include "dojo/aspm/status.html" with state=latest_report.status label=latest_report.get_status_display %}{% else %}—{% endif %}</dd></div>
+                </dl>
+            {% endif %}
             {% if commits %}
                 <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Commits' %}">
                     <table class="table table-condensed">
@@ -24,7 +38,7 @@
                         <tbody>
                         {% for commit in commits %}
                             <tr>
-                                <td><a href="{% url 'scm_commit_detail' commit.pk %}"><code>{{ commit.sha }}</code></a></td>
+                                <td><a href="{% url 'scm_commit_detail' commit.pk %}"><code title="{{ commit.sha }}">{{ commit.sha|slice:":12" }}</code></a></td>
                                 <td>{{ commit.branch|default:"—" }}</td>
                                 <td>{{ commit.author|default:"—" }}</td>
                                 <td>{{ commit.committed_at|default:"—" }}</td>
@@ -35,7 +49,7 @@
                 </div>
                 {% include "dojo/paging_snippet.html" with page=commits %}
             {% else %}
-                <p>{% trans "No commits have been linked to this repository." %}</p>
+                <p>{% if branch %}{% trans "No linked commits match this branch." %}{% else %}{% trans "No commits have been linked to this repository." %}{% endif %}</p>
             {% endif %}
         </div>
     </section>

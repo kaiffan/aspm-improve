@@ -161,6 +161,7 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         projects = reverse("aspm_projects")
         visible = client.get(projects, {"product_type": self.product.prod_type_id, "q": self.product.name})
         self.assertEqual([item.pk for item in visible.context["projects"]], [self.product.pk])
+        self.assertEqual(visible.context["projects"][0].latest_scan_status, self.scan.status)
         excluded = client.get(projects, {"q": self.hidden.name})
         self.assertContains(excluded, "No projects match your search.")
 
@@ -174,6 +175,23 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         self.assertEqual([entry.pk for entry in classic.context["entries"]], [self.product.pk])
         self.assertContains(classic, reverse("product_report", args=(self.product.pk,)))
         self.assertNotContains(classic, reverse("product_report", args=(self.hidden.pk,)))
+
+    def test_repository_branch_filter_and_activity_follow_product_grants(self):
+        reader, _ = self._session("user", (GROUP_TEST,))
+        commit = self.scan.commit
+        commit.branch = "feature/example"
+        commit.save(update_fields=["branch"])
+        repository = reverse("scm_repository_detail", args=(commit.repository_id,))
+
+        scoped = reader.get(repository, {"branch": commit.branch})
+        self.assertContains(scoped, self.scan.scanner)
+        self.assertEqual([item.pk for item in scoped.context["commits"]], [commit.pk])
+        self.assertEqual(scoped.context["latest_scan"].pk, self.scan.pk)
+
+        empty = reader.get(repository, {"branch": "missing"})
+        self.assertContains(empty, "No linked commits match this branch.")
+        self.assertIsNone(empty.context["latest_scan"])
+        self.assertEqual(reader.get(reverse("scm_repository_detail", args=(self.other_scan.commit.repository_id,))).status_code, 404)
 
     def test_role_boundaries_hold_at_legacy_and_aspm_routes(self):
         user, _ = self._session("user", (GROUP_TEST,))

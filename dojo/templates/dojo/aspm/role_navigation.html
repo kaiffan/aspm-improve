@@ -1,7 +1,7 @@
 {% load i18n authorization_tags %}
 {% translate "Overview" as overview %}
-{% translate "Projects & repositories" as projects %}
-{% translate "Products & engagements" as classic %}
+{% if aspm_role == "user" %}{% translate "My projects" as projects %}{% else %}{% translate "Projects & repositories" as projects %}{% endif %}
+{% translate "Classic workspace" as classic %}
 {% translate "Findings" as findings %}
 {% translate "Reports" as reports %}
 {% translate "Integrations" as integrations %}
@@ -16,7 +16,7 @@
     {% include "dojo/aspm/nav_link.html" with route="aspm_classic" icon="layer-group" text=classic routes="product product_type view_product_type view_product all_engagements active_engagements engagements_all view_engagements view_engagement view_test" %}
     {% if aspm_role != "user" %}{% include "dojo/aspm/nav_link.html" with route="all_findings" icon="shield-halved" text=findings routes="open_findings verified_findings closed_findings accepted_findings view_finding" %}{% endif %}
     {% include "dojo/aspm/nav_link.html" with route="aspm_reports" icon="file-lines" text=reports routes="report_builder product_report engagement_report test_report" %}
-    {% if aspm_role == "expert" %}{% include "dojo/aspm/nav_link.html" with route="aspm_scanners" icon="plug" text=integrations %}{% endif %}
+    {% if aspm_role == "expert" and not aspm_webhooks_can_manage and not request.user.is_superuser %}{% include "dojo/aspm/nav_link.html" with route="aspm_scanners" icon="plug" text=integrations %}{% endif %}
 </div>
 {% if aspm_role == "secops" or aspm_webhooks_can_manage or request.user.is_superuser %}
     <div class="aspm-nav-group" role="group" aria-label="{% trans 'Administration' %}">

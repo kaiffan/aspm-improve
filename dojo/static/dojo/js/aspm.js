@@ -87,6 +87,8 @@
         if (!sidebar || !toggle || !backdrop) return;
         var desktop = window.matchMedia('(min-width: 1024px)');
         var desktopLabel = toggle.dataset.desktopLabel;
+        var workspace = document.getElementById('wrapper');
+        var tools = sidebar.querySelector('.aspm-nav-tools > summary');
         var mobileLabel = toggle.getAttribute('aria-label');
         var desktopCollapsed = false;
         try { desktopCollapsed = localStorage.getItem('aspm.sidebarCollapsed') === 'true'; } catch (_) { /* Storage may be unavailable. */ }
@@ -94,29 +96,44 @@
             root.toggleAttribute('data-nav-collapsed', desktopCollapsed);
             toggle.setAttribute('aria-expanded', String(desktop.matches && !desktopCollapsed));
             toggle.setAttribute('aria-label', desktop.matches ? desktopLabel : mobileLabel);
-            sidebar.inert = desktop.matches && desktopCollapsed;
+            sidebar.inert = !desktop.matches && !root.hasAttribute('data-nav-open');
         }
         function close(restoreFocus) {
             root.removeAttribute('data-nav-open');
             toggle.setAttribute('aria-expanded', 'false');
             backdrop.hidden = true;
+            sidebar.inert = !desktop.matches;
+            sidebar.removeAttribute('role');
+            sidebar.removeAttribute('aria-modal');
+            if (workspace) workspace.inert = false;
             if (restoreFocus) toggle.focus();
         }
         function focusable() {
-            return Array.from(sidebar.querySelectorAll('a[href], button, select, [tabindex="0"]')).filter(function (el) { return el.getClientRects().length && !el.disabled; });
+            return Array.from(sidebar.querySelectorAll('a[href], button, select, summary, [tabindex="0"]')).filter(function (el) { return el.getClientRects().length && getComputedStyle(el).visibility === 'visible' && !el.disabled; });
         }
+        function setDesktopCollapsed(collapsed) {
+            desktopCollapsed = collapsed;
+            try { localStorage.setItem('aspm.sidebarCollapsed', String(collapsed)); } catch (_) { /* Keep this tab usable. */ }
+            syncDesktop();
+        }
+        if (tools) tools.addEventListener('click', function () {
+            if (desktop.matches && desktopCollapsed) setDesktopCollapsed(false);
+        });
         toggle.addEventListener('click', function () {
             if (desktop.matches) {
-                desktopCollapsed = !desktopCollapsed;
-                try { localStorage.setItem('aspm.sidebarCollapsed', String(desktopCollapsed)); } catch (_) { /* Keep this tab usable. */ }
-                syncDesktop();
+                setDesktopCollapsed(!desktopCollapsed);
                 return;
             }
             if (root.hasAttribute('data-nav-open')) return close(true);
             root.setAttribute('data-nav-open', '');
             toggle.setAttribute('aria-expanded', 'true');
             backdrop.hidden = false;
-            requestAnimationFrame(function () { var first = focusable()[0]; if (first) first.focus(); });
+            sidebar.inert = false;
+            sidebar.setAttribute('role', 'dialog');
+            sidebar.setAttribute('aria-modal', 'true');
+            if (workspace) workspace.inert = true;
+            var first = focusable()[0];
+            if (first) first.focus();
         });
         backdrop.addEventListener('click', function () { close(true); });
         sidebar.addEventListener('click', function (event) { if (event.target.closest('[data-nav-close]')) close(true); });

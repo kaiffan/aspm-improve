@@ -34,8 +34,19 @@ def get_branding():
     """Return public presentation metadata without database or network access."""
     revision = getattr(settings, "ASPM_GIT_SHA", "")
     primary = _color(getattr(settings, "ASPM_BRAND_PRIMARY", ""))
+    palettes = {}
+    for theme in ("light", "dark"):
+        surface = _color(getattr(settings, f"ASPM_BRAND_{theme.upper()}_SURFACE", ""))
+        sidebar = _color(getattr(settings, f"ASPM_BRAND_{theme.upper()}_SIDEBAR", ""))
+        palettes[theme] = {
+            "surface": surface,
+            "on_surface": _text_color(surface) if surface else "",
+            "sidebar": sidebar,
+            "on_sidebar": _text_color(sidebar) if sidebar else "",
+        }
     return {
         **_RELEASE,
+        "palettes": palettes,
         "primary": primary,
         "on_primary": _text_color(primary) if primary else "",
         "secondary": _color(getattr(settings, "ASPM_BRAND_SECONDARY", "")),

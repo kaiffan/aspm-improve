@@ -1,30 +1,43 @@
-{{- if and .Values.web.enabled .Values.pdb.enabled }}
+{{- $root := . }}
+{{- range $component, $scale := dict "web" (dict "enabled" .Values.web.enabled "pdb" .Values.pdb "hpa" .Values.hpa) "worker" .Values.worker }}
+{{- if and $scale.enabled $scale.pdb.enabled }}
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "aspm.fullname" . }}-web
-  labels: {{ include "aspm.labels" . | nindent 4 }}
+  name: {{ include "aspm.fullname" $root }}-{{ $component }}
+  labels:
+    {{- include "aspm.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
 spec:
-  minAvailable: {{ .Values.pdb.minAvailable }}
+  minAvailable: {{ $scale.pdb.minAvailable }}
   selector:
     matchLabels:
-      {{- include "aspm.selector" . | nindent 6 }}
-      app.kubernetes.io/component: web
+      {{- include "aspm.selector" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $component }}
 {{- end }}
-{{- if and .Values.web.enabled .Values.hpa.enabled }}
+{{- if and $scale.enabled $scale.hpa.enabled }}
+{{- $hpa := $scale.hpa }}
+{{- if lt (int $hpa.maxReplicas) (int $hpa.minReplicas) }}
+{{- fail (printf "%s HPA maxReplicas must be at least minReplicas" $component) }}
+{{- end }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "aspm.fullname" . }}-web
-  labels: {{ include "aspm.labels" . | nindent 4 }}
+  name: {{ include "aspm.fullname" $root }}-{{ $component }}
+  labels: {{ include "aspm.labels" $root | nindent 4 }}
 spec:
-  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: {{ include "aspm.fullname" . }}-web}
-  minReplicas: {{ .Values.hpa.minReplicas }}
-  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "aspm.fullname" $root }}-{{ $component }}
+  minReplicas: {{ $hpa.minReplicas }}
+  maxReplicas: {{ $hpa.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
-        target: {type: Utilization, averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}}
+        target: {type: Utilization, averageUtilization: {{ $hpa.targetCPUUtilizationPercentage }}}
+{{- end }}
 {{- end }}

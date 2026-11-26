@@ -7,6 +7,9 @@ metadata:
 data:
   nginx.conf: |
     worker_processes auto;
+    {{- if .Values.web.gracefulDrain }}
+    worker_shutdown_timeout 120s;
+    {{- end }}
     pid /tmp/nginx.pid;
     error_log /dev/stderr warn;
     events { worker_connections 1024; }
@@ -23,7 +26,10 @@ data:
       server {
         listen 8080;
         server_tokens off;
-        location /static/ { alias /usr/share/nginx/html/static/; }
+        location /static/ {
+          alias /usr/share/nginx/html/static/;
+          add_header Cache-Control "public, max-age=60, must-revalidate";
+        }
         location /health/ { return 404; }
         location /django_metrics { return 404; }
         location / {

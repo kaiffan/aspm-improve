@@ -4,23 +4,29 @@
     <div class="aspm-workspace-hero">
         <header class="aspm-page-heading"><div>
             <h1>{% if aspm_role == "user" %}{% trans "My projects" %}{% else %}{% trans "Projects & repositories" %}{% endif %}</h1>
-            <p>{% trans "Open a repository to review commit evidence, or follow the same project into its classic engagements." %}</p>
+            <p>{% trans "Review repository evidence and classic assessments by project." %}</p>
         </div></header>
     </div>
     {% translate "Project name" as search_label %}
     {% include "dojo/aspm/product_filters.html" with search_id="project-search" %}
-    <section class="aspm-section" aria-label="{% trans 'Projects' %}">
+    <section class="aspm-section aspm-project-list" aria-label="{% trans 'Projects' %}">
         {% if projects %}
             <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Project results' %}">
-                <table class="table">
-                    <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Product type" %}</th><th scope="col">{% trans "Workspace" %}</th></tr></thead>
-                    <tbody>
+                <table class="table" role="table">
+                    <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">{% trans "Project" %}</th><th scope="col" role="columnheader">{% trans "Product type" %}</th>{% if show_scan_activity %}<th scope="col" role="columnheader">{% trans "Latest CI delivery" %}</th>{% endif %}<th scope="col" role="columnheader">{% trans "Workspace" %}</th></tr></thead>
+                    <tbody role="rowgroup">
                         {% for project in projects %}
-                            <tr>
+                            <tr role="row">
                                 {% url 'scm_repository_list' project.pk as repositories_url %}
-                                <th scope="row"><a href="{% if repositories_url %}{{ repositories_url }}{% else %}{% url 'view_product' project.pk %}{% endif %}">{{ project.name }}</a></th>
-                                <td>{{ project.prod_type.name }}</td>
-                                <td><div class="aspm-table-actions">
+                                <th scope="row" role="rowheader"><a href="{% if repositories_url %}{{ repositories_url }}{% else %}{% url 'view_product' project.pk %}{% endif %}">{{ project.name }}</a></th>
+                                <td role="cell">{{ project.prod_type.name }}</td>
+                                {% if show_scan_activity %}
+                                    <td role="cell">{% if project.latest_scan_at %}
+                                        {% include "dojo/aspm/status.html" with state=project.latest_scan_status label=project.latest_scan_status|lower|capfirst %}<br>
+                                        <time datetime="{{ project.latest_scan_at|date:'c' }}">{{ project.latest_scan_at }}</time>
+                                    {% else %}{% trans "No CI deliveries" %}{% endif %}</td>
+                                {% endif %}
+                                <td role="cell"><div class="aspm-table-actions">
                                     {% if repositories_url %}<a class="btn btn-secondary" href="{{ repositories_url }}">{% trans "Repositories" %}</a>{% endif %}
                                     <a class="btn btn-secondary" href="{% url 'view_engagements' project.pk %}">{% trans "Engagements" %}</a>
                                     {% if aspm_can_manage_engagements %}<a href="{% url 'aspm_engagement_policy' project.pk %}">{% trans "Engagement policy" %}</a>{% endif %}

@@ -282,6 +282,35 @@
         "type": "object"
       }
     },
+    "scheduling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "nodePolicy": {
+          "type": "string",
+          "enum": [
+            "DoNotSchedule",
+            "ScheduleAnyway"
+          ]
+        },
+        "zonePolicy": {
+          "type": "string",
+          "enum": [
+            "DoNotSchedule",
+            "ScheduleAnyway",
+            ""
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "nodePolicy",
+        "zonePolicy"
+      ]
+    },
     "podSecurityContext": {
       "type": "object"
     },
@@ -311,6 +340,9 @@
           "type": "integer",
           "minimum": 0
         },
+        "gracefulDrain": {
+          "type": "boolean"
+        },
         "resources": {
           "type": "object"
         },
@@ -333,6 +365,7 @@
         "processes",
         "threads",
         "terminationGracePeriodSeconds",
+        "gracefulDrain",
         "resources",
         "nginxResources",
         "startupProbe",
@@ -358,6 +391,53 @@
         "queues": {
           "type": "string"
         },
+        "readinessProbeEnabled": {
+          "type": "boolean"
+        },
+        "pdb": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "minAvailable": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "enabled",
+            "minAvailable"
+          ]
+        },
+        "hpa": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "minReplicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxReplicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "targetCPUUtilizationPercentage": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ]
+        },
         "terminationGracePeriodSeconds": {
           "type": "integer",
           "minimum": 901
@@ -371,6 +451,9 @@
         "replicas",
         "concurrency",
         "queues",
+        "readinessProbeEnabled",
+        "pdb",
+        "hpa",
         "terminationGracePeriodSeconds",
         "resources"
       ]
@@ -527,7 +610,7 @@
         },
         "targetCPUUtilizationPercentage": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 1
         }
       },
       "required": [
@@ -608,6 +691,7 @@
     "tolerations",
     "affinity",
     "topologySpreadConstraints",
+    "scheduling",
     "podSecurityContext",
     "securityContext",
     "web",

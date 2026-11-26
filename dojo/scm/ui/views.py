@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import F
 from django.http import HttpResponseBadRequest
@@ -8,6 +9,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from dojo.aspm_access.permissions import role
+from dojo.aspm_ingestion.models import GeneratedReport, ScanRun
 from dojo.aspm_ingestion.permissions import api_only_scans_enabled
 from dojo.models import Engagement
 from dojo.product.queries import get_authorized_products
@@ -45,10 +47,29 @@ def repository_list(request, product_id):
 
 def repository_detail(request, repository_id):
     repository = get_object_or_404(authorized_repositories(request.user), pk=repository_id)
+    branch = request.GET.get("branch", "").strip()[:255]
+    commits = repository.commits.order_by(*COMMIT_ORDER)
+    if branch:
+        commits = commits.filter(branch=branch)
+    activity = {}
+    if settings.ASPM_INGESTION_ENABLED:
+        scans = ScanRun.objects.filter(commit__repository=repository, product_id=repository.product_id)
+        if branch:
+            scans = scans.filter(commit__branch=branch)
+        activity = {
+            "latest_scan": scans.only("pk", "scanner", "status", "commit_id").order_by("-created_at", "-pk").first(),
+            "last_completed": scans.filter(status=ScanRun.Status.COMPLETED).order_by("-finished_at", "-pk").values_list("finished_at", flat=True).first(),
+            "latest_report": GeneratedReport.objects.filter(commit_id__in=commits.order_by().values("pk")).only(
+                "pk", "commit_id", "version", "status",
+            ).order_by("-created_at", "-pk").first(),
+            "show_scan_activity": True,
+        }
     return render(request, "dojo/scm/repository_detail.html", {
         **_project_context(repository.product, repository.url, request.user),
+        **activity,
         "repository": repository,
-        "commits": _page(request, repository.commits.order_by(*COMMIT_ORDER)),
+        "branch": branch,
+        "commits": _page(request, commits),
         "custom_breadcrumb": _repository_breadcrumbs(repository, request.user),
     })
 

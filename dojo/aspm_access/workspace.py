@@ -37,7 +37,7 @@ def _audit(request, obj, action, message):
     )
 
 
-def _product_workspace(request, *, title, template, context_name):
+def _product_workspace(request, *, title, template, context_name, show_scan_activity=False):
     query = request.GET.get("q", "").strip()[:150]
     products = get_authorized_products("view", user=request.user)
     product_types = Product_Type.objects.filter(
@@ -47,9 +47,19 @@ def _product_workspace(request, *, title, template, context_name):
     if selected_type.isascii() and selected_type.isdecimal() and len(selected_type) <= 18:
         products = products.filter(prod_type_id=int(selected_type))
     products = products.filter(name__icontains=query).select_related("prod_type").order_by("name", "pk")
+    show_scan_activity = show_scan_activity and settings.ASPM_INGESTION_ENABLED and settings.ASPM_SCM_HIERARCHY
+    if show_scan_activity:
+        latest = ScanRun.objects.filter(
+            product_id=OuterRef("pk"), commit__repository__product_id=OuterRef("pk"),
+        ).order_by("-created_at", "-pk")
+        products = products.annotate(
+            latest_scan_at=Subquery(latest.values("created_at")[:1]),
+            latest_scan_status=Subquery(latest.values("status")[:1]),
+        )
     add_breadcrumb(title=title, top_level=True, request=request)
     return render(request, template, {
         context_name: _page(request, products),
+        "show_scan_activity": show_scan_activity,
         "query": query,
         "product_types": product_types,
         "selected_type": selected_type,
@@ -58,7 +68,9 @@ def _product_workspace(request, *, title, template, context_name):
 
 @require_GET
 def projects(request):
-    return _product_workspace(request, title=_("Projects"), template="dojo/aspm/projects.html", context_name="projects")
+    return _product_workspace(
+        request, title=_("Projects"), template="dojo/aspm/projects.html", context_name="projects", show_scan_activity=True,
+    )
 
 
 @require_GET

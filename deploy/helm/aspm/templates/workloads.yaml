@@ -15,7 +15,7 @@ spec:
   replicas: 1
   strategy: {type: Recreate}
   {{- else }}
-  {{- if or (ne $component "web") (not $root.Values.hpa.enabled) }}
+  {{- if not (or (and (eq $component "web") $root.Values.hpa.enabled) (and (eq $component "worker") $root.Values.worker.hpa.enabled)) }}
   replicas: {{ $cfg.replicas }}
   {{- end }}
   strategy:
@@ -58,8 +58,25 @@ spec:
       {{- with $root.Values.affinity }}
       affinity: {{ toYaml . | nindent 8 }}
       {{- end }}
-      {{- with $root.Values.topologySpreadConstraints }}
-      topologySpreadConstraints: {{ toYaml . | nindent 8 }}
+      {{- $scheduling := $root.Values.scheduling }}
+      {{- if or $root.Values.topologySpreadConstraints (and $scheduling.enabled (ne $component "beat")) }}
+      topologySpreadConstraints:
+        {{- with $root.Values.topologySpreadConstraints }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and $scheduling.enabled (ne $component "beat") }}
+        {{- range $topology, $policy := dict "kubernetes.io/hostname" $scheduling.nodePolicy "topology.kubernetes.io/zone" $scheduling.zonePolicy }}
+        {{- if $policy }}
+        - maxSkew: 1
+          topologyKey: {{ $topology }}
+          whenUnsatisfiable: {{ $policy }}
+          labelSelector:
+            matchLabels:
+              {{- include "aspm.selector" $root | nindent 14 }}
+              app.kubernetes.io/component: {{ $component }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
       {{- end }}
       initContainers:
         - name: schema-and-storage
@@ -86,9 +103,26 @@ spec:
           startupProbe: {{ toYaml $cfg.startupProbe | nindent 12 }}
           readinessProbe: {{ toYaml $cfg.readinessProbe | nindent 12 }}
           livenessProbe: {{ toYaml $cfg.livenessProbe | nindent 12 }}
+          {{- if $cfg.gracefulDrain }}
+          {{- if lt (int $cfg.terminationGracePeriodSeconds) 145 }}
+          {{- fail "web.gracefulDrain requires terminationGracePeriodSeconds >= 145" }}
+          {{- end }}
+          lifecycle:
+            preStop:
+              exec: {command: [sleep, "130"]}
+          {{- end }}
           {{- else if eq $component "worker" }}
           command: [celery]
           args: [--app=dojo, worker, --loglevel=INFO, --pool=prefork, {{ printf "--concurrency=%v" $cfg.concurrency | quote }}, --prefetch-multiplier=1, {{ printf "--queues=%s" $cfg.queues | quote }}]
+          {{- if $cfg.readinessProbeEnabled }}
+          readinessProbe:
+            exec:
+              command: [sh, -ec, 'celery --app=dojo inspect --timeout=3 --destination="celery@$HOSTNAME" ping']
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 8
+            failureThreshold: 3
+          {{- end }}
           {{- else }}
           command: [python, manage.py, aspm_beat]
           {{- end }}
@@ -115,10 +149,23 @@ spec:
           imagePullPolicy: {{ $root.Values.nginxImage.pullPolicy }}
           command: [nginx, -g, "daemon off;"]
           ports: [{name: http, containerPort: 8080}]
-          readinessProbe:
-            tcpSocket: {port: http}
+          startupProbe:
+            httpGet: {path: /static/dojo/css/aspm.css, port: http}
             periodSeconds: 2
+            failureThreshold: 15
+          readinessProbe:
+            httpGet: {path: /static/dojo/css/aspm.css, port: http}
+            periodSeconds: 5
             timeoutSeconds: 2
+          livenessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 15
+            timeoutSeconds: 2
+          {{- if $cfg.gracefulDrain }}
+          lifecycle:
+            preStop:
+              exec: {command: [sleep, "5"]}
+          {{- end }}
           securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
           resources: {{ toYaml $cfg.nginxResources | nindent 12 }}
           volumeMounts:

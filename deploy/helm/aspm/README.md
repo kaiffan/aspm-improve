@@ -100,6 +100,9 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `tolerations` | `list` | `[]` |
 | `affinity` | `dict` | `{}` |
 | `topologySpreadConstraints` | `list` | `[]` |
+| `scheduling.enabled` | `bool` | `False` |
+| `scheduling.nodePolicy` | `str` | `ScheduleAnyway` |
+| `scheduling.zonePolicy` | `str` | `` |
 | `podSecurityContext.runAsNonRoot` | `bool` | `True` |
 | `podSecurityContext.runAsUser` | `int` | `1001` |
 | `podSecurityContext.runAsGroup` | `int` | `1337` |
@@ -113,7 +116,8 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `web.replicas` | `int` | `2` |
 | `web.processes` | `int` | `2` |
 | `web.threads` | `int` | `2` |
-| `web.terminationGracePeriodSeconds` | `int` | `90` |
+| `web.terminationGracePeriodSeconds` | `int` | `150` |
+| `web.gracefulDrain` | `bool` | `False` |
 | `web.resources.requests.cpu` | `str` | `250m` |
 | `web.resources.requests.memory` | `str` | `512Mi` |
 | `web.resources.limits.cpu` | `str` | `2` |
@@ -144,6 +148,13 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `worker.replicas` | `int` | `2` |
 | `worker.concurrency` | `int` | `2` |
 | `worker.queues` | `str` | `celery` |
+| `worker.readinessProbeEnabled` | `bool` | `False` |
+| `worker.pdb.enabled` | `bool` | `False` |
+| `worker.pdb.minAvailable` | `int` | `2` |
+| `worker.hpa.enabled` | `bool` | `False` |
+| `worker.hpa.minReplicas` | `int` | `3` |
+| `worker.hpa.maxReplicas` | `int` | `4` |
+| `worker.hpa.targetCPUUtilizationPercentage` | `int` | `70` |
 | `worker.terminationGracePeriodSeconds` | `int` | `960` |
 | `worker.resources.requests.cpu` | `str` | `250m` |
 | `worker.resources.requests.memory` | `str` | `512Mi` |

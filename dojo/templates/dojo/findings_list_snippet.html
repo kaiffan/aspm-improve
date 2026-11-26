@@ -6,20 +6,21 @@
 {% load static %}
 {% load i18n %}
 {% block findings_list %}
-    <div class="row">
+    <div class="row aspm-findings-browser">
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading tight">
-                    <h3 class="has-filters">
-                        <i class="fa-solid fa-bug dd-card-icon" aria-hidden="true"></i>{% blocktrans %}{{ filter_name }} Findings{% endblocktrans %}
-                        <div class="dropdown pull-right">
-                            &nbsp;
+                    <div class="aspm-finding-toolbar">
+                        <h2>
+                        <i class="fa-solid fa-bug dd-card-icon" aria-hidden="true"></i>{% blocktrans %}{{ filter_name }} Findings{% endblocktrans %}</h2>
+                        <div class="aspm-finding-actions">
+                          <div class="dropdown">
                             <button class="btn btn-primary dropdown-toggle"
                                     type="button"
                                     id="downloadMenu"
                                     data-toggle="dropdown"
-                                    aria-expanded="true"
-                                    aria-label="{% trans 'dropdown-menu' %}">
+                                    aria-expanded="false"
+                                    aria-label="{% trans 'Export findings' %}">
                                 <span class="fa-solid fa-download"></span>
                                 <span class="caret"></span>
                             </button>
@@ -40,7 +41,8 @@
                                     </a>
                                 </li>
                             </ul>
-                            <button id="show-filters"
+                          </div>
+                            <button id="show-filters" type="button" aria-expanded="false"
                                     data-toggle="collapse"
                                     data-target="#the-filters"
                                     class="btn btn-primary toggle-filters"
@@ -48,14 +50,14 @@
                                 <i class="fa-solid fa-filter" aria-hidden="true"></i> {% trans "Filters" %}
                             </button>
                         </div>
-                    </h3>
+                    </div>
                 </div>
                 <div id="the-filters" class="is-filters panel-body collapse">
                     {% include "dojo/filter_snippet.html" with form=filtered.form %}
                 </div>
             </div>
             {% if findings %}
-                <div class="clearfix">{% include "dojo/paging_snippet.html" with page=findings page_size=True %}</div>
+                <div class="aspm-findings-pagination">{% include "dojo/paging_snippet.html" with page=findings page_size=True %}</div>
                 {% if not product_tab or product_tab and product_tab.product|has_object_permission:"edit" %}
                     <div class="dropdown hidden" style="padding-bottom: 5px;" id="bulk_edit_menu">
                         {{ bulk_edit_form.media.css }}

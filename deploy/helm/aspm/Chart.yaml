@@ -1,7 +1,7 @@
 apiVersion: v2
 name: aspm
 description: ASPM API ingestion, private evidence and durable integrations
-version: 0.1.0-rc.5
+version: 0.1.0-rc.6
 appVersion: "1.0.1-enterprise-rc"
 type: application
 kubeVersion: ">=1.27.0-0"
@@ -16,3 +16,7 @@ annotations:
       description: Render the free storage threshold as a decimal integer for the Django runtime
     - kind: fixed
       description: Wait for nginx readiness and report bounded ClusterIP HTTP smoke retries
+    - kind: added
+      description: Add local, standard HA and high-throughput profiles with worker disruption and optional autoscaling policies
+    - kind: changed
+      description: Verify nginx static readiness and provide configurable ingress drain for web shutdown

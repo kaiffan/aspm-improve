@@ -29,6 +29,15 @@ class TestASPMBranding(SimpleTestCase):
         with self.assertRaises(ImproperlyConfigured):
             get_branding()
 
+    @override_settings(ASPM_BRAND_LIGHT_SIDEBAR="#f4f4f4", ASPM_BRAND_DARK_SURFACE="#171b22")
+    def test_theme_branding_uses_validated_hex_and_contrasting_text(self):
+        palettes = get_branding()["palettes"]
+        self.assertEqual(palettes["light"]["on_sidebar"], "#000000")
+        self.assertEqual(palettes["dark"]["on_surface"], "#ffffff")
+        with override_settings(ASPM_BRAND_DARK_SURFACE="red; color: red"):
+            with self.assertRaises(ImproperlyConfigured):
+                get_branding()
+
     @override_settings(ASPM_SHOW_UPSTREAM_PROMOTIONS=False)
     def test_promos_are_not_fetched_and_read_only_warning_is_preserved(self):
         request = RequestFactory().get("/")

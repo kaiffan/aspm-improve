@@ -17,6 +17,8 @@ def schema(value, key=""):
         result = {"type": "integer", "minimum": 0}
         if key in {"replicas", "concurrency", "processes", "threads", "minReplicas", "maxReplicas", "activeDeadlineSeconds"}:
             result["minimum"] = 1
+        if key == "targetCPUUtilizationPercentage":
+            result["minimum"] = 1
         if key == "port":
             result.update(minimum=1, maximum=65535)
         return result
@@ -24,6 +26,10 @@ def schema(value, key=""):
         result = {"type": "string"}
         if key in {"existingSecret", "existingClaim", "mediaExistingClaim", "repository", "tag", "host", "tlsSecretName"}:
             result["minLength"] = 1
+        if key in {"nodePolicy", "zonePolicy"}:
+            result["enum"] = ["DoNotSchedule", "ScheduleAnyway"]
+            if key == "zonePolicy":
+                result["enum"].append("")
         if key == "digest":
             result["pattern"] = "^$|^sha256:[a-f0-9]{64}$"
         if key == "pullPolicy":

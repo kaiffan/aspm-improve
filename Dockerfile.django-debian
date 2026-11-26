@@ -32,6 +32,12 @@ COPY requirements.txt ./
 RUN export PYCURL_SSL_LIBRARY=openssl && \
     CPUCOUNT=1 pip3 wheel --wheel-dir=/tmp/wheels -r ./requirements.txt
 
+# The Python base includes pip's own TLS bundle, independent of requirements.txt.
+FROM scratch AS pip-bootstrap
+ADD --checksum=sha256:fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70 \
+  https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl \
+  /pip-26.2.2-py3-none-any.whl
+
 FROM base AS release
 WORKDIR /app
 ARG uid=1001
@@ -92,9 +98,11 @@ RUN \
   --find-links=/tmp/wheels \
   -r ./requirements.txt && \
   apt-get -y purge --auto-remove git
-# Fail the build if either trust store still carries the root distrusted after the
-# eMudhra key compromise (2026-10-20), so a cached or stale layer can't ship it.
-RUN python3 -c "import ssl, sys, certifi; bad = [f for f in ('/etc/ssl/certs/ca-certificates.crt', certifi.where()) if (lambda ctx: ctx.load_verify_locations(cafile=f) or any(dict(x[0] for x in c['subject']).get('commonName') == 'emSign ECC Root CA - G3' for c in ctx.get_ca_certs()))(ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT))]; sys.exit('distrusted root emSign ECC Root CA - G3 still in: ' + ', '.join(bad) if bad else 0)"
+# pip 26.2.2 updates its vendored certifi after the eMudhra key compromise.
+RUN --mount=from=pip-bootstrap,target=/tmp/pip-bootstrap \
+  python3 -m pip install --no-index --no-deps --no-cache-dir /tmp/pip-bootstrap/pip-26.2.2-py3-none-any.whl
+# Check all three trust stores to catch stale base-image or cached packages.
+RUN python3 -c "import ssl, sys, certifi; from pip._vendor import certifi as pip_certifi; bad = [f for f in ('/etc/ssl/certs/ca-certificates.crt', certifi.where(), pip_certifi.where()) if (lambda ctx: ctx.load_verify_locations(cafile=f) or any(dict(x[0] for x in c['subject']).get('commonName') == 'emSign ECC Root CA - G3' for c in ctx.get_ca_certs()))(ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT))]; sys.exit('distrusted root emSign ECC Root CA - G3 still in: ' + ', '.join(bad) if bad else 0)"
 
 COPY \
   docker/entrypoint-celery-beat.sh \

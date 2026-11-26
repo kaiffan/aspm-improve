@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: Evidence polling is bounded to five minutes
+ok 1 - Evidence polling is bounded to five minutes
+  ---
+  duration_ms: 6.002833
+  ...
+# Subtest: Evidence revision change reloads the page once
+ok 2 - Evidence revision change reloads the page once
+  ---
+  duration_ms: 0.671875
+  ...
+# Subtest: Authorization failures stop evidence polling
+ok 3 - Authorization failures stop evidence polling
+  ---
+  duration_ms: 0.721542
+  ...
+# Subtest: Expired polling budget survives page reload
+ok 4 - Expired polling budget survives page reload
+  ---
+  duration_ms: 0.765916
+  ...
+# Subtest: Hidden pages do not send evidence polling requests
+ok 5 - Hidden pages do not send evidence polling requests
+  ---
+  duration_ms: 1.053625
+  ...
+# Subtest: System is the default and applies before DOM ready
+ok 6 - System is the default and applies before DOM ready
+  ---
+  duration_ms: 2.748875
+  ...
+# Subtest: Explicit light preference overrides dark system and persists
+ok 7 - Explicit light preference overrides dark system and persists
+  ---
+  duration_ms: 0.878916
+  ...
+# Subtest: System preference reacts to OS changes
+ok 8 - System preference reacts to OS changes
+  ---
+  duration_ms: 0.904875
+  ...
+# Subtest: Explicit preference ignores OS changes
+ok 9 - Explicit preference ignores OS changes
+  ---
+  duration_ms: 1.125375
+  ...
+# Subtest: Disabled storage keeps theme controls functional
+ok 10 - Disabled storage keeps theme controls functional
+  ---
+  duration_ms: 2.286292
+  ...
+# Subtest: Invalid stored or cross-tab values fall back to System
+ok 11 - Invalid stored or cross-tab values fall back to System
+  ---
+  duration_ms: 0.828958
+  ...
+# Subtest: Chart theming preserves scale/data behavior and disabled plugins
+ok 12 - Chart theming preserves scale/data behavior and disabled plugins
+  ---
+  duration_ms: 0.974875
+  ...
+# Subtest: Chart theming does not assign resolved proxies back into their parents
+ok 13 - Chart theming does not assign resolved proxies back into their parents
+  ---
+  duration_ms: 0.781375
+  ...
+# Subtest: Tagulous replacement retains the visible form label
+ok 14 - Tagulous replacement retains the visible form label
+  ---
+  duration_ms: 1.099208
+  ...
+# Subtest: Select2 inline search retains the native filter label
+ok 15 - Select2 inline search retains the native filter label
+  ---
+  duration_ms: 0.765708
+  ...
+# Subtest: Detached Select2 search gets a name without overwriting an explicit one
+ok 16 - Detached Select2 search gets a name without overwriting an explicit one
+  ---
+  duration_ms: 1.173834
+  ...
+# Subtest: Filters initialized after window load receive accessible names
+ok 17 - Filters initialized after window load receive accessible names
+  ---
+  duration_ms: 1.091167
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 163.15525

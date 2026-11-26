@@ -1,0 +1,10 @@
+# Include in the repo after providing a semgrep-report job that publishes semgrep.json.
+aspm-upload-semgrep:
+  stage: deploy
+  needs: [{job: semgrep-report, artifacts: true}]
+  # Use an approved runner image with bash, curl, trusted corporate CAs and Python 3.
+  tags: [aspm-integration]
+  script:
+    - export ASPM_COMMIT_SHA="$CI_COMMIT_SHA"
+    - export ASPM_IDEMPOTENCY_KEY="gitlab/${CI_PROJECT_ID}/${CI_PIPELINE_ID}/semgrep"
+    - integration-examples/curl/upload.sh 'Semgrep JSON Report' semgrep.json

@@ -1,0 +1,37 @@
+Rollback was a success! Happy Helming!
+deployment "aspm-aspm-web" successfully rolled out
+deployment "aspm-aspm-worker" successfully rolled out
+deployment "aspm-aspm-beat" successfully rolled out
+[26/Nov/2026 20:08:33] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 20:08:33] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 20:08:33] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+ASPM schema and private storage preflight passed
+->  celery@aspm-aspm-worker-5c94654456-pkrs7: OK
+        pong
+
+1 node online.
+[('live', 200), ('startup', 200), ('ready', 200)]
+NAME: aspm
+LAST DEPLOYED: Thu Nov 26 23:07:55 2026
+NAMESPACE: aspm-lab-handover
+STATUS: deployed
+REVISION: 3
+DESCRIPTION: Rollback to 1
+TEST SUITE:     aspm-aspm-http-test
+Last Started:   Thu Nov 26 23:08:36 2026
+Last Completed: Thu Nov 26 23:08:43 2026
+Phase:          Succeeded
+
+POD LOGS: aspm-aspm-http-test
+ASPM login smoke attempt 1: http://aspm-aspm:80/login: <urlopen error [Errno 111] Connection refused>
+ASPM login smoke passed: HTTP 200 from http://aspm-aspm:80/login (attempt 2)
+
+Published HTTP/TLS check deferred. Supply --url when ingress or port-forward is ready.
+[26/Nov/2026 20:08:43] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 20:08:43] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 20:08:43] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+12 originals + four report artifacts retained identical SHA-256 fingerprint after rollback: c96ed1f4c1bcd54ef265da74bc1c258ad6da7dc6b2f4b911a92a82e74aa0e25d
+REVISION	UPDATED                 	STATUS    	CHART          	APP VERSION        	DESCRIPTION
+1       	Thu Nov 26 22:17:49 2026	superseded	aspm-0.1.0-rc.8	1.0.1-enterprise-rc	Install complete
+2       	Thu Nov 26 22:50:44 2026	superseded	aspm-0.1.0-rc.9	1.0.1-enterprise-rc	Upgrade complete
+3       	Thu Nov 26 23:07:55 2026	deployed  	aspm-0.1.0-rc.8	1.0.1-enterprise-rc	Rollback to 1

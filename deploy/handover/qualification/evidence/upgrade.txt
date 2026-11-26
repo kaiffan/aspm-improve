@@ -1,0 +1,84 @@
+REVISION	UPDATED                 	STATUS  	CHART          	APP VERSION        	DESCRIPTION
+1       	Thu Nov 26 22:17:49 2026	deployed	aspm-0.1.0-rc.8	1.0.1-enterprise-rc	Install complete
+[26/Nov/2026 19:50:24] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:50:24] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:50:24] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+orbstack: linux/arm64, 10 CPU, 8195968Ki memory; DiskPressure=False
+==> Linting helm/aspm-0.1.0-rc.9.tgz
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PVC aspm-evidence: Bound
+PVC aspm-media: Bound
+Secret aspm-runtime: references present
+Warning: resource networkpolicies/aspm-aspm is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+networkpolicy.networking.k8s.io/aspm-aspm configured (server dry run)
+Warning: resource networkpolicies/aspm-aspm-test is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+networkpolicy.networking.k8s.io/aspm-aspm-test configured (server dry run)
+Warning: resource serviceaccounts/aspm-aspm is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+serviceaccount/aspm-aspm configured (server dry run)
+Warning: resource configmaps/aspm-aspm-nginx is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+configmap/aspm-aspm-nginx configured (server dry run)
+Warning: resource services/aspm-aspm is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+service/aspm-aspm configured (server dry run)
+Warning: resource deployments/aspm-aspm-web is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+deployment.apps/aspm-aspm-web configured (server dry run)
+Warning: resource deployments/aspm-aspm-worker is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+deployment.apps/aspm-aspm-worker configured (server dry run)
+Warning: resource deployments/aspm-aspm-beat is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+deployment.apps/aspm-aspm-beat configured (server dry run)
+pod/aspm-preflight-556d97d558 created
+pod/aspm-preflight-556d97d558 condition met
+[26/Nov/2026 19:50:38] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:50:38] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:50:38] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+PostgreSQL SQL/TLS: OK
+broker DNS/PING: OK
+cache DNS/PING: OK
+evidence fsync/rename: OK
+media write: OK
+OIDC discovery: DISABLED
+pod "aspm-preflight-556d97d558" deleted from aspm-lab-handover namespace
+Release "aspm" has been upgraded. Happy Helming!
+NAME: aspm
+LAST DEPLOYED: Thu Nov 26 22:50:44 2026
+NAMESPACE: aspm-lab-handover
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+Migration Job: Succeeded
+deployment "aspm-aspm-web" successfully rolled out
+deployment "aspm-aspm-worker" successfully rolled out
+deployment "aspm-aspm-beat" successfully rolled out
+[26/Nov/2026 19:53:38] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:53:38] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:53:38] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+ASPM schema and private storage preflight passed
+->  celery@aspm-aspm-worker-7f9f67df46-cnxbm: OK
+        pong
+
+1 node online.
+[('live', 200), ('startup', 200), ('ready', 200)]
+NAME: aspm
+LAST DEPLOYED: Thu Nov 26 22:50:44 2026
+NAMESPACE: aspm-lab-handover
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE:     aspm-aspm-http-test
+Last Started:   Thu Nov 26 22:53:45 2026
+Last Completed: Thu Nov 26 22:53:55 2026
+Phase:          Succeeded
+
+POD LOGS: aspm-aspm-http-test
+ASPM login smoke attempt 1: http://aspm-aspm:80/login: <urlopen error [Errno 111] Connection refused>
+ASPM login smoke passed: HTTP 200 from http://aspm-aspm:80/login (attempt 2)
+
+Published HTTP/TLS check deferred. Supply --url when ingress or port-forward is ready.
+Published site configuration: http://127.0.0.1:18739
+[26/Nov/2026 19:53:58] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:53:58] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:53:58] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+REVISION	UPDATED                 	STATUS    	CHART          	APP VERSION        	DESCRIPTION
+1       	Thu Nov 26 22:17:49 2026	superseded	aspm-0.1.0-rc.8	1.0.1-enterprise-rc	Install complete
+2       	Thu Nov 26 22:50:44 2026	deployed  	aspm-0.1.0-rc.9	1.0.1-enterprise-rc	Upgrade complete

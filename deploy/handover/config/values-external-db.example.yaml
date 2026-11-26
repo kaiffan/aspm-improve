@@ -1,0 +1,28 @@
+# ASPM deploys no PostgreSQL workload. Apply this overlay to a fresh release.
+# In aspm-runtime, store the complete percent-encoded PostgreSQL URI under
+# database-url. Host, port, database, username, and password are all read there.
+existingSecret: aspm-runtime
+secretKeys:
+  databaseUrl: database-url
+
+databaseTLS:
+  # Secret in the release namespace containing ca.crt for the named database host.
+  existingSecret: aspm-postgres-ca
+config:
+  DD_DATABASE_CONN_MAX_AGE: "60"
+  DD_DATABASE_OPTIONS: '{"connect_timeout":5,"sslmode":"verify-full","sslrootcert":"/app/db-tls/ca.crt"}'
+
+networkPolicy:
+  # Replace the PostgreSQL documentation address with the reachable private
+  # endpoint CIDR. Retain the broker/cache and other dependencies in this list.
+  # Helm replaces lists, so merge all required rules into the final overlay.
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 192.0.2.10/32
+      ports:
+        - protocol: TCP
+          port: 5432
+
+tests:
+  enabled: true

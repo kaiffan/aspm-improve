@@ -1,0 +1,124 @@
+{
+  "registered_at": 1794942049.276438,
+  "weights": {
+    "findings": 30,
+    "filtered_product": 15,
+    "finding_detail": 10,
+    "products": 10,
+    "tests": 10,
+    "engagements": 5,
+    "dashboard": 10,
+    "web_products": 5,
+    "endpoints": 5
+  },
+  "cases": [
+    {
+      "id": "core_findings",
+      "url": "/api/v2/findings/?limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_filtered_product",
+      "url": "/api/v2/findings/?test__engagement__product={product}&severity=High&active=true&limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_finding_detail",
+      "url": "/api/v2/findings/{finding}/",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_products",
+      "url": "/api/v2/products/?limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_tests",
+      "url": "/api/v2/tests/?limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_engagements",
+      "url": "/api/v2/engagements/?limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_dashboard",
+      "url": "/dashboard",
+      "format": "html",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_web_products",
+      "url": "/asset",
+      "format": "html",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    },
+    {
+      "id": "core_endpoints",
+      "url": "/api/v2/endpoints/?limit=100",
+      "format": "json",
+      "actor": "membership-vu",
+      "expected_status": [
+        200
+      ],
+      "immutable_findings": true
+    }
+  ],
+  "n_per_point": 300,
+  "repeat41": [
+    1,
+    5,
+    10,
+    15,
+    25
+  ],
+  "repeat42": [
+    25
+  ],
+  "repeat43": [
+    25
+  ],
+  "think_ms": 0,
+  "safe_escalation": "Stop entire campaign if any guard/business failure;35/50 held",
+  "scope": "Current1M/member identities/shared testPG/caps; no historical Original comparison; no expected403 or reduced Products payload",
+  "reset_each_repeat": true
+}

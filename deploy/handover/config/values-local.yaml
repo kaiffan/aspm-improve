@@ -1,0 +1,22 @@
+# Single-node lab. PostgreSQL, broker, cache and claims are provisioned separately.
+web:
+  replicas: 1
+  processes: 1
+  threads: 2
+  resources:
+    requests: {cpu: 200m, memory: 384Mi}
+worker:
+  replicas: 1
+  concurrency: 1
+pdb:
+  enabled: false
+config:
+  DD_DATABASE_OPTIONS: '{"connect_timeout":3,"sslmode":"disable"}'
+  DD_SESSION_COOKIE_SECURE: "False"
+  DD_CSRF_COOKIE_SECURE: "False"
+  DD_SECURE_PROXY_SSL_HEADER: "False"
+databaseTLS:
+  existingSecret: ""
+scheduling:
+  enabled: true
+  nodePolicy: ScheduleAnyway

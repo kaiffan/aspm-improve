@@ -1,0 +1,39 @@
+{
+  "application_sha": "bef347c845eee8e16fdd6c3b5e8134eb499ece44",
+  "architecture": "linux/arm64",
+  "published": false,
+  "images": {
+    "django": {
+      "tag": "aspm-qualified/django:bef347c845ee-arm64",
+      "local_image_id": "sha256:f4b225c7d5d63f7b740385abdd9c0542c7ba0b26be3dace532ea36678f536e2b",
+      "local_repo_digests": [
+        "aspm-qualified/django@sha256:f4b225c7d5d63f7b740385abdd9c0542c7ba0b26be3dace532ea36678f536e2b"
+      ],
+      "platform_config_id": "sha256:cdca4ea8300434cad3e8ee96fdf279e1527b036d668d25c65f8c757a6b903bae",
+      "registry_manifest_digest": null,
+      "image_size_bytes": 1073069245,
+      "local_only": true,
+      "sbom": "django.cyclonedx.json",
+      "security_scan": "Trivy 0.70.0"
+    },
+    "nginx": {
+      "tag": "aspm-qualified/nginx:bef347c845ee-arm64",
+      "local_image_id": "sha256:98eb393686f674aabacfe94b36341ff06efeeb1a4a992538530497749bfd7db4",
+      "local_repo_digests": [
+        "aspm-qualified/nginx@sha256:98eb393686f674aabacfe94b36341ff06efeeb1a4a992538530497749bfd7db4"
+      ],
+      "platform_config_id": "sha256:777157c7274229501952133fb4c004bac6dd71a885a9ae38d5cf18616c725a91",
+      "registry_manifest_digest": null,
+      "image_size_bytes": 455359320,
+      "local_only": true,
+      "sbom": "nginx.cyclonedx.json",
+      "security_scan": "Trivy 0.70.0"
+    }
+  },
+  "roles": {
+    "web": "django and nginx",
+    "worker": "django",
+    "beat": "django",
+    "migration": "django"
+  }
+}

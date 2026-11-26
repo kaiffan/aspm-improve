@@ -1,0 +1,11 @@
+# Example step in a job with checkout and the preceding scanner step.
+name: Upload scanner result to ASPM
+env:
+  ASPM_URL: ${{ vars.ASPM_URL }}
+  ASPM_PROJECT_ID: ${{ vars.ASPM_PROJECT_ID }}
+  ASPM_REPOSITORY_ID: ${{ vars.ASPM_REPOSITORY_ID }}
+  ASPM_TOKEN: ${{ secrets.ASPM_TOKEN }}
+  ASPM_COMMIT_SHA: ${{ github.sha }}
+  ASPM_IDEMPOTENCY_KEY: github/${{ github.repository_id }}/${{ github.run_id }}/semgrep
+run: integration-examples/curl/upload.sh 'Semgrep JSON Report' semgrep.json
+shell: bash

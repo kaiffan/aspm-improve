@@ -1,0 +1,49 @@
+deployment "aspm-aspm-web" successfully rolled out
+deployment "aspm-aspm-worker" successfully rolled out
+deployment "aspm-aspm-beat" successfully rolled out
+[26/Nov/2026 19:57:49] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:57:49] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:57:49] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+ASPM schema and private storage preflight passed
+->  celery@aspm-aspm-worker-c87d97565-rsts2: OK
+        pong
+
+1 node online.
+[('live', 200), ('startup', 200), ('ready', 200)]
+NAME: aspm
+LAST DEPLOYED: Thu Nov 26 22:54:37 2026
+NAMESPACE: aspm-lab-handover-rc
+STATUS: deployed
+REVISION: 2
+DESCRIPTION: Upgrade complete
+TEST SUITE:     aspm-aspm-http-test
+Last Started:   Thu Nov 26 22:57:58 2026
+Last Completed: Thu Nov 26 22:58:07 2026
+Phase:          Succeeded
+
+POD LOGS: aspm-aspm-http-test
+ASPM login smoke attempt 1: http://aspm-aspm:80/login: <urlopen error [Errno 111] Connection refused>
+ASPM login smoke passed: HTTP 200 from http://aspm-aspm:80/login (attempt 2)
+
+Login HTTP 200 at http://127.0.0.1:18743
+[26/Nov/2026 19:58:08] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:58:09] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:58:09] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+System check identified no issues (4 silenced).
+[26/Nov/2026 19:58:13] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:58:13] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:58:13] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+No changes detected
+Django image: pip 26.2.2 app certifi 2026.10.19 vendored certifi 2026.10.19
+[26/Nov/2026 19:58:16] INFO [dojo.notifications.signals:33] creating default set of notifications for: qualification-admin
+[26/Nov/2026 19:58:17] INFO [dojo.notifications.signals:33] creating default set of notifications for: qualification-ci
+[26/Nov/2026 19:58:17] INFO [dojo.notifications.signals:33] creating default set of notifications for: qualification-other
+Semgrep JSON Report: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 1
+Dependency Track Finding Packaging Format (FPF) Export: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 1
+Trivy Scan: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 5
+Fortify Scan: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 2
+KICS Scan: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 18
+ffuf Scan: POST 202, replay 200, status COMPLETED, original SHA-256, cross-scope 404, count 1
+DevSecOps: 6 parallel formats, one commit, 6 distinct runs, 2 report hashes checked, cross-scope 404, no finalize.
+Classic: Product Type, Product, Engagement and Test created; import+reimport HTTP 201 and same Test; Finding PATCH false_p=True.
+{"pages":240,"checks":11,"errors":0}

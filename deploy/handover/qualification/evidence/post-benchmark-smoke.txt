@@ -1,0 +1,28 @@
+deployment "aspm-aspm-web" successfully rolled out
+deployment "aspm-aspm-worker" successfully rolled out
+deployment "aspm-aspm-beat" successfully rolled out
+[26/Nov/2026 20:16:29] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 20:16:29] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 20:16:29] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+ASPM schema and private storage preflight passed
+->  celery@aspm-aspm-worker-7767499fc-2wphr: OK
+        pong
+
+1 node online.
+[('live', 200), ('startup', 200), ('ready', 200)]
+NAME: aspm
+LAST DEPLOYED: Thu Nov 26 23:14:40 2026
+NAMESPACE: aspm-lab-handover-rc
+STATUS: deployed
+REVISION: 6
+DESCRIPTION: Upgrade complete
+TEST SUITE:     aspm-aspm-http-test
+Last Started:   Thu Nov 26 23:16:31 2026
+Last Completed: Thu Nov 26 23:16:38 2026
+Phase:          Succeeded
+
+POD LOGS: aspm-aspm-http-test
+ASPM login smoke attempt 1: http://aspm-aspm:80/login: <urlopen error [Errno 111] Connection refused>
+ASPM login smoke passed: HTTP 200 from http://aspm-aspm:80/login (attempt 2)
+
+Published HTTP/TLS check deferred. Supply --url when ingress or port-forward is ready.

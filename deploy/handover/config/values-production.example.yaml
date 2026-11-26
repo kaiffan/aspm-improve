@@ -1,0 +1,53 @@
+# Apply after values-ha.yaml and replace examples before rendering or deployment.
+# Registry images must come from the same source revision. Set both pinned digests.
+image:
+  repository: registry.example.invalid/aspm/django
+  digest: ""
+nginxImage:
+  repository: registry.example.invalid/aspm/nginx
+  digest: ""
+web:
+  replicas: 2
+worker:
+  replicas: 3
+  concurrency: 2
+existingSecret: aspm-runtime
+databaseTLS:
+  existingSecret: aspm-postgres-ca
+nodeSelector:
+  kubernetes.io/arch: amd64
+config:
+  DD_ASPM_GIT_SHA: bef347c845eee8e16fdd6c3b5e8134eb499ece44
+  DD_ALLOWED_HOSTS: localhost,aspm.example.invalid
+  DD_SITE_URL: https://aspm.example.invalid
+  DD_DATABASE_OPTIONS: '{"connect_timeout":5,"sslmode":"verify-full","sslrootcert":"/app/db-tls/ca.crt"}'
+  DD_SESSION_COOKIE_SECURE: "True"
+  DD_CSRF_COOKIE_SECURE: "True"
+  DD_SECURE_PROXY_SSL_HEADER: "True"
+# Existing RWX claims in the ASPM namespace. Validate ownership, fsync and rename.
+storage:
+  existingClaim: aspm-evidence
+  mediaExistingClaim: aspm-media
+oidc:
+  enabled: true
+  issuer: https://keycloak.example.invalid/realms/aspm
+  callbackUrl: https://aspm.example.invalid/sso/callback
+  clientId: aspm
+  existingSecret: aspm-oidc-client
+ingress:
+  enabled: true
+  className: traefik
+  host: aspm.example.invalid
+  tlsSecretName: aspm-tls
+networkPolicy:
+  ingressNamespace: ingress-system
+  ingressPodSelector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+  # Add explicit rules for PostgreSQL, HA broker, HA cache, Keycloak and receivers.
+  # The chart permits DNS and otherwise fails closed.
+  egress: []
+monitoring:
+  serviceMonitor:
+    # Enable after the monitoring namespace, selectors and CRD are available.
+    enabled: false

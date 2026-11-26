@@ -1,0 +1,31 @@
+orbstack: linux/arm64, 10 CPU, 8195968Ki memory; DiskPressure=False
+==> Linting helm/aspm-0.1.0-rc.9.tgz
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+PVC aspm-evidence: Bound
+PVC aspm-media: Bound
+Secret aspm-runtime: references present
+networkpolicy.networking.k8s.io/aspm-aspm created (server dry run)
+networkpolicy.networking.k8s.io/aspm-aspm-test created (server dry run)
+serviceaccount/aspm-aspm created (server dry run)
+configmap/aspm-aspm-nginx created (server dry run)
+service/aspm-aspm created (server dry run)
+deployment.apps/aspm-aspm-web created (server dry run)
+deployment.apps/aspm-aspm-worker created (server dry run)
+deployment.apps/aspm-aspm-beat created (server dry run)
+pod/aspm-preflight-99cb62c242 created
+pod/aspm-preflight-99cb62c242 condition met
+[26/Nov/2026 19:49:34] INFO [dojo.auditlog.services:171] Registering models with django-pghistory
+[26/Nov/2026 19:49:34] INFO [dojo.auditlog.services:426] Successfully registered models with django-pghistory
+[26/Nov/2026 19:49:34] INFO [dojo.auditlog.services:493] Audit logging configured: django-pghistory
+PostgreSQL SQL/TLS: OK
+broker DNS/PING: OK
+cache DNS/PING: OK
+evidence fsync/rename: OK
+media write: OK
+OIDC discovery: DISABLED
+pod "aspm-preflight-99cb62c242" deleted from aspm-lab-handover-rc namespace
+Release "aspm" does not exist. Installing it now.
+Error: failed pre-install: resource Job/aspm-lab-handover-rc/aspm-aspm-migrate not ready. status: Failed, message: Job Failed. failed: 1/1
+ASPM: operation failed (CalledProcessError). See preceding diagnostic output.

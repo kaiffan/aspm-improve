@@ -1010,7 +1010,7 @@
             <dialog id="sessionTimeoutDialog" class="modal" aria-labelledby="sessionTimeoutTitle">
                 <div class="modal-header">
                     <h4 class="modal-title" id="sessionTimeoutTitle">Session Expiring Soon</h4>
-                    <button onclick="this.closest('dialog').close()" class="close">&times;</button>
+                    <button type="button" onclick="this.closest('dialog').close()" class="close" aria-label="{% trans 'Close' %}"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     Your session is about to expire due to inactivity.

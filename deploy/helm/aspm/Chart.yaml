@@ -1,7 +1,7 @@
 apiVersion: v2
 name: aspm
 description: ASPM API ingestion, private evidence and durable integrations
-version: 0.1.0-rc.7
+version: 0.1.0-rc.8
 appVersion: "1.0.1-enterprise-rc"
 type: application
 kubeVersion: ">=1.27.0-0"
@@ -22,3 +22,5 @@ annotations:
       description: Verify nginx static readiness and provide configurable ingress drain for web shutdown
     - kind: added
       description: Support namespace-scoped ingress controllers and selector-based ingress policy
+    - kind: added
+      description: Add component-scoped preferred anti-affinity and complete the corporate HA example

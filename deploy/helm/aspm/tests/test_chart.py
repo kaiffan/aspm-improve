@@ -97,6 +97,11 @@ class ChartTests(unittest.TestCase):
             spread = deployment["template"]["spec"]["topologySpreadConstraints"]
             self.assertCountEqual([rule["topologyKey"] for rule in spread], ["kubernetes.io/hostname", "topology.kubernetes.io/zone"])
             self.assertTrue(all(rule["labelSelector"] == deployment["selector"] for rule in spread))
+            affinity = deployment["template"]["spec"]["affinity"]["podAntiAffinity"]["preferredDuringSchedulingIgnoredDuringExecution"]
+            self.assertEqual(affinity[0]["podAffinityTerm"], {
+                "topologyKey": "kubernetes.io/hostname",
+                "labelSelector": deployment["selector"],
+            })
         self.assertEqual(by_kind["Deployment"]["beat"]["strategy"], {"type": "Recreate"})
 
     def test_lab_ingress_requires_neither_cluster_class_nor_unrelated_source_pods(self):

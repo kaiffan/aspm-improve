@@ -102,6 +102,7 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `topologySpreadConstraints` | `list` | `[]` |
 | `scheduling.enabled` | `bool` | `False` |
 | `scheduling.nodePolicy` | `str` | `ScheduleAnyway` |
+| `scheduling.preferDistinctNodes` | `bool` | `False` |
 | `scheduling.zonePolicy` | `str` | `` |
 | `podSecurityContext.runAsNonRoot` | `bool` | `True` |
 | `podSecurityContext.runAsUser` | `int` | `1001` |

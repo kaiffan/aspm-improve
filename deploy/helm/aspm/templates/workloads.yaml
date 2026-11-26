@@ -57,10 +57,20 @@ spec:
       {{- with $root.Values.tolerations }}
       tolerations: {{ toYaml . | nindent 8 }}
       {{- end }}
-      {{- with $root.Values.affinity }}
+      {{- $scheduling := $root.Values.scheduling }}
+      {{- $affinity := deepCopy $root.Values.affinity }}
+      {{- if and $scheduling.enabled $scheduling.preferDistinctNodes (ne $component "beat") }}
+      {{- $antiAffinity := default (dict) $affinity.podAntiAffinity }}
+      {{- $selector := include "aspm.selector" $root | fromYaml }}
+      {{- $_ := set $selector "app.kubernetes.io/component" $component }}
+      {{- $term := dict "weight" 100 "podAffinityTerm" (dict "topologyKey" "kubernetes.io/hostname" "labelSelector" (dict "matchLabels" $selector)) }}
+      {{- $preferred := default (list) $antiAffinity.preferredDuringSchedulingIgnoredDuringExecution }}
+      {{- $_ := set $antiAffinity "preferredDuringSchedulingIgnoredDuringExecution" (append $preferred $term) }}
+      {{- $_ := set $affinity "podAntiAffinity" $antiAffinity }}
+      {{- end }}
+      {{- with $affinity }}
       affinity: {{ toYaml . | nindent 8 }}
       {{- end }}
-      {{- $scheduling := $root.Values.scheduling }}
       {{- if or $root.Values.topologySpreadConstraints (and $scheduling.enabled (ne $component "beat")) }}
       topologySpreadConstraints:
         {{- with $root.Values.topologySpreadConstraints }}

@@ -296,6 +296,9 @@
             "ScheduleAnyway"
           ]
         },
+        "preferDistinctNodes": {
+          "type": "boolean"
+        },
         "zonePolicy": {
           "type": "string",
           "enum": [
@@ -308,6 +311,7 @@
       "required": [
         "enabled",
         "nodePolicy",
+        "preferDistinctNodes",
         "zonePolicy"
       ]
     },

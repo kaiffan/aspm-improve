@@ -1,15 +1,48 @@
-# Replace repository, digest, host, Secret/PVC names and networkPolicy rules.
-# Pin both images to registry manifest digests from a qualified native build.
+# Apply after values-ha.yaml and replace examples before rendering or deployment.
+# Registry images must come from the same source revision. Set both pinned digests.
+image:
+  repository: registry.example.invalid/aspm/django
+nginxImage:
+  repository: registry.example.invalid/aspm/nginx
 web:
-  replicas: 3
+  replicas: 2
 worker:
   replicas: 3
   concurrency: 2
+existingSecret: aspm-runtime
+databaseTLS:
+  existingSecret: aspm-postgres-ca
 config:
-  DD_ALLOWED_HOSTS: localhost,aspm.corp.example
-  DD_SITE_URL: https://aspm.corp.example
+  DD_ALLOWED_HOSTS: localhost,aspm.example.invalid
+  DD_SITE_URL: https://aspm.example.invalid
+  DD_DATABASE_OPTIONS: '{"connect_timeout":5,"sslmode":"verify-full","sslrootcert":"/app/db-tls/ca.crt"}'
+  DD_SESSION_COOKIE_SECURE: "True"
+  DD_CSRF_COOKIE_SECURE: "True"
+  DD_SECURE_PROXY_SSL_HEADER: "True"
+# Existing RWX claims in the ASPM namespace. Validate ownership, fsync and rename.
+storage:
+  existingClaim: aspm-evidence
+  mediaExistingClaim: aspm-media
+oidc:
+  enabled: true
+  issuer: https://keycloak.example.invalid/realms/aspm
+  callbackUrl: https://aspm.example.invalid/sso/callback
+  clientId: aspm
+  existingSecret: aspm-oidc-client
 ingress:
   enabled: true
-  host: aspm.corp.example
-  tlsSecretName: aspm-corp-tls
-# Empty egress deliberately fails closed; supply actual dependency selectors/CIDRs.
+  className: traefik
+  host: aspm.example.invalid
+  tlsSecretName: aspm-tls
+networkPolicy:
+  ingressNamespace: ingress-system
+  ingressPodSelector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+  # Add explicit rules for PostgreSQL, HA broker, HA cache, Keycloak and receivers.
+  # The chart permits DNS and otherwise fails closed.
+  egress: []
+monitoring:
+  serviceMonitor:
+    # Enable after the monitoring namespace, selectors and CRD are available.
+    enabled: false

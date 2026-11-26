@@ -1,0 +1,22 @@
+HTTP and TLS returned login successfully. TLS used the lab CA.
+beat aspm-aspm-beat-7d6fb64f95-6jbzq beat True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+web aspm-aspm-web-cc5d5c8fd-2ttsc nginx True aspm-dual-lab/nginx:eee10e678c77 docker-pullable://aspm-dual-lab/nginx@sha256:2b8654aa312c1ab93a833d2e1f726ca2fb5cf40ff807dce6a74f869b094fe963
+web aspm-aspm-web-cc5d5c8fd-2ttsc web True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+web aspm-aspm-web-cc5d5c8fd-jx29g nginx True aspm-dual-lab/nginx:eee10e678c77 docker-pullable://aspm-dual-lab/nginx@sha256:2b8654aa312c1ab93a833d2e1f726ca2fb5cf40ff807dce6a74f869b094fe963
+web aspm-aspm-web-cc5d5c8fd-jx29g web True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+worker aspm-aspm-worker-76d4c4644f-n28bb worker True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+worker aspm-aspm-worker-76d4c4644f-tv227 worker True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+worker aspm-aspm-worker-76d4c4644f-xlzgm worker True aspm-dual-lab/django:eee10e678c77 docker-pullable://aspm-dual-lab/django@sha256:e861c9829d431192bfe310297b8a92086faddcb85312c0fad371dddca546a520
+nginx StopSignal SIGQUIT
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                                               SELECTOR
+deployment.apps/aspm-aspm-beat     1/1     1            1           21h   beat         aspm-dual-lab/django:eee10e678c77                                    app.kubernetes.io/component=beat,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-web      2/2     2            2           21h   web,nginx    aspm-dual-lab/django:eee10e678c77,aspm-dual-lab/nginx:eee10e678c77   app.kubernetes.io/component=web,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+deployment.apps/aspm-aspm-worker   3/3     3            3           21h   worker       aspm-dual-lab/django:eee10e678c77                                    app.kubernetes.io/component=worker,app.kubernetes.io/instance=aspm,app.kubernetes.io/name=aspm
+
+NAME                                    READY   STATUS    RESTARTS   AGE     IP               NODE       NOMINATED NODE   READINESS GATES
+pod/aspm-aspm-beat-7d6fb64f95-6jbzq     1/1     Running   0          15m     192.168.194.27   orbstack   <none>           <none>
+pod/aspm-aspm-web-cc5d5c8fd-2ttsc       2/2     Running   0          7m8s    192.168.194.36   orbstack   <none>           <none>
+pod/aspm-aspm-web-cc5d5c8fd-jx29g       2/2     Running   0          6m56s   192.168.194.37   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76d4c4644f-n28bb   1/1     Running   0          15m     192.168.194.26   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76d4c4644f-tv227   1/1     Running   0          40s     192.168.194.40   orbstack   <none>           <none>
+pod/aspm-aspm-worker-76d4c4644f-xlzgm   1/1     Running   0          14m     192.168.194.29   orbstack   <none>           <none>

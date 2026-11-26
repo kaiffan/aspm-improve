@@ -1,0 +1,10 @@
+[26/Nov/2026 15:58:41] INFO [celery.worker.strategy:161] Task dojo.aspm_ingestion.process_job[57649708-30aa-4903-b2d6-38281b135da2] received
+Process 'ForkPoolWorker-1' pid:13 exited with 'signal 9 (SIGKILL)'
+[26/Nov/2026 15:58:50] ERROR [celery.worker.request:659] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 9 (SIGKILL) Job: 18.')
+    raise WorkerLostError(
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 9 (SIGKILL) Job: 18.
+[26/Nov/2026 15:58:50] INFO [celery.worker.strategy:161] Task dojo.aspm_ingestion.process_job[57649708-30aa-4903-b2d6-38281b135da2] received
+[26/Nov/2026 15:58:50] INFO [celery.app.trace:128] Task dojo.aspm_ingestion.process_job[57649708-30aa-4903-b2d6-38281b135da2] succeeded in 0.007300638942979276s: None
+[26/Nov/2026 15:59:44] INFO [celery.worker.strategy:161] Task dojo.aspm_ingestion.process_job[5f04bcc5-f71f-41aa-b651-3c3b67eae067] received
+[26/Nov/2026 15:59:44] INFO [celery.app.trace:128] Task dojo.aspm_ingestion.process_job[5f04bcc5-f71f-41aa-b651-3c3b67eae067] succeeded in 0.030942426004912704s: None

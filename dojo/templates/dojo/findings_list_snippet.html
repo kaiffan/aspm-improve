@@ -10,10 +10,10 @@
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading tight">
-                    <div class="aspm-finding-toolbar">
+                    <div class="aspm-list-toolbar">
                         <h2>
                         <i class="fa-solid fa-bug dd-card-icon" aria-hidden="true"></i>{% blocktrans %}{{ filter_name }} Findings{% endblocktrans %}</h2>
-                        <div class="aspm-finding-actions">
+                        <div class="aspm-list-actions">
                           <div class="dropdown">
                             <button class="btn btn-primary dropdown-toggle"
                                     type="button"
@@ -57,7 +57,7 @@
                 </div>
             </div>
             {% if findings %}
-                <div class="aspm-findings-pagination">{% include "dojo/paging_snippet.html" with page=findings page_size=True %}</div>
+                <div class="aspm-list-pagination">{% include "dojo/paging_snippet.html" with page=findings page_size=True %}</div>
                 {% if not product_tab or product_tab and product_tab.product|has_object_permission:"edit" %}
                     <div class="dropdown hidden" style="padding-bottom: 5px;" id="bulk_edit_menu">
                         {{ bulk_edit_form.media.css }}

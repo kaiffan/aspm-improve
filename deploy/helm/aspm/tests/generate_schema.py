@@ -7,7 +7,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 # Kubernetes API subobjects deliberately retain extensible maps.
-EXTENSIBLE = {"resources", "nginxResources", "startupProbe", "readinessProbe", "livenessProbe", "securityContext", "podSecurityContext", "affinity", "nodeSelector", "podLabels", "podAnnotations", "annotations", "labels", "namespaceSelector", "podSelector"}
+EXTENSIBLE = {"resources", "nginxResources", "startupProbe", "readinessProbe", "livenessProbe", "securityContext", "podSecurityContext", "affinity", "nodeSelector", "podLabels", "podAnnotations", "annotations", "labels", "namespaceSelector", "podSelector", "ingressPodSelector"}
 
 
 def schema(value, key=""):

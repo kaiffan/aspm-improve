@@ -1,0 +1,26 @@
+image:
+  digest: sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4
+ingressClass:
+  enabled: false
+api:
+  dashboard: false
+rbac:
+  namespaced: true
+providers:
+  kubernetesCRD:
+    enabled: false
+  kubernetesGateway:
+    enabled: false
+  kubernetesIngress:
+    enabled: true
+    ingressClass: aspm-ha-lab
+    allowExternalNameServices: true
+    namespaces: [aspm-lab-ingress]
+    nativeLBByDefault: true
+    publishedService:
+      enabled: false
+service:
+  spec: {type: ClusterIP}
+resources:
+  requests: {cpu: 50m, memory: 64Mi}
+  limits: {cpu: 500m, memory: 256Mi}

@@ -182,6 +182,7 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `ingress.tlsSecretName` | `str` | `aspm-tls` |
 | `networkPolicy.enabled` | `bool` | `True` |
 | `networkPolicy.ingressNamespace` | `str` | `ingress-nginx` |
+| `networkPolicy.ingressPodSelector` | `dict` | `{}` |
 | `networkPolicy.egress` | `list` | `[]` |
 | `pdb.enabled` | `bool` | `True` |
 | `pdb.minAvailable` | `int` | `1` |

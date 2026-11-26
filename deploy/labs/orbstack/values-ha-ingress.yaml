@@ -1,0 +1,7 @@
+# Use when the optional namespace-scoped TLS gateway sits in aspm-lab-ingress.
+# The gateway owns the lab Ingress and ExternalName Service in its TLS-only namespace.
+networkPolicy:
+  ingressNamespace: aspm-lab-ingress
+  ingressPodSelector:
+    matchLabels:
+      app.kubernetes.io/instance: aspm-lab-traefik-aspm-lab-ingress

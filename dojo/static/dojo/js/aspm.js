@@ -150,6 +150,11 @@
         desktop.addEventListener('change', function () { close(false); syncDesktop(); });
         syncDesktop();
         var route = document.body.dataset.aspmRoute;
+        var locationLabel = document.querySelector('[data-aspm-location]');
+        var pageHeading = document.querySelector('#base-content h1');
+        if (locationLabel && pageHeading && pageHeading.textContent.trim()) {
+            locationLabel.textContent = pageHeading.textContent.trim();
+        }
         if (route && !sidebar.querySelector('.aspm-nav-link[aria-current]')) {
             sidebar.querySelectorAll('.aspm-nav-link[data-nav-routes]').forEach(function (link) {
                 if (link.dataset.navRoutes.split(' ').includes(route)) link.setAttribute('aria-current', 'location');

@@ -14,7 +14,7 @@
             </dl>
             <form class="aspm-result-form" method="get">
                 <label for="repository-branch">{% trans "Branch" %}
-                    <input class="form-control" id="repository-branch" type="search" name="branch" value="{{ branch }}" maxlength="255" placeholder="{% trans 'Exact branch name' %}">
+                    <input class="form-control" id="repository-branch" type="search" name="branch" value="{{ branch }}" maxlength="150" placeholder="{% trans 'Exact branch name' %}">
                 </label>
                 <button class="btn btn-secondary" type="submit">{% trans "Filter" %}</button>
                 {% if branch %}<a href="{{ request.path }}">{% trans "Clear branch filter" %}</a>{% endif %}

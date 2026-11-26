@@ -99,6 +99,19 @@ class ChartTests(unittest.TestCase):
             self.assertTrue(all(rule["labelSelector"] == deployment["selector"] for rule in spread))
         self.assertEqual(by_kind["Deployment"]["beat"]["strategy"], {"type": "Recreate"})
 
+    def test_lab_ingress_requires_neither_cluster_class_nor_unrelated_source_pods(self):
+        profile = Path(__file__).resolve().parents[3] / "labs" / "orbstack" / "values-ha-ingress.yaml"
+        docs = render("-f", str(profile), "--set", "ingress.enabled=true",
+                      "--set-string", "ingress.className=",
+                      "--set-string", r"ingress.annotations.kubernetes\.io/ingress\.class=aspm-ha-lab")
+        ingress = next(doc for doc in docs if doc["kind"] == "Ingress")
+        self.assertNotIn("ingressClassName", ingress["spec"])
+        self.assertEqual(ingress["metadata"]["annotations"]["kubernetes.io/ingress.class"], "aspm-ha-lab")
+        policy = next(doc for doc in docs if doc["kind"] == "NetworkPolicy")
+        ingress_source = policy["spec"]["ingress"][0]["from"][0]
+        self.assertIn("namespaceSelector", ingress_source)
+        self.assertIn("podSelector", ingress_source)
+
     def test_high_throughput_scales_web_and_opt_in_workers(self):
         profile = ("-f", str(CHART / "values-high-throughput.yaml"))
         for worker_autoscaling in (False, True):

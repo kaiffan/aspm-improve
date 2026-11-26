@@ -563,6 +563,9 @@
         "ingressNamespace": {
           "type": "string"
         },
+        "ingressPodSelector": {
+          "type": "object"
+        },
         "egress": {
           "type": "array",
           "items": {
@@ -573,6 +576,7 @@
       "required": [
         "enabled",
         "ingressNamespace",
+        "ingressPodSelector",
         "egress"
       ]
     },

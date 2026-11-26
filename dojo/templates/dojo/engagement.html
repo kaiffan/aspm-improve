@@ -20,12 +20,12 @@
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading tight">
-                    <h3 class="has-filters">
-                        <i class="fa-solid fa-inbox dd-card-icon" aria-hidden="true"></i>{{ view }} Engagements
-                        <div class="dropdown pull-right">
-                            &nbsp;
+                    <div class="aspm-list-toolbar">
+                        <h2><i class="fa-solid fa-inbox dd-card-icon" aria-hidden="true"></i>{{ view }} Engagements</h2>
+                        <div class="aspm-list-actions">
+                          <div class="dropdown">
                             <button class="btn btn-primary dropdown-toggle" type="button" id="downloadMenu"
-                                    data-toggle="dropdown" aria-expanded="true" aria-label="{% trans 'download' %}">
+                                    data-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Export engagements' %}">
                                 <span class="fa-solid fa-download"></span>
                                 <span class="caret"></span>
                             </button>
@@ -41,9 +41,12 @@
                                 </a>
                             </li>
                             </ul>
-                            <button id="show-filters" aria-label="{% trans 'Filters' %}" data-toggle="collapse" data-target="#the-filters" class="btn btn-primary toggle-filters"> <i class="fa-solid fa-filter"></i> <i class="caret"></i> </button>
+                          </div>
+                            <button id="show-filters" type="button" aria-controls="the-filters" aria-expanded="{% if filter_form|has_active_filters %}true{% else %}false{% endif %}" data-toggle="collapse" data-target="#the-filters" class="btn btn-primary toggle-filters">
+                                <i class="fa-solid fa-filter" aria-hidden="true"></i> {% trans "Filters" %}
+                            </button>
                         </div>
-                    </h3>
+                    </div>
                 </div>
                 <div id="the-filters" class="is-filters panel-body collapse {% if filter_form|has_active_filters %}in{% endif %}">
                     {% include "dojo/filter_snippet.html" with form=filter_form %}
@@ -51,7 +54,7 @@
             </div>
             {% if engagements %}
 
-                <div class="clearfix">
+                <div class="aspm-list-pagination">
                     {% include "dojo/paging_snippet.html" with page=engagements page_size=True %}
                 </div>
 
@@ -195,7 +198,7 @@
                         {% endfor %}
                     </table>
                 </div>
-                <div class="clearfix">
+                <div class="aspm-list-pagination">
                     {% include "dojo/paging_snippet.html" with page=engagements page_size=True %}
                 </div>
             {% else %}

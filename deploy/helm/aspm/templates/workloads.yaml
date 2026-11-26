@@ -36,7 +36,9 @@ spec:
         app.kubernetes.io/component: {{ $component }}
       annotations:
         checksum/config: {{ toJson $root.Values.config | sha256sum }}
-        checksum/nginx: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | sha256sum }}
+        {{- if eq $component "web" }}
+        checksum/nginx: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | fromYaml | dig "data" "nginx.conf" "" | sha256sum }}
+        {{- end }}
         {{- with $root.Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

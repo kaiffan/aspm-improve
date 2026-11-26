@@ -516,6 +516,7 @@ code { color: var(--color-dd-interactive-700); }
   border-bottom: 1px solid var(--color-border);
 }
 .aspm-topbar-location { min-width: 0; color: var(--color-text); font-size: .84rem; font-weight: 650; }
+[data-aspm-location] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aspm-topbar-location ol { display: flex; align-items: baseline; gap: .5rem; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .aspm-topbar-location li { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aspm-topbar-location li:last-child { flex-shrink: 0; max-width: 65%; }
@@ -536,25 +537,26 @@ code { color: var(--color-dd-interactive-700); }
 .aspm-page-heading h1, .aspm-page-heading p, .aspm-commit-meta, .aspm-overview-metrics dd { overflow-wrap: anywhere; }
 .aspm-section .table :is(th, td) { padding-block: var(--aspm-table-cell); }
 .aspm-overview-metrics dd:has(time), .aspm-section.aspm-evidence .aspm-overview-metrics dd { font-size: .94rem; }
-.aspm-finding-toolbar .dropdown-menu { min-width: min(14rem, 70vw); }
+.aspm-list-toolbar .dropdown-menu { min-width: min(14rem, 70vw); }
 .aspm-section .table td, .aspm-section .table th { overflow-wrap: anywhere; }
-.aspm-finding-toolbar, .aspm-finding-actions, .aspm-findings-pagination {
+.aspm-project-list tbody th { font-family: inherit; font-size: .9rem; font-weight: 650; }
+.aspm-list-toolbar, .aspm-list-actions, .aspm-list-pagination {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--aspm-space-sm);
 }
-.aspm-finding-toolbar h2 { margin: 0; }
-.aspm-findings-pagination .pagination { display: flex; flex-wrap: wrap; margin-block: .45rem; }
-.aspm-findings-pagination .pagination a { min-width: 24px; text-align: center; }
+.aspm-list-toolbar h2 { margin: 0; }
+.aspm-list-pagination .pagination { display: flex; flex-wrap: wrap; margin-block: .45rem; }
+.aspm-list-pagination .pagination a { min-width: 24px; text-align: center; }
 .aspm-findings-browser .table-responsive { overflow: auto; }
 .aspm-findings-browser .table-responsive:has(table:not(.dataTable)) { max-height: min(65vh, 46rem); }
 .aspm-findings-browser table:not(.dataTable) thead th { position: sticky; top: 0; z-index: 1; }
 .aspm-result-form { display: flex; align-items: end; flex-wrap: wrap; gap: var(--aspm-space-md); margin-block: 0 1rem; }
 .aspm-result-form label { display: grid; gap: .35rem; flex: 0 1 16rem; min-width: 0; margin: 0; }
 .aspm-result-form select, .aspm-result-form input { width: 100%; min-height: var(--aspm-control-size); max-width: 100%; }
-.aspm-result-form button, .aspm-finding-toolbar button { min-height: var(--aspm-control-size); }
+.aspm-result-form button, .aspm-list-toolbar button { min-height: var(--aspm-control-size); }
 .aspm-workspace-tabs a { display: inline-flex; align-items: center; min-height: var(--aspm-control-size); }
 @media (max-width: 740px) {
   :root { --dd-topbar-height: 6.5rem; }

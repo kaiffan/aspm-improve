@@ -6,7 +6,9 @@ metadata:
   labels: {{ include "aspm.labels" . | nindent 4 }}
   annotations: {{ toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . | quote }}
+  {{- end }}
   tls:
     - hosts: [{{ .Values.ingress.host | quote }}]
       secretName: {{ .Values.ingress.tlsSecretName | quote }}

@@ -47,7 +47,7 @@ def repository_list(request, product_id):
 
 def repository_detail(request, repository_id):
     repository = get_object_or_404(authorized_repositories(request.user), pk=repository_id)
-    branch = request.GET.get("branch", "").strip()[:255]
+    branch = request.GET.get("branch", "").strip()[:150]
     commits = repository.commits.order_by(*COMMIT_ORDER)
     if branch:
         commits = commits.filter(branch=branch)

@@ -163,6 +163,7 @@ ingress:
 networkPolicy:
   enabled: true
   ingressNamespace: ingress-nginx
+  ingressPodSelector: {}
   # Allow external PostgreSQL, broker/cache and approved webhook consumers explicitly.
   # Each item is a Kubernetes NetworkPolicy egress rule.
   egress: []

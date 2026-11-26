@@ -478,7 +478,7 @@
                         </ol>
                     </nav>
                 {% else %}
-                    <a class="aspm-topbar-location" href="{% if aspm_role == 'user' %}{% url 'aspm_projects' %}{% else %}{% url 'dashboard' %}{% endif %}">{{ ASPM.name }}</a>
+                    <span class="aspm-topbar-location" data-aspm-location>{{ title|default:ASPM.name }}</span>
                 {% endif %}
                 <!-- Search -->
                 <form id="custom_search_form" method="get" action="{% if aspm_role %}{% url 'aspm_projects' %}{% else %}{% url 'simple_search' %}{% endif %}" class="aspm-topbar-search" role="search">

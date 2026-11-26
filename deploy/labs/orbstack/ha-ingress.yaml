@@ -1,0 +1,35 @@
+# This namespace is dedicated to the TLS certificate and routing objects.
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspm-lab-upstream
+  namespace: aspm-lab-ingress
+spec:
+  type: ExternalName
+  externalName: aspm-aspm.aspm-lab-orbstack.svc.cluster.local
+  ports:
+    - {name: http, port: 80, protocol: TCP}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aspm-ha
+  namespace: aspm-lab-ingress
+  annotations:
+    kubernetes.io/ingress.class: aspm-ha-lab
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts: [localhost]
+      secretName: aspm-ha-ingress-tls
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aspm-lab-upstream
+                port: {name: http}

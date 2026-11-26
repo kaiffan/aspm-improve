@@ -452,7 +452,7 @@
 
     {% with finding|additional_vulnerability_ids as additional_vulnerability_ids %}
     {% if additional_vulnerability_ids %}
-    <div class="panel panel-default">
+    <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Additional vulnerability identifiers' %}">
         <table id="additional_finding_references" class="table-striped table table-condensed table-hover centered">
             <tr>
                 <th>Additional Vulnerability Ids</th>
@@ -477,7 +477,7 @@
 
     {% with finding.cwes|slice:"1:" as additional_cwes %}
     {% if additional_cwes %}
-    <div class="panel panel-default">
+    <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Additional CWEs' %}">
         <table id="additional_finding_cwes" class="table-striped table table-condensed table-hover centered">
             <tr>
                 <th>Additional CWEs</th>
@@ -500,7 +500,7 @@
         {% if finding.sast_source_object or finding.sast_sink_object or finding.sast_source_file_path or finding.sast_source_line > 0 %}
         {# For tools that give information on both source (start) and sink (end) of the attack vector #}
 
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Source code location' %}">
             <table id="sast_source" class="table-striped table table-condensed table-hover centered">
                 <tr>
                     <th>Source Filepath</th>
@@ -526,7 +526,7 @@
                 </tr>
             </table>
         </div>
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Sink code location' %}">
             <table id="sast_sink" class="table-striped table table-condensed table-hover centered">
                 <tr>
                     <th>Sink Filepath</th>
@@ -555,7 +555,7 @@
         {% endif %}
     {% endif %}
     {% if finding.service or finding.file_path or finding.line > 0 or finding.has_jira_configured or finding.has_jira_issue or finding.github_issue or finding.github_conf_new or finding.finding_group or finding.component_name or finding.nb_occurences > 1 %}
-    <div class="panel panel-default">
+    <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Finding location and component' %}">
         <table id="error_notes" class="table-striped table table-condensed table-hover centered">
             <tr>
                 <th>Service</th>
@@ -711,7 +711,7 @@
     </div>
     {% endif %}
     {% if finding.param or finding.payload %}
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive" tabindex="0" role="region" aria-label="{% trans 'Finding parameters and payload' %}">
             <table id="error_notes" class="table-striped table table-condensed table-hover">
                 <tr>
                     <th>Injected Parameter(s)</th>

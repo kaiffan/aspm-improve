@@ -110,6 +110,21 @@ class TestFindingBrowserRecovery(DojoTestCase):
         self.assertTrue(similar_sql)
         self.assertTrue(all("= ANY(" not in sql for sql in similar_sql))
 
+    def test_finding_location_uses_a_keyboard_accessible_scroll_region(self):
+        finding = self.findings[0]
+        file_path = "src/" + "long_path_segment/" * 10 + "parser.py"
+        self.scope.filter(pk=finding.pk).update(file_path=file_path, line=42)
+        self.client.force_login(self.reader)
+
+        response = self.client.get(reverse("view_finding", args=(finding.pk,)))
+
+        self.assertContains(response, file_path)
+        self.assertRegex(
+            response.content.decode(),
+            r'<div class="panel panel-default table-responsive" tabindex="0" role="region" '
+            r'aria-label="Finding location and component">\s*<table id="error_notes"',
+        )
+
     def test_foreign_finding_page_is_denied(self):
         self.client.force_login(self.reader)
         finding = Finding.objects.exclude(test__engagement__product=self.product).first()

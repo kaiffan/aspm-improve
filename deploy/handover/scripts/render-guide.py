@@ -96,8 +96,8 @@ def build_pdf(output, work):
         ("Идентификация", "Значение"),
         ("Приложение", "1.0.1 · DefectDojo OSS 3.5.100"),
         ("Helm", manifest["chart_version"] + " · appVersion 1.0.1-enterprise-rc"),
-        ("Базовый образ", manifest["application_sha"][:12] + " · Linux/ARM64"),
-        ("Статус", "PRODUCTION HOLD"),
+        ("Ревизия приложения", manifest["application_sha"][:12] + " · проверены образы Linux/ARM64"),
+        ("Статус", manifest["release_status"]),
     ], [147, 348])
     items.append(p("Содержание", "header"))
     table(items, [("Стр.", "Раздел"), *notes], [61, 434])
@@ -116,7 +116,7 @@ def build_pdf(output, work):
         ("Компонент", "Что подготовить"),
         ("Kubernetes", "Context, namespace, Linux arch, registry, два закреплённых image digest, квоты и запас на rollout."),
         ("PostgreSQL", "Выделенная DB и роль с правом миграций, FQDN, слоты и CA. SSL verify-full. Direct/session pooling."),
-        ("Хранилище", "Два RWX PVC, UID 1001/GID 1337, fsync/atomic rename, snapshots и журнал целостности."),
+        ("Хранилище", "Для S3 подготовьте приватный versioned bucket, HTTPS и CA. Для filesystem подготовьте два RWX PVC, UID 1001/GID 1337 и снимки."),
         ("Broker и cache", "Независимые endpoints и URI в Secret. Ограниченный egress."),
         ("Ingress", "Class, hostname, доверенный сертификат и корректный proxy header. Egress к DNS/DB/IdP/broker."),
         ("Keycloak / AD", "Confidential client, PKCE S256, callback, ID token claims, доверенный CA, группы и TTL."),
@@ -128,12 +128,12 @@ def build_pdf(output, work):
     items.append(PageBreak())
 
     section(items, "04   /   ПЕРВЫЙ ЗАПУСК", "Установка и smoke",
-            "Команды запускаются из распакованного комплекта. Имена и параметры берутся из анкеты.")
+            "Для checkout из Git запускайте scripts из deploy/handover. Для архива используйте корень распакованного комплекта.")
     blocks(items, [
-        ("1. Целостность", "shasum -a 256 -c SHA256SUMS. Все записи должны вернуть OK."),
-        ("2. Конфигурация", "Скопируйте config/values-production.example.yaml в site.yaml. Заполните внешние references, digest, hostname и egress."),
-        ("3. Preflight", "scripts/preflight.sh --context CONTEXT --namespace NAMESPACE --release aspm --profile ha --arch ARCH -f site.yaml"),
-        ("4. Развёртывание", "scripts/deploy.sh --context CONTEXT --namespace NAMESPACE --release aspm --profile ha --arch ARCH -f site.yaml --apply"),
+        ("1. Целостность", "Для checkout сверьте SHA из отчёта. Для архива выполните shasum -a 256 -c SHA256SUMS."),
+        ("2. Конфигурация", "Заполните site.yaml, images.registry.yaml и storage.site.yaml. При подключении мониторинга добавьте monitoring.site.yaml."),
+        ("3. Preflight", "Запустите scripts/preflight.sh с context, namespace, архитектурой и профилем HA. Для checkout добавьте --chart ../helm/aspm и передайте values через -f."),
+        ("4. Развёртывание", "Запустите scripts/deploy.sh с теми же аргументами и --apply. Команды сборки и публикации образов приведены в docs/18_BUILD_AND_IMAGE_TRANSFER.md."),
         ("5. Проверка", "Migration Job: Succeeded, Ready web/worker/Beat, health HTTP 200, Helm test Succeeded, опубликованный Login HTTP 200."),
         ("6. Проверка прав и данных", "Войдите через Keycloak тестовыми SecOps, Expert и User. В тестовом проекте выполните Legacy import, CI upload и скачайте HTML/JSON отчёт."),
     ])
@@ -149,7 +149,7 @@ def build_pdf(output, work):
         ("ScanRun завис или FAILED", "GET статуса, attempt, error_code, worker/Beat и oldest pending. Проверьте broker и storage."),
         ("Права пользователя", "Проверьте Keycloak claims, project ID, TTL. Протестируйте отдельную учётную запись."),
         ("Высокая нагрузка DB", "Активные сессии, waits, WAL и CPU. Сопоставьте всплеск с rollout, worker concurrency и отчётами."),
-        ("Хранилище и целостность", "PVC Bound, free bytes и inodes. Сравните checksum, восстановите согласованную копию."),
+        ("Хранилище и целостность", "Для S3 проверьте версии и доступность объектов. Для filesystem проверьте PVC Bound, free bytes и inodes. Сверьте SHA-256."),
     ], [156, 339])
     items.append(p("Полный runbook и эскалации находятся в docs/16_TROUBLESHOOTING.md."))
     items.append(PageBreak())
@@ -157,7 +157,7 @@ def build_pdf(output, work):
     section(items, "06   /   ДАННЫЕ", "Backup, restore и изменения",
             "Операции восстановления выполняет DBA с явно выбранной пустой целью. Согласуйте RPO, RTO и порядок switching.")
     blocks(items, [
-        ("Backup", "Зафиксируйте согласованную точку записи. Снимите PostgreSQL dump, snapshot private evidence и media. Защитите ключи и файлы в штатном vault."),
+        ("Backup", "Зафиксируйте согласованную точку записи. Снимите PostgreSQL dump и манифест версий S3 либо снимки private evidence и media. Храните копию отдельно от runtime."),
         ("Restore", "Проверьте SHA-256. Запустите scripts/restore.sh с отдельным DB service и точным подтверждением цели. Сверьте миграции, счётчики, SHA-256 оригиналов и версии отчётов."),
         ("Upgrade", "Проверьте schema compatibility и lock impact на копии данных. Сохраните текущую Helm revision и image digests. Примените новый пакет через deploy."),
         ("Rollback", "Укажите успешную revision, письменный schema review и точное имя цели. Helm переключает манифесты. Решение по схеме, данным и трафику принимает DBA/SRE."),
@@ -166,18 +166,18 @@ def build_pdf(output, work):
     items.append(PageBreak())
 
     section(items, "07   /   ПЕРЕДАЧА", "Решение и открытые проверки",
-            "Состояние конкретных gates и фактические журналы фиксируются в qualification/RELEASE_GATE.md.")
+            "Текущие решения в checkout находятся в release-report/aspm-final-qualification/RELEASE_GATE.md. Для архива сверяйте паспорт поставки.")
     table(items, [
         ("Граница", "Действие владельца"),
-        ("Corporate staging и IAM", "Предоставить registry, namespace, TLS, PostgreSQL/CSI и тестовые AD группы. Пройти post-deployment."),
+        ("Corporate staging и IAM", "Предоставить registry, namespace, TLS, PostgreSQL, S3 или CSI и тестовые AD группы. Пройти post-deployment."),
         ("AMD64", "Собрать и просканировать оба образа на согласованном Linux/AMD64 runner, проверить smoke."),
         ("Ёмкость и HA", "Выделить стенд Core9/Acceptance 1M, проверить отказ узла и внешних сервисов."),
-        ("Security", "Разобрать оставшиеся findings, включая CVE-2026-6653. Утвердить окно и gates перед production."),
+        ("Security", "Завершить оценку Git history, выпустить SBOM и проверить актуальную пару образов. Утвердить gates перед публикацией."),
     ], [152, 343])
     blocks(items, [
         ("Контакты", "ASPM owner __________________________    SRE __________________________"),
         ("", "DBA __________________________________    IAM __________________________"),
-        ("Дополнения", "Выверенные команды и подробные инструкции в редактируемых docs/ и checklists/; журнал чистой установки в qualification/."),
+        ("Дополнения", "Команды и подробные инструкции находятся в docs/ и checklists/. Результаты исходной квалификации находятся в qualification/."),
     ])
     items.append(PageBreak())
     section(items, "08   /   НАБЛЮДАЕМОСТЬ", "Метрики и доставка",

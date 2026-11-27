@@ -20,6 +20,8 @@ Production остаётся **HOLD**. Для staging выберите профи
 
 В каталоге Enterprise Delivery Package или `deploy/handover` используйте Helm, kubectl, Python 3.11+ с PyYAML и четыре доступных узлу образа. В примере Django и nginx обозначены переменными с полными ссылками на образы, собранные из application SHA. PostgreSQL 18.6 и Valkey 9.1.2 получаются из утверждённого registry. Команда создаёт новый namespace и отдельные зависимости. Для другого локального порта укажите `ASPM_LAB_PORT` перед подготовкой namespace и используйте тот же порт в port-forward и `--url`. Профиль использует HTTP на loopback, RWO и отдельную PostgreSQL.
 
+Для checkout из Git задайте `ASPM_CHART_ARGS=(--chart ../helm/aspm)`. Для распакованного архива задайте `ASPM_CHART_ARGS=()`, чтобы использовать чарт из манифеста.
+
 ```bash
 scripts/prepare-lab.sh orbstack aspm-lab-handover local-path \
   postgres:18.6-alpine valkey/valkey:9.1.2 \
@@ -31,8 +33,6 @@ scripts/deploy.sh --context orbstack --namespace aspm-lab-handover --release asp
 kubectl --context orbstack -n aspm-lab-handover port-forward \
   --address 127.0.0.1 service/aspm-aspm 18739:80
 ```
-
-Для checkout из Git задайте `ASPM_CHART_ARGS=(--chart ../helm/aspm)`. Для распакованного архива задайте `ASPM_CHART_ARGS=()`, чтобы использовать чарт из манифеста.
 
 В отдельном терминале повторите проверки опубликованного URL.
 

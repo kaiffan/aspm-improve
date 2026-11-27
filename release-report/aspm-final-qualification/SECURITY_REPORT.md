@@ -1,0 +1,9 @@
+# Проверки безопасности
+
+Разрешения проверены на синтетических данных изолированного ASPM. Файлы шести сканеров прочитаны своим scoped token, запросы из другого проекта получили 404. Локальные Reader grants проверены на браузерных страницах. System Health отклонял Reader с 403. Тесты Django проверяют scope, Keycloak protocol и проверку данных отчёта. 111 тестов за 30.468 с · OK. Обнаружено по группам: 111.
+
+Gitleaks не нашёл совпадений в двух новых коммитах с исправлениями. Проверка унаследованной истории сканировала 92 непубличных коммита и выдал 72 совпадения. В снимке исходного checkout для квалификации выдал 1 541 совпадение, включая 1 302 в unittests, 193 в perf-report и 28 в Django fixtures. Значения скрыты в raw evidence. Ручная оценка всех совпадений и проверка исторических бинарных артефактов остаются открыты. Текущий release gate по секретам не пройден. Trivy 0.70.0: django {'LOW': 107, 'HIGH': 68, 'MEDIUM': 100, 'UNKNOWN': 24, 'CRITICAL': 1}, совпадений secret scan 0 / nginx {}, совпадений secret scan 0 CycloneDX SBOM и полный отчёт по digest сохранены в локальных QA evidence. Оценка применимости CVE остаётся открытой. Проверки касались только локальной среды.
+
+Trivy классифицировал CVE-2026-6653 как CRITICAL. В sandbox подтверждён libxml2 2.12.7+dfsg+really2.9.14-2.1+deb13u3. Debian помечает пакеты trixie и trixie-security как vulnerable. Тот же трекер указывает no-dsa с низким приоритетом для trixie. Образ также содержит зависимости libxslt и xmlsec от системного libxml2. [Debian Security Tracker](https://security-tracker.debian.org/tracker/CVE-2026-6653).
+
+Обычный Python import использует urllib3 2.8.0, setuptools 84.0.0 и lxml с libxml 2.14.6. В pip vendor manifest обнаружены msgpack 1.1.2 и setuptools 70.3.0. Уязвимости системной библиотеки, bundled lxml и vendored Python-пакетов оцениваются по своим путям загрузки.

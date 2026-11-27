@@ -181,4 +181,4 @@ Send each scanner report once with `POST /api/aspm/v1/scans/` (202 + ScanRun ID)
 The commit shows the accepted scan immediately and publishes historical results after asynchronous processing.
 No finalize request or generated export is required. [Workflow and API examples](docs/aspm-api/README.md).
 
-Инструкции по сборке и установке ASPM из Git и из Enterprise Delivery Package. [Начало работы](deploy/handover/START_HERE.md).
+Инструкции по сборке и установке ASPM из Git и из Enterprise Delivery Package. [Начало работы](deploy/handover/START_HERE.md) · [Квалификация выпуска](release-report/aspm-final-qualification/EXECUTIVE_SUMMARY.md).

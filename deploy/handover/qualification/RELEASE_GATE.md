@@ -1,6 +1,6 @@
 # Release gates | ASPM 1.0.1
 
-**Текущий кандидат rc.11 · PRODUCTION HOLD.** Результаты S3/DR и открытые проверки перечислены в [квалификации rc.11](FINAL_STORAGE.md).
+**RELEASE HOLD · PRODUCTION HOLD.** При установке из Git используйте текущий отчёт `release-report/aspm-final-qualification/RELEASE_GATE.md`. Результаты исходной квалификации S3/DR на rc.11 сохранены в [отчёте о хранилище](FINAL_STORAGE.md).
 
 ## История предыдущей поставки
 

@@ -13,4 +13,4 @@
 | Команда CI/CD | [API](docs/11_CICD_INTEGRATION.md) · [Примеры](integration-examples/README.md) |
 | Владелец выпуска | [Паспорт](DELIVERY_MANIFEST.json) · [Сборка и перенос образов](docs/18_BUILD_AND_IMAGE_TRANSFER.md) · [Сообщение о передаче](HANDOVER_MESSAGE.md) |
 
-Сверьте SHA256SUMS. Актуальные инструкции по S3 и DR находятся в Markdown. PDF в docs относится к предыдущей поставке. Лицензии upstream включены в исходники.
+Для архива сверьте SHA256SUMS. Для checkout следуйте инструкции сборки из Git. [Руководство по развёртыванию и эксплуатации](docs/ASPM-1.0.1-Deployment-and-Operations-Guide.pdf) описывает S3, filesystem/RWX, мониторинг и восстановление для rc.11. Лицензии upstream включены в исходники.

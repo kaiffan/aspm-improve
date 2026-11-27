@@ -11,7 +11,7 @@ DIAGRAMS = {
             ("Клиенты", "Браузер · CI"), ("Ingress", "HTTPS · TLS"), ("ClusterIP", "Kubernetes Service"),
             ("Web × 2", "nginx + Django"), ("PostgreSQL", "Сессии · outbox · locks"),
             ("Workers × 3", "Celery · parser · reports"), ("Beat × 1", "Dispatcher · fencing"),
-            ("Private storage", "Evidence и media · RWX"), ("Keycloak", "OIDC · AD federation"),
+            ("Private storage", "Evidence и media · S3 / RWX"), ("Keycloak", "OIDC · AD federation"),
             ("Broker / cache", "Отдельные endpoints"),
         ],
         [(0, 1), (1, 2), (2, 3), (3, 4), (3, 7), (3, 8), (6, 4), (6, 9), (9, 5), (5, 4), (5, 7)],

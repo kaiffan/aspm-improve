@@ -1,0 +1,5 @@
+# Kubernetes HA
+
+Helm 0.1.0-rc.11 собран в архив, прошёл 23 behavioral assertions и lint семи основных профилей. Стандартный HA-профиль задаёт 2 web, 3 Worker и 1 Beat. В отдельном namespace OrbStack сервер принял dry run ресурсов и прошёл preflight PostgreSQL, broker, cache и private volume. Третья попытка выполнила миграции и начала rollout с образами из чистого клона.
+
+В исходных попытках PostgreSQL, broker, cache и Beat перезапускались с OOM. Worker оставался Pending, web показал readiness 503. После уменьшения лабораторных requests финальный smoke зарегистрировал успешную миграцию, пробы live/startup/ready HTTP 200 и Celery ping. 1 web, 1 worker и 1 Beat достигли Ready. Helm HTTP smoke завершился. Нагрузочный HA gate открыт. Размер одного узла около 8 GiB, до rollout суммарные Kubernetes requests достигали 87%. Нагрузки других namespace не меняли. При повторном запуске 2/3/1 migration hook остался Pending. Kubernetes зарегистрировал 0/1 nodes available и Insufficient memory. Изменения workloads ограничены QA-namespace. Multi-node HA и продолжительные rolling updates остаются NOT TESTED.

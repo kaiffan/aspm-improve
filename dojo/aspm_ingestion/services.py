@@ -4,6 +4,7 @@ import logging
 import secrets
 import uuid
 
+from django.core.exceptions import SuspiciousFileOperation
 from django.db import transaction
 from django.db.models import Max
 from django.urls import reverse
@@ -106,7 +107,7 @@ def accept_scan(token, data, upload, *, correlation_id=None):
 
     try:
         key, digest, size, storage_seconds, obj = save_original(upload, expected_sha256=data.get("sha256"), reuse=reuse_existing)
-    except OSError as error:
+    except (OSError, SuspiciousFileOperation) as error:
         raise EvidenceUnavailable from error
     retained = False
     try:

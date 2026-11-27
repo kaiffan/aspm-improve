@@ -187,6 +187,20 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         secops, _ = self._session("secops", ())
         self.assertContains(secops.get(reverse("aspm_system_health")), "Dependency checks")
 
+    def test_system_health_reports_misconfigured_private_storage(self):
+        secops, _ = self._session("secops", ())
+        with self.settings(
+            ASPM_STORAGE_BACKEND="filesystem",
+            MEDIA_ROOT=self.directory.name,
+            ASPM_ARTIFACT_ROOT=self.directory.name,
+            CELERY_BROKER_URL="memory://",
+        ):
+            response = secops.get(reverse("aspm_system_health"))
+        self.assertContains(response, "Dependency checks")
+        checks = dict(response.context["checks"])
+        self.assertFalse(checks["Private storage"])
+        self.assertFalse(checks["Celery broker"])
+
     def test_repository_branch_filter_and_activity_follow_product_grants(self):
         reader, _ = self._session("user", (GROUP_TEST,))
         commit = self.scan.commit

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
 from django.core.management.base import CommandError
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -164,7 +164,7 @@ def system_health(request):
     for name, check in probes:
         try:
             available = check()
-        except (CommandError, DatabaseError, OSError, PostgresError, RedisError):
+        except (CommandError, DatabaseError, OSError, PostgresError, RedisError, SuspiciousFileOperation):
             available = False
         checks.append((name, available))
     add_breadcrumb(title=_("System health"), top_level=True, request=request)

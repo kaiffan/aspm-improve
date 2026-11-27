@@ -9,7 +9,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 SCRIPT = Path(__file__).with_name("publish-images.sh")
 APP_SHA = "1" * 40
 MONITORING_SHA = "2" * 40

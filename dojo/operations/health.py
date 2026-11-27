@@ -17,7 +17,11 @@ def database_ready():
 
 
 def redis_ready(url):
-    with redis.Redis.from_url(url, socket_connect_timeout=0.5, socket_timeout=0.5, retry=redis.retry.Retry(redis.backoff.NoBackoff(), 0)) as client:
+    try:
+        client = redis.Redis.from_url(url, socket_connect_timeout=0.5, socket_timeout=0.5, retry=redis.retry.Retry(redis.backoff.NoBackoff(), 0))
+    except ValueError:
+        return False
+    with client:
         return client.ping()
 
 

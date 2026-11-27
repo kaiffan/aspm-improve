@@ -106,6 +106,17 @@ class AspmIngestionTests(IngestionFixture, APITestCase):
         self.assertEqual(self.upload(branch="changed").status_code, 409)
         self.assertEqual(self.upload(commit_sha="b" * 40).status_code, 409)
 
+    def test_misconfigured_private_storage_rejects_acceptance_with_service_unavailable(self):
+        with self.settings(
+            ASPM_STORAGE_BACKEND="filesystem",
+            MEDIA_ROOT=self.directory.name,
+            ASPM_ARTIFACT_ROOT=self.directory.name,
+        ):
+            response = self.upload()
+        self.assertEqual(response.status_code, 503)
+        self.assertFalse(ScanRun.objects.exists())
+        self.assertFalse(IngestionJob.objects.exists())
+
     def test_independent_attempts_keep_history(self):
         first = self.complete(self.accepted(key="job/1", attempt_number=1))
         second = self.complete(self.accepted(key="job/2", attempt_number=2))

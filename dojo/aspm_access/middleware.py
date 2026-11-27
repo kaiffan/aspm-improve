@@ -12,7 +12,7 @@ SESSION_KEY = "aspm_oidc_access"
 FLOW_KEY = "aspm_oidc_flow"
 
 READ_ROUTES = frozenset({
-    "aspm_projects", "aspm_reports", "scm_repository_list", "scm_repository_detail", "scm_commit_detail", "scm_commit_compare",
+    "aspm_projects", "aspm_reports", "aspm_scan_processing", "scm_repository_list", "scm_repository_detail", "scm_commit_detail", "scm_commit_compare",
     "aspm_commit_evidence", "aspm_commit_state", "aspm_scanners", "view_profile",
     "aspm_v1:repositories", "aspm_v1:commits", "aspm_v1:commit-scans", "aspm_v1:scan-detail",
     "aspm_v1:artifact", "aspm_v1:reports", "aspm_v1:report-download",

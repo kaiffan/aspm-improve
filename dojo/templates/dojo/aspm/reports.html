@@ -3,7 +3,6 @@
 {% block content %}
     <div class="aspm-workspace-hero"><header class="aspm-page-heading"><div>
         <h1>{% trans "Reports" %}</h1>
-        <p>{% trans "Find assessment reports, original scanner outputs, and fixed ASPM exports." %}</p>
     </div></header></div>
     <nav class="aspm-workspace-tabs" aria-label="{% trans 'Report type' %}">
         <a href="?type=generated&amp;q={{ query|urlencode }}" {% if section == "generated" %}aria-current="page"{% endif %}>{% trans "Generated ASPM reports" %}</a>

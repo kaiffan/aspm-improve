@@ -1,0 +1,6 @@
+# Apply with the HA profile and pre-provision private RWX claims.
+storage:
+  backend: filesystem
+  existingClaim: aspm-evidence-rwx
+  mediaExistingClaim: aspm-media-rwx
+  minimumFreeBytes: 1073741824

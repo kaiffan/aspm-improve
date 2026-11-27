@@ -1,0 +1,25 @@
+# Apply after the deployment profile. Replace all example infrastructure inputs.
+storage:
+  backend: s3
+  s3:
+    endpoint: https://object-storage.example.invalid
+    region: us-east-1
+    bucket: aspm-runtime
+    prefix: production/aspm
+    addressingStyle: path
+    credentialsSecret: aspm-runtime-s3
+    accessKeyName: access-key-id
+    secretKeyName: secret-access-key
+    caSecret: aspm-object-storage-ca
+    connectTimeoutSeconds: 3
+    readTimeoutSeconds: 20
+    attempts: 3
+    multipartThresholdMiB: 32
+    multipartPartMiB: 8
+    encryption: AES256
+    tempSize: 4Gi
+    egress:
+      - to:
+          - ipBlock: {cidr: 192.0.2.10/32}
+        ports:
+          - {protocol: TCP, port: 443}

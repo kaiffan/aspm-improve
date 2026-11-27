@@ -1,4 +1,5 @@
 {{- $root := . }}
+{{- $s3 := eq .Values.storage.backend "s3" }}
 {{- range $component := list "web" "worker" "beat" }}
 {{- $cfg := index $root.Values $component }}
 {{- if $cfg.enabled }}
@@ -40,7 +41,7 @@ spec:
         aspm.io/metrics: "true"
         {{- end }}
       annotations:
-        checksum/config: {{ toJson $root.Values.config | sha256sum }}
+        checksum/config: {{ list $root.Values.config $root.Values.storage | toJson | sha256sum }}
         {{- if eq $component "web" }}
         checksum/nginx: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | fromYaml | dig "data" "nginx.conf" "" | sha256sum }}
         {{- end }}
@@ -104,7 +105,11 @@ spec:
           securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
           resources: {{ toYaml $cfg.resources | nindent 12 }}
           volumeMounts:
+            {{- if not $s3 }}
             - {name: evidence, mountPath: /app/aspm-private}
+            {{- else if $root.Values.storage.s3.caSecret }}
+            - {name: s3-tls, mountPath: /app/s3-tls, readOnly: true}
+            {{- end }}
             - {name: tmp, mountPath: /tmp}
             {{- if $root.Values.databaseTLS.existingSecret }}
             - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
@@ -164,8 +169,12 @@ spec:
           securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
           resources: {{ toYaml $cfg.resources | nindent 12 }}
           volumeMounts:
+            {{- if not $s3 }}
             - {name: evidence, mountPath: /app/aspm-private}
             - {name: media, mountPath: /app/media}
+            {{- else if $root.Values.storage.s3.caSecret }}
+            - {name: s3-tls, mountPath: /app/s3-tls, readOnly: true}
+            {{- end }}
             - {name: tmp, mountPath: /tmp}
             - {name: run, mountPath: /var/run/defectdojo}
             {{- if $instrument }}
@@ -214,7 +223,11 @@ spec:
             {{- if $instrument }}
             - {name: metrics, mountPath: /run/aspm-metrics}
             {{- else }}
+            {{- if not $s3 }}
             - {name: evidence, mountPath: /app/aspm-private}
+            {{- else if $root.Values.storage.s3.caSecret }}
+            - {name: s3-tls, mountPath: /app/s3-tls, readOnly: true}
+            {{- end }}
             {{- if $root.Values.databaseTLS.existingSecret }}
             - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
             {{- end }}
@@ -272,11 +285,16 @@ spec:
           secret:
             secretName: {{ $root.Values.oidc.existingCaSecret | quote }}
         {{- end }}
+        {{- if not $s3 }}
         - name: evidence
           persistentVolumeClaim: {claimName: {{ $root.Values.storage.existingClaim | quote }}}
         - name: media
           persistentVolumeClaim: {claimName: {{ $root.Values.storage.mediaExistingClaim | quote }}}
-        - {name: tmp, emptyDir: {sizeLimit: 1Gi}}
+        {{- else if $root.Values.storage.s3.caSecret }}
+        - name: s3-tls
+          secret: {secretName: {{ $root.Values.storage.s3.caSecret | quote }}}
+        {{- end }}
+        - {name: tmp, emptyDir: {sizeLimit: {{ ternary $root.Values.storage.s3.tempSize "1Gi" $s3 | quote }}}}
         - {name: run, emptyDir: {sizeLimit: 64Mi}}
         {{- if $root.Values.databaseTLS.existingSecret }}
         - name: db-tls

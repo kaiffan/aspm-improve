@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, JsonResponse
 
 from dojo.aspm_access.permissions import role
 from dojo.aspm_ingestion.engagements import can_manage_engagement_policy
+from dojo.aspm_ingestion.object_store import ObjectUnavailableError
 from dojo.aspm_ingestion.permissions import api_only_scans_enabled
 from dojo.webhooks.permissions import can_manage_webhooks
 
@@ -32,3 +33,16 @@ def ingestion_context(request):
         "aspm_can_manage_engagements": can_manage_engagement_policy(request.user),
         "aspm_webhooks_can_manage": settings.ASPM_WEBHOOKS_ENABLED and can_manage_webhooks(request.user),
     }
+
+
+class PrivateStorageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        if isinstance(exception, ObjectUnavailableError):
+            return JsonResponse({"detail": "Private storage is temporarily unavailable."}, status=503)
+        return None

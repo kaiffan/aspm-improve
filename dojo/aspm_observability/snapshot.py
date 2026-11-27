@@ -124,7 +124,9 @@ def broker():
 def storage():
     from dojo.management.commands.aspm_preflight import storage_ready  # noqa: PLC0415
 
-    storage_ready()
+    storage_ready(writable=False)
+    if settings.ASPM_STORAGE_BACKEND == "s3":
+        return []
     stats = os.statvfs(Path(settings.ASPM_ARTIFACT_ROOT))
     return [
         gauge("aspm_evidence_filesystem_bytes", "Capacity of the mounted evidence filesystem", stats.f_blocks * stats.f_frsize, state="total"),

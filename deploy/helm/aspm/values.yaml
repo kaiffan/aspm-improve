@@ -59,10 +59,31 @@ oidc:
 databaseTLS:
   existingSecret: aspm-postgres-ca
 storage:
+  backend: filesystem
   existingClaim: aspm-evidence
   mediaExistingClaim: aspm-media
   # RWX semantics, same UID and atomic rename/fsync must be qualified on the real CSI driver.
   minimumFreeBytes: 1073741824
+  s3:
+    endpoint: ""
+    region: us-east-1
+    bucket: ""
+    prefix: ""
+    addressingStyle: path
+    credentialsSecret: ""
+    accessKeyName: access-key-id
+    secretKeyName: secret-access-key
+    sessionTokenKey: ""
+    caSecret: ""
+    connectTimeoutSeconds: 3
+    readTimeoutSeconds: 20
+    attempts: 3
+    multipartThresholdMiB: 32
+    multipartPartMiB: 8
+    encryption: ""
+    kmsKeyId: ""
+    tempSize: 4Gi
+    egress: []
 serviceAccount:
   create: true
   name: ""

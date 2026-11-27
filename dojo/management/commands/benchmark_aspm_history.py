@@ -8,12 +8,12 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection
+from django.db import connection, transaction
 from django.utils import timezone
 
 from dojo.aspm_ingestion.models import IngestionJob, ScanRun
 from dojo.aspm_ingestion.services import accept_scan, finalize_commit, issue_token, request_report
-from dojo.aspm_ingestion.storage import private_path, safe_name, save_original
+from dojo.aspm_ingestion.storage import publish_object, safe_name, save_original, verified_artifact
 from dojo.aspm_ingestion.tasks import MeasuredReImporter, generate_report, prepare_test, snapshot_findings
 from dojo.models import Finding, Product, Product_Type, Test
 
@@ -52,7 +52,7 @@ class Command(BaseCommand):
         test = prepare_test(scan)
         importer = MeasuredReImporter(test=test, scan_type=scan.scanner, user=user, scan_date=timezone.now(), deduplication_execution_mode="sync", push_to_jira=False)
         importer.phase_timings = {}
-        with private_path(scan.artifact_path).open("rb") as report_file:
+        with verified_artifact(scan.artifact_path, scan.artifact_sha256, scan.artifact_size) as report_file:
             importer.process_scan(report_file)
         finding = Finding.objects.get(test=test)
         start = time.monotonic()
@@ -90,12 +90,15 @@ class Command(BaseCommand):
             msg = "The selected Test does not contain the complete synthetic fixture."
             raise CommandError(msg)
         upload = SimpleUploadedFile("synthetic.json", b'{"fixture":"synthetic SQL-cloned Findings; not a parser throughput measurement"}')
-        key, digest, size, storage_seconds = save_original(upload)
+        key, digest, size, storage_seconds, obj = save_original(upload)
         user = get_user_model().objects.filter(username__startswith="history-benchmark-").first()
-        scan = ScanRun.objects.create(product_id=test.engagement.product_id, commit_id=test.engagement.commit_id, test=test,
-                                      submitted_by=user, delivery_key=uuid.uuid4().hex, fingerprint=digest, scanner=test.scan_type,
-                                      artifact_path=key, artifact_sha256=digest, artifact_size=size, original_name=safe_name(upload.name),
-                                      status="PROCESSING", attempt=1, started_at=timezone.now(), timings={"artifact_storage_seconds": storage_seconds})
+        with transaction.atomic():
+            scan = ScanRun.objects.create(product_id=test.engagement.product_id, commit_id=test.engagement.commit_id, test=test,
+                                          submitted_by=user, delivery_key=uuid.uuid4().hex, fingerprint=digest, scanner=test.scan_type,
+                                          artifact_path=key, artifact_sha256=digest, artifact_size=size, original_name=safe_name(upload.name),
+                                          status="PROCESSING", attempt=1, started_at=timezone.now(), timings={"artifact_storage_seconds": storage_seconds})
+            if obj is not None:
+                publish_object(obj)
         with connection.cursor() as cursor:
             cursor.execute("SELECT pg_current_wal_lsn()")
             observation_lsn = cursor.fetchone()[0]
@@ -117,10 +120,14 @@ class Command(BaseCommand):
             for table in ("dojo_finding", "dojo_findingobservation"):
                 cursor.execute("SELECT pg_table_size(%s), pg_indexes_size(%s), pg_total_relation_size(%s)", [table, table, table])
                 sizes[table] = dict(zip(("table_bytes", "index_bytes", "total_bytes"), cursor.fetchone(), strict=True))
+        report_sizes = {}
+        for kind, key in (("json", report.json_path), ("html", report.html_path)):
+            with verified_artifact(key, report.checksums[kind]) as source:
+                report_sizes[f"{kind}_bytes"] = source.seek(0, 2)
         result = {"database": connection.settings_dict["NAME"], "rows": rows, "actual_finding_count": Finding.objects.count(), "actual_observation_count": count,
                   "fixture": "Synthetic Finding rows cloned using SQL, excluding parser/dedup scaling claims; snapshot and report use production code.",
                   "seed_seconds": seed_seconds, "seed_wal_bytes": seed_wal, "snapshot_seconds": snapshot_seconds, "snapshot_wal_bytes": snapshot_wal,
                   "generation_seconds": report.timings["generation_seconds"], "sizes": sizes,
-                  "json_bytes": private_path(report.json_path).stat().st_size, "html_bytes": private_path(report.html_path).stat().st_size,
+                  **report_sizes,
                   "scan_id": str(scan.pk), "report_id": str(report.pk), "report_checksums": report.checksums}
         self.stdout.write(json.dumps(result, indent=2))

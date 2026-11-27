@@ -52,6 +52,11 @@ spec:
     - to:
         - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}
       ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+    {{- if eq .Values.storage.backend "s3" }}
+    {{- with .Values.storage.s3.egress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- end }}
     {{- with .Values.networkPolicy.egress }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

@@ -219,6 +219,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "backend": {
+          "enum": [
+            "filesystem",
+            "s3"
+          ]
+        },
         "existingClaim": {
           "type": "string",
           "minLength": 1
@@ -230,12 +236,110 @@
         "minimumFreeBytes": {
           "type": "integer",
           "minimum": 0
+        },
+        "s3": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "bucket": {
+              "type": "string"
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "addressingStyle": {
+              "enum": [
+                "path",
+                "virtual",
+                "auto"
+              ]
+            },
+            "credentialsSecret": {
+              "type": "string"
+            },
+            "accessKeyName": {
+              "type": "string"
+            },
+            "secretKeyName": {
+              "type": "string"
+            },
+            "sessionTokenKey": {
+              "type": "string"
+            },
+            "caSecret": {
+              "type": "string"
+            },
+            "connectTimeoutSeconds": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "readTimeoutSeconds": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "multipartThresholdMiB": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "multipartPartMiB": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "encryption": {
+              "type": "string"
+            },
+            "kmsKeyId": {
+              "type": "string"
+            },
+            "tempSize": {
+              "type": "string"
+            },
+            "egress": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "endpoint",
+            "region",
+            "bucket",
+            "prefix",
+            "addressingStyle",
+            "credentialsSecret",
+            "accessKeyName",
+            "secretKeyName",
+            "sessionTokenKey",
+            "caSecret",
+            "connectTimeoutSeconds",
+            "readTimeoutSeconds",
+            "attempts",
+            "multipartThresholdMiB",
+            "multipartPartMiB",
+            "encryption",
+            "kmsKeyId",
+            "tempSize",
+            "egress"
+          ]
         }
       },
       "required": [
+        "backend",
         "existingClaim",
         "mediaExistingClaim",
-        "minimumFreeBytes"
+        "minimumFreeBytes",
+        "s3"
       ]
     },
     "serviceAccount": {

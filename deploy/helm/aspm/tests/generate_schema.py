@@ -22,6 +22,10 @@ def schema(value, key=""):
         if key == "port":
             result.update(minimum=1, maximum=65535)
         return result
+    if key == "backend":
+        return {"enum": ["filesystem", "s3"]}
+    if key == "addressingStyle":
+        return {"enum": ["path", "virtual", "auto"]}
     if key == "authType":
         return {"enum": ["none", "basic", "bearer"]}
     if isinstance(value, str):

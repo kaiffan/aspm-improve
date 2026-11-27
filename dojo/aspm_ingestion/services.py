@@ -14,7 +14,7 @@ from dojo.aspm_access.backend import managed_account
 from dojo.aspm_ingestion.engagements import resolve_engagement
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, IngestionJob, IngestionToken, ScanRun
 from dojo.aspm_ingestion.selection import SCAN_FIELDS, live_selection
-from dojo.aspm_ingestion.storage import private_path, safe_name, save_original
+from dojo.aspm_ingestion.storage import EvidenceUnavailable, discard_original, publish_object, safe_name, save_original
 from dojo.aspm_observability import metrics as telemetry
 from dojo.scm.identity_v1 import repository_provider
 from dojo.scm.models import Commit, Repository
@@ -89,13 +89,28 @@ def accept_scan(token, data, upload, *, correlation_id=None):
         if repository.url != data["repository_url"]:
             msg = "Repository is outside the token scope."
             raise PermissionDenied(msg)
-    key, digest, size, storage_seconds = save_original(upload)
+    metadata = {k: v for k, v in data.items() if k not in {"project_id", "repository_id", "repository_url", "commit_sha", "scanner_type", "idempotency_key", "sha256"}}
+    url = repository.url if repository else data["repository_url"]
+
+    def fingerprint_for(digest, size):
+        identity = {"repository": url, "commit": data["commit_sha"], "scanner": data["scanner_type"], "metadata": metadata, "sha256": digest, "size": size}
+        return hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+    def reuse_existing(digest, size):
+        existing = ScanRun.objects.filter(product_id=token.product_id, delivery_key=data["idempotency_key"]).first()
+        if existing is None:
+            return None
+        if existing.fingerprint != fingerprint_for(digest, size) or existing.submitted_by_id != token.user_id:
+            raise Conflict
+        return existing.artifact_path
+
+    try:
+        key, digest, size, storage_seconds, obj = save_original(upload, expected_sha256=data.get("sha256"), reuse=reuse_existing)
+    except OSError as error:
+        raise EvidenceUnavailable from error
     retained = False
     try:
-        metadata = {k: v for k, v in data.items() if k not in {"project_id", "repository_id", "repository_url", "commit_sha", "scanner_type", "idempotency_key", "sha256"}}
-        url = repository.url if repository else data["repository_url"]
-        identity = {"repository": url, "commit": data["commit_sha"], "scanner": data["scanner_type"], "metadata": metadata, "sha256": digest, "size": size}
-        fingerprint = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        fingerprint = fingerprint_for(digest, size)
         if data.get("sha256") and data["sha256"] != digest:
             raise ValidationError({"sha256": "The original does not match the supplied SHA256."})
         with transaction.atomic():
@@ -117,19 +132,24 @@ def accept_scan(token, data, upload, *, correlation_id=None):
                 if telemetry.ENABLED:
                     transaction.on_commit(lambda: telemetry.scan_event(scan.scanner, "duplicate"))
                 return scan, False
+            if obj is not None:
+                try:
+                    publish_object(obj)
+                except OSError as error:
+                    raise EvidenceUnavailable from error
             IngestionJob.objects.create(scan=scan, next_dispatch_at=timezone.now())
             if telemetry.ENABLED:
                 def record_acceptance():
                     telemetry.scan_event(scan.scanner, "accepted")
                     telemetry.ARTIFACT_SIZE.labels("scan").observe(size)
 
-                transaction.on_commit(record_acceptance)
-            transaction.on_commit(wake_dispatcher)
+                transaction.on_commit(record_acceptance, robust=True)
+            transaction.on_commit(wake_dispatcher, robust=True)
         retained = True
         return scan, True
     finally:
         if not retained:
-            private_path(key).unlink(missing_ok=True)
+            discard_original(key)
 
 
 @transaction.atomic

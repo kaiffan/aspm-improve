@@ -160,6 +160,31 @@ class IngestionJob(models.Model):
     report = models.OneToOneField(GeneratedReport, null=True, on_delete=models.CASCADE)
     next_dispatch_at = models.DateTimeField(db_index=True)
     deliveries = models.PositiveIntegerField(default=0)
+    storage_failures = models.PositiveSmallIntegerField(default=0)
+    storage_retry_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [models.CheckConstraint(condition=(models.Q(scan__isnull=False, report__isnull=True) | models.Q(scan__isnull=True, report__isnull=False)), name="aspm_job_one_target")]
+
+
+class StoredObject(models.Model):
+    class State(models.TextChoices):
+        STAGED = "staged"
+        READY = "ready"
+        RETIRED = "retired"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=400, unique=True)
+    backend = models.CharField(max_length=20, default="s3")
+    bucket = models.CharField(max_length=255)
+    object_key = models.CharField(max_length=500)
+    version_id = models.CharField(max_length=1024, blank=True)
+    sha256 = models.CharField(max_length=64)
+    size = models.PositiveBigIntegerField()
+    content_type = models.CharField(max_length=255)
+    state = models.CharField(max_length=12, choices=State, default=State.STAGED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [models.Index(fields=("state", "updated_at"), name="aspm_object_state_age")]

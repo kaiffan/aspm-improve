@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="aspm-workspace-hero">
+    <header class="aspm-page-heading">
+        <div><h1>{% trans "System health" %}</h1><p>{% trans "Dependency checks from the serving web pod." %}</p></div>
+        {% if aspm_role == "secops" or request.user.is_superuser %}<a class="btn btn-secondary" href="{% url 'celery_status' %}">{% trans "Worker status" %}</a>{% endif %}
+    </header>
+</div>
+<section class="aspm-section" aria-label="{% trans 'Dependency checks' %}">
+    <table class="table">
+        <thead><tr><th scope="col">{% trans "Dependency" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
+        <tbody>
+        {% for name, available in checks %}
+            <tr><th scope="row">{{ name }}</th>
+            <td>{% if available %}{% trans "Available" as label %}{% include "dojo/aspm/status.html" with state="COMPLETED" label=label %}
+                {% else %}{% trans "Unavailable" as label %}{% include "dojo/aspm/status.html" with state="FAILED" label=label %}{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p>{% trans "Private storage backend" %} <code>{{ storage_backend }}</code></p>
+</section>
+{% endblock %}

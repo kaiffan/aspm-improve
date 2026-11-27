@@ -1,7 +1,7 @@
 apiVersion: v2
 name: aspm
 description: ASPM API ingestion, private evidence and durable integrations
-version: 0.1.0-rc.10
+version: 0.1.0-rc.11
 appVersion: "1.0.1-enterprise-rc"
 type: application
 kubeVersion: ">=1.27.0-0"
@@ -28,3 +28,5 @@ annotations:
       description: Apply release placement rules to migration and test hooks
     - kind: added
       description: Add private ASPM metrics, Prometheus collection and scoped VictoriaMetrics remote write
+    - kind: added
+      description: Add private S3 storage for immutable scan artifacts, generated reports and Classic media

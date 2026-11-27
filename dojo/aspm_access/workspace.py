@@ -2,16 +2,21 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.core.management.base import CommandError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import OuterRef, Subquery
+from django.db.utils import DatabaseError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
+from psycopg import Error as PostgresError
+from redis.exceptions import RedisError
 
 from dojo.aspm_access.models import SsoProductGrant
 from dojo.aspm_access.permissions import has_capability
@@ -19,6 +24,8 @@ from dojo.aspm_ingestion.engagements import can_manage_engagement_policy
 from dojo.aspm_ingestion.models import EngagementPolicy, EngagementStrategy, GeneratedReport, ManagedEngagement, ScanRun
 from dojo.aspm_ingestion.scanners import SCANNER_FORMATS
 from dojo.engagement.models import Engagement
+from dojo.management.commands.aspm_preflight import storage_ready
+from dojo.operations.health import database_ready, redis_ready
 from dojo.product.models import Product
 from dojo.product.queries import get_authorized_products
 from dojo.product_type.models import Product_Type
@@ -113,6 +120,57 @@ def reports(request):
         ).order_by("-created_at", "-pk")
     add_breadcrumb(title=_("Reports"), top_level=True, request=request)
     return render(request, "dojo/aspm/reports.html", {"entries": _page(request, entries), "query": query, "section": section})
+
+
+@require_GET
+@login_required
+def scan_processing(request):
+    if not settings.ASPM_INGESTION_ENABLED or not settings.ASPM_SCM_HIERARCHY:
+        raise Http404
+    query = request.GET.get("q", "").strip()[:150]
+    state = request.GET.get("status", "")
+    products = get_authorized_products("view", user=request.user).filter(name__icontains=query)
+    entries = ScanRun.objects.filter(product__in=products, commit__repository__product__in=products)
+    if state in ScanRun.Status.values:
+        entries = entries.filter(status=state)
+    entries = entries.select_related("product", "commit").only(
+        "id", "product__name", "commit__sha", "scanner", "status", "created_at", "finished_at", "error_code",
+    ).order_by("-created_at", "-pk")
+    add_breadcrumb(title=_("Scan processing"), top_level=True, request=request)
+    return render(request, "dojo/aspm/scan_processing.html", {
+        "entries": _page(request, entries), "query": query, "state": state, "states": ScanRun.Status.choices,
+    })
+
+
+@require_GET
+@login_required
+def system_health(request):
+    if not has_capability(request.user, "dojo.view_system_settings"):
+        raise PermissionDenied
+    cache_url = settings.CACHES["default"].get("LOCATION")
+
+    def storage_available():
+        storage_ready(writable=False)
+        return True
+
+    probes = [
+        (_("PostgreSQL"), database_ready),
+        (_("Celery broker"), lambda: redis_ready(settings.CELERY_BROKER_URL)),
+        (_("Private storage"), storage_available),
+    ]
+    if isinstance(cache_url, str) and cache_url.startswith(("redis://", "rediss://")):
+        probes.append((_("Cache"), lambda: redis_ready(cache_url)))
+    checks = []
+    for name, check in probes:
+        try:
+            available = check()
+        except (CommandError, DatabaseError, OSError, PostgresError, RedisError):
+            available = False
+        checks.append((name, available))
+    add_breadcrumb(title=_("System health"), top_level=True, request=request)
+    return render(request, "dojo/aspm/system_health.html", {
+        "checks": checks, "storage_backend": settings.ASPM_STORAGE_BACKEND,
+    })
 
 
 @require_GET

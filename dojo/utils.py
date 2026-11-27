@@ -42,6 +42,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.core.cache import cache
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import IntegrityError, OperationalError, connections, transaction
 from django.db.models import Case, Count, F, IntegerField, Q, Sum, Value, When
@@ -954,6 +955,10 @@ def get_page_items_and_count(request, items, page_size, prefix="", *, do_count=T
 def handle_uploaded_threat(f, eng):
     path = Path(f.name)
     extension = path.suffix
+    if settings.ASPM_STORAGE_BACKEND == "s3":
+        eng.tmodel_path = default_storage.save(f"threat/upload{extension}", f)
+        eng.save()
+        return
     # Check if threat folder exist.
     threat_dir = Path(settings.MEDIA_ROOT) / "threat"
     if not threat_dir.is_dir():
@@ -969,6 +974,10 @@ def handle_uploaded_threat(f, eng):
 def handle_uploaded_selenium(f, cred):
     path = Path(f.name)
     extension = path.suffix
+    if settings.ASPM_STORAGE_BACKEND == "s3":
+        cred.selenium_script = default_storage.save(f"selenium/upload{extension}", f)
+        cred.save()
+        return
     sel_path = Path(settings.MEDIA_ROOT) / "selenium" / f"{cred.id}{extension}"
     with sel_path.open("wb+") as destination:
         destination.writelines(chunk for chunk in f.chunks())
@@ -2430,6 +2439,9 @@ def generate_file_response(file_object: FileUpload) -> FileResponse:
     # Add some important headers
     response["Content-Disposition"] = f'attachment; filename="{full_file_name}"'
     response["Content-Length"] = storage.size(name)
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Content-Security-Policy"] = "sandbox; default-src 'none'"
     return response
 
 
@@ -2437,6 +2449,21 @@ def generate_file_response_from_file_path(
     file_path: str, file_name: str | None = None, file_size: int | None = None,
 ) -> FileResponse:
     """Serve an local file in a uniformed way."""
+    if settings.ASPM_STORAGE_BACKEND == "s3":
+        from dojo.aspm_ingestion.storage import legacy_media_name  # noqa: PLC0415 -- only in the object profile
+
+        name = legacy_media_name(file_path)
+        if name is None:
+            raise Http404
+        try:
+            source = default_storage.open(name, "rb")
+        except FileNotFoundError as error:
+            raise Http404 from error
+        response = FileResponse(source, as_attachment=True, filename=file_name or Path(name).name, content_type="application/octet-stream")
+        response["Cache-Control"] = "private, no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Content-Security-Policy"] = "sandbox; default-src 'none'"
+        return response
     # Determine the file path
     path = Path(file_path)
     # Guard against a missing file on disk so callers that pass a raw path (e.g. the

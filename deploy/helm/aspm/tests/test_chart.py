@@ -87,6 +87,28 @@ class ChartTests(unittest.TestCase):
                 threshold = next(env["value"] for env in container["env"] if env["name"] == "DD_ASPM_STORAGE_MIN_FREE_BYTES")
                 self.assertEqual(threshold, expected)
 
+    def test_s3_profile_has_no_file_claims_and_mounts_private_ca(self):
+        docs = render(
+            "-f", str(CHART / "values-storage-s3.example.yaml"),
+            "--set", "networkPolicy.enabled=true",
+        )
+        self.assertFalse([item for item in docs if item["kind"] == "PersistentVolumeClaim"])
+        for item in docs:
+            if item["kind"] != "Deployment":
+                continue
+            pod = item["spec"]["template"]["spec"]
+            volumes = {volume["name"]: volume for volume in pod["volumes"]}
+            self.assertNotIn("evidence", volumes)
+            self.assertNotIn("media", volumes)
+            self.assertEqual(volumes["s3-tls"]["secret"]["secretName"], "aspm-object-storage-ca")
+            self.assertEqual(volumes["tmp"]["emptyDir"]["sizeLimit"], "4Gi")
+            init = pod["initContainers"][0]
+            env = {entry["name"]: entry for entry in init["env"]}
+            self.assertEqual(env["DD_ASPM_STORAGE_BACKEND"]["value"], "s3")
+            self.assertEqual(env["DD_ASPM_S3_ACCESS_KEY_ID"]["valueFrom"]["secretKeyRef"]["name"], "aspm-runtime-s3")
+        policy = next(item for item in docs if item["kind"] == "NetworkPolicy")
+        self.assertIn("192.0.2.10/32", str(policy["spec"]["egress"]))
+
     def test_monitoring_dedicated_mounts_private_credentials_and_discovers_pods(self):
         docs = render(
             "--set", "monitoring.enabled=true,monitoring.dedicated.enabled=true",

@@ -218,6 +218,9 @@ class RiskAcceptanceViewSet(
         )
         if hasattr(response, "_resource_closers"):
             response._resource_closers.append(file_handle.close)
+        response["Cache-Control"] = "private, no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Content-Security-Policy"] = "sandbox; default-src 'none'"
         response["Content-Length"] = file_object.size
         response[
             "Content-Disposition"

@@ -2495,3 +2495,35 @@ ASPM_MAX_REPORT_BYTES = env.int("DD_ASPM_MAX_REPORT_BYTES", default=536870912)
 ASPM_WEBHOOKS_ENABLED = env.bool("DD_ASPM_WEBHOOKS_ENABLED", default=False)
 ASPM_WEBHOOK_MAX_PENDING = env.int("DD_ASPM_WEBHOOK_MAX_PENDING", default=10000)
 ASPM_WEBHOOK_MAX_PAYLOAD_BYTES = env.int("DD_ASPM_WEBHOOK_MAX_PAYLOAD_BYTES", default=65536)
+
+ASPM_STORAGE_BACKEND = env.str("DD_ASPM_STORAGE_BACKEND", default="filesystem")
+if ASPM_STORAGE_BACKEND not in {"filesystem", "s3"}:
+    msg = "DD_ASPM_STORAGE_BACKEND must be filesystem or s3."
+    raise ImproperlyConfigured(msg)
+ASPM_STORAGE_TEMP_DIR = env.str("DD_ASPM_STORAGE_TEMP_DIR", default="/tmp")
+ASPM_S3 = {
+    "endpoint": env.str("DD_ASPM_S3_ENDPOINT", default=""),
+    "region": env.str("DD_ASPM_S3_REGION", default="us-east-1"),
+    "bucket": env.str("DD_ASPM_S3_BUCKET", default=""),
+    "prefix": env.str("DD_ASPM_S3_PREFIX", default=""),
+    "style": env.str("DD_ASPM_S3_ADDRESSING_STYLE", default="path"),
+    "ca": env.str("DD_ASPM_S3_CA", default=""),
+    "access_key": env.str("DD_ASPM_S3_ACCESS_KEY_ID", default=""),
+    "secret_key": env.str("DD_ASPM_S3_SECRET_ACCESS_KEY", default=""),
+    "session_token": env.str("DD_ASPM_S3_SESSION_TOKEN", default=""),
+    "connect_timeout": env.int("DD_ASPM_S3_CONNECT_TIMEOUT", default=3),
+    "read_timeout": env.int("DD_ASPM_S3_READ_TIMEOUT", default=20),
+    "attempts": env.int("DD_ASPM_S3_ATTEMPTS", default=3),
+    "multipart_threshold_mib": env.int("DD_ASPM_S3_MULTIPART_THRESHOLD_MIB", default=32),
+    "multipart_part_mib": env.int("DD_ASPM_S3_MULTIPART_PART_MIB", default=8),
+    "encryption": env.str("DD_ASPM_S3_ENCRYPTION", default=""),
+    "kms_key_id": env.str("DD_ASPM_S3_KMS_KEY_ID", default=""),
+}
+ASPM_MAX_MEDIA_BYTES = env.int("DD_ASPM_MAX_MEDIA_BYTES", default=52428800)
+if ASPM_STORAGE_BACKEND == "s3":
+    STORAGES = {
+        "default": {"BACKEND": "dojo.aspm_ingestion.storage.PrivateMediaStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    FILE_UPLOAD_TEMP_DIR = ASPM_STORAGE_TEMP_DIR
+    MIDDLEWARE = [*MIDDLEWARE, "dojo.aspm_ingestion.middleware.PrivateStorageMiddleware"]

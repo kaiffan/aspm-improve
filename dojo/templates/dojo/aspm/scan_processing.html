@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="aspm-workspace-hero">
+    <header class="aspm-page-heading"><h1>{% trans "Scan processing" %}</h1></header>
+</div>
+<form class="aspm-workspace-form" method="get" role="search" aria-label="{% trans 'Filter scan deliveries' %}">
+    <div>
+        <label for="scan-project">{% trans "Project name" %}</label>
+        <input id="scan-project" class="form-control" type="search" name="q" value="{{ query }}" maxlength="150">
+    </div>
+    <div>
+        <label for="scan-status">{% trans "Status" %}</label>
+        <select id="scan-status" class="form-control" name="status">
+            <option value="">{% trans "All statuses" %}</option>
+            {% for value, label in states %}<option value="{{ value }}"{% if value == state %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">{% trans "Apply filters" %}</button>
+</form>
+<section class="aspm-section" aria-label="{% trans 'Scan deliveries' %}">
+    <div class="table-responsive" tabindex="0" role="region" aria-label="{% trans 'Scan deliveries table' %}">
+        <table class="table">
+            <thead><tr><th scope="col">{% trans "Project" %}</th><th scope="col">{% trans "Commit" %}</th><th scope="col">{% trans "Scanner" %}</th><th scope="col">{% trans "Accepted" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
+            <tbody>
+            {% for scan in entries %}
+                <tr>
+                    <th scope="row">{{ scan.product.name }}</th>
+                    <td><a href="{% url 'aspm_commit_evidence' scan.commit_id %}?tab=originals&amp;run={{ scan.pk }}"><code>{{ scan.commit.sha|slice:":12" }}</code><span class="sr-only"> {% trans "Scan details" %}</span></a></td>
+                    <td>{{ scan.scanner }}</td>
+                    <td><time datetime="{{ scan.created_at|date:'c' }}">{{ scan.created_at }}</time></td>
+                    <td>{% include "dojo/aspm/status.html" with state=scan.status label=scan.get_status_display %}{% if scan.error_code %}<div><code>{{ scan.error_code }}</code></div>{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">{% trans "No scan deliveries match these filters." %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="aspm-pagination">{% include "dojo/paging_snippet.html" with page=entries %}</div>
+</section>
+{% endblock %}

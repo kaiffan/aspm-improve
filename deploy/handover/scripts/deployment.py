@@ -32,6 +32,8 @@ def ping(name):
     return redis.Redis.from_url(os.environ[name], socket_connect_timeout=5, socket_timeout=5).ping()
 
 def media():
+    if os.environ.get("DD_ASPM_STORAGE_BACKEND") == "s3":
+        return
     with tempfile.NamedTemporaryFile(dir="/app/media") as f:
         f.write(b"aspm preflight"); f.flush(); os.fsync(f.fileno())
 
@@ -44,7 +46,7 @@ def oidc():
             assert json.load(response)["issuer"] == issuer
 
 checks = {"PostgreSQL SQL/TLS": db, "broker DNS/PING": lambda: ping("DD_CELERY_BROKER_URL"),
-          "cache DNS/PING": lambda: ping("DD_CACHE_URL"), "evidence fsync/rename": storage_ready,
+          "cache DNS/PING": lambda: ping("DD_CACHE_URL"), "private storage read/write": storage_ready,
           "media write": media, "OIDC discovery": oidc}
 ok = True
 for name, check in checks.items():
@@ -142,7 +144,7 @@ def require_manifest_secrets(args, manifest, secrets):
     ]
     prom_config = "\n".join(prom_configs)
     volume_keys = {
-        "db-tls": {"ca.crt"}, "oidc-ca": {"ca.crt"}, "ca": {"ca.crt"},
+        "db-tls": {"ca.crt"}, "oidc-ca": {"ca.crt"}, "s3-tls": {"ca.crt"}, "ca": {"ca.crt"},
         "scrape-auth": {"token"}, "scrape-tls": {"tls.crt", "tls.key"},
         "scrape-ca": {"ca.crt"},
         "write-auth": {name for name in ("username", "password", "token")

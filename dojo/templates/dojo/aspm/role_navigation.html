@@ -4,6 +4,7 @@
 {% translate "Classic workspace" as classic %}
 {% translate "Findings" as findings %}
 {% translate "Reports" as reports %}
+{% translate "Scan processing" as scan_processing %}
 {% translate "Integrations" as integrations %}
 {% translate "Webhooks" as webhooks %}
 {% translate "Access management" as access %}
@@ -15,6 +16,7 @@
     {% include "dojo/aspm/nav_link.html" with route="aspm_projects" icon="code-branch" text=projects routes="scm_repository_list scm_repository_detail scm_commit_detail scm_commit_compare aspm_commit_evidence" %}
     {% include "dojo/aspm/nav_link.html" with route="aspm_classic" icon="layer-group" text=classic routes="product product_type view_product_type view_product all_engagements active_engagements engagements_all view_engagements view_engagement view_test" %}
     {% if aspm_role != "user" %}{% include "dojo/aspm/nav_link.html" with route="all_findings" icon="shield-halved" text=findings routes="open_findings verified_findings closed_findings accepted_findings view_finding" %}{% endif %}
+    {% if aspm_ingestion_enabled %}{% include "dojo/aspm/nav_link.html" with route="aspm_scan_processing" icon="list-check" text=scan_processing %}{% endif %}
     {% include "dojo/aspm/nav_link.html" with route="aspm_reports" icon="file-lines" text=reports routes="report_builder product_report engagement_report test_report" %}
     {% if aspm_role == "expert" and not aspm_webhooks_can_manage and not request.user.is_superuser %}{% include "dojo/aspm/nav_link.html" with route="aspm_scanners" icon="plug" text=integrations %}{% endif %}
 </div>
@@ -25,7 +27,7 @@
         {% if aspm_webhooks_can_manage %}{% include "dojo/aspm/nav_link.html" with route="aspm_webhooks" icon="share-nodes" text=webhooks %}{% endif %}
         {% if aspm_oidc_enabled and "dojo.manage_sso_mapping"|has_configuration_permission:request %}{% include "dojo/aspm/nav_link.html" with route="aspm_sso_mappings" icon="users-gear" text=access %}{% endif %}
         {% if aspm_role == "secops" or request.user.is_superuser %}
-            {% include "dojo/aspm/nav_link.html" with route="celery_status" icon="heart-pulse" text=health %}
+            {% include "dojo/aspm/nav_link.html" with route="aspm_system_health" icon="heart-pulse" text=health routes="celery_status" %}
             {% include "dojo/aspm/nav_link.html" with route="system_settings" icon="gear" text=settings %}
         {% endif %}
     </div>

@@ -3,7 +3,6 @@ import html
 import json
 import logging
 import os
-import pathlib
 import time
 import uuid
 from collections import Counter
@@ -18,7 +17,14 @@ from django.utils import timezone
 
 from dojo.aspm_ingestion.logging import private_import_logs
 from dojo.aspm_ingestion.models import FindingObservation, GeneratedReport, IngestionJob, ScanRun
-from dojo.aspm_ingestion.storage import bounded_text_output, private_path, sync_directories, verify_original
+from dojo.aspm_ingestion.object_store import ObjectTransportError
+from dojo.aspm_ingestion.storage import (
+    bounded_text_output,
+    publish_object,
+    report_paths,
+    stage_report,
+    verified_artifact,
+)
 from dojo.aspm_observability import metrics as telemetry
 from dojo.celery import app
 from dojo.importers.default_importer import DefaultImporter
@@ -155,11 +161,16 @@ def snapshot_findings(scan):
 
 def import_scan(scan):
     try:
-        verify_original(scan)
-    except (ValueError, OSError):
+        source = verified_artifact(scan.artifact_path, scan.artifact_sha256, scan.artifact_size)
+    except OSError:
         if telemetry.ENABLED:
             telemetry.STORAGE_FAILURES.labels("scan_read").inc()
         raise
+    with source:
+        import_verified_scan(scan, source)
+
+
+def import_verified_scan(scan, source):
     test = prepare_test(scan)
     timings = dict(scan.timings)
     timings["acceptance_to_start_seconds"] = max(0, (scan.started_at - scan.created_at).total_seconds())
@@ -173,8 +184,7 @@ def import_scan(scan):
         importer.phase_timings = {}
         locked = lock_tests_under_import([test.pk])
         try:
-            with private_path(scan.artifact_path).open("rb") as source:
-                result = importer.process_scan(File(source, name=scan.original_name))
+            result = importer.process_scan(File(source, name=scan.original_name))
             if not getattr(importer, "deduplication_complete", False):
                 msg = "deduplication_incomplete"
                 raise RuntimeError(msg)
@@ -185,10 +195,13 @@ def import_scan(scan):
     timings["observation_seconds"] = seconds
     finished_at = timezone.now()
     with transaction.atomic():
-        ScanRun.objects.filter(pk=scan.pk).update(
+        updated = ScanRun.objects.filter(pk=scan.pk, status=ScanRun.Status.PROCESSING, attempt=scan.attempt).update(
             status=ScanRun.Status.COMPLETED, finished_at=finished_at, error_code="",
             observation_generation=scan.attempt, finding_count=count, severity_summary=severity, timings=timings,
         )
+        if updated != 1:
+            msg = "ScanRun lost its processing attempt."
+            raise RuntimeError(msg)
         IngestionJob.objects.filter(scan=scan).delete()
     if telemetry.ENABLED:
         scanner = telemetry.SCANNERS.get(scan.scanner, "other")
@@ -214,17 +227,13 @@ def generate_report(report):
     wait = (timezone.now() - report.created_at).total_seconds()
     prefix = f"reports/{report.pk}/{uuid.uuid4().hex}"
     json_key, html_key = f"{prefix}/report.json", f"{prefix}/report.html"
-    json_path, html_path = private_path(json_key), private_path(html_key)
-    json_path.parent.mkdir(mode=0o700, parents=True)
     severity = Counter()
     for scan in report.manifest["scans"]:
         if scan["status"] == ScanRun.Status.COMPLETED:
             severity.update(scan["severity_summary"])
     manifest = {**report.manifest, "severity_summary": dict(severity)}
-    try:
+    with report_paths(json_key, html_key) as (json_path, html_path):
         with bounded_text_output(json_path) as json_output, bounded_text_output(html_path) as html_output:
-            pathlib.Path(json_path).chmod(0o600)
-            pathlib.Path(html_path).chmod(0o600)
             # Stream observations. Memory stays bounded even for million-row reports.
             json_output.write('{"report":' + json.dumps(manifest, ensure_ascii=True) + ',"observations":[')
             html_output.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;"><title>ASPM commit report</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:2em auto;padding:0 1em;color:#202124}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f4f4;padding:1em}article{border-bottom:1px solid #ddd;padding:1em 0}h1,h2,h3{line-height:1.25}a{overflow-wrap:anywhere}</style></head><body><h1>ASPM generated commit report</h1>')
@@ -243,21 +252,21 @@ def generate_report(report):
             for output in (json_output, html_output):
                 output.flush()
                 os.fsync(output.fileno())
-        checksums = {}
-        sync_directories(json_path)
-        for kind, path in (("json", json_path), ("html", html_path)):
-            digest = hashlib.sha256()
-            with path.open("rb") as source:
-                for chunk in iter(lambda: source.read(1024 * 1024), b""):
-                    digest.update(chunk)
-            checksums[kind] = digest.hexdigest()
+        json_sha, json_obj = stage_report(json_key, json_path, "application/json")
+        html_sha, html_obj = stage_report(html_key, html_path, "text/html; charset=utf-8")
+        checksums = {"json": json_sha, "html": html_sha}
         with transaction.atomic():
-            GeneratedReport.objects.filter(pk=report.pk).update(status=ScanRun.Status.COMPLETED, json_path=json_key, html_path=html_key, checksums=checksums, timings={"generation_seconds": time.monotonic() - start})
+            for obj in (json_obj, html_obj):
+                if obj is not None:
+                    publish_object(obj)
+            updated = GeneratedReport.objects.filter(pk=report.pk, status=ScanRun.Status.ACCEPTED).update(
+                status=ScanRun.Status.COMPLETED, json_path=json_key, html_path=html_key, checksums=checksums,
+                timings={"generation_seconds": time.monotonic() - start},
+            )
+            if updated != 1:
+                msg = "Generated report lost its publication attempt."
+                raise RuntimeError(msg)
             IngestionJob.objects.filter(report=report).delete()
-    except BaseException:
-        json_path.unlink(missing_ok=True)
-        html_path.unlink(missing_ok=True)
-        raise
     if telemetry.ENABLED:
         telemetry.report_event("generated")
         telemetry.REPORT_PHASE.labels("generated", "generation").observe(time.monotonic() - start)
@@ -266,10 +275,27 @@ def generate_report(report):
         telemetry.ARTIFACT_SIZE.labels("html").observe(html_output.bytes_written)
 
 
+def defer_storage_retry(kind, identifier):
+    jobs = IngestionJob.objects.filter(**{f"{kind}_id": identifier})
+    job = jobs.first()
+    if job is None or job.storage_failures >= 3:
+        return False
+    retry_at = timezone.now() + timedelta(seconds=15 * 2 ** job.storage_failures)
+    with transaction.atomic():
+        jobs.update(storage_failures=job.storage_failures + 1, storage_retry_at=retry_at, next_dispatch_at=retry_at)
+        if kind == "scan":
+            ScanRun.objects.filter(pk=identifier).update(status=ScanRun.Status.ACCEPTED, error_code="storage_retry_pending")
+    return True
+
+
 @app.task(name="dojo.aspm_ingestion.process_job", acks_late=True, reject_on_worker_lost=True, soft_time_limit=840, time_limit=900, ignore_result=True)
 def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
     with job_lock(identifier) as acquired:
         if not acquired:
+            return
+        if kind not in {"scan", "report"}:
+            return
+        if IngestionJob.objects.filter(**{f"{kind}_id": identifier}, storage_retry_at__gt=timezone.now()).exists():
             return
         if kind == "scan":
             scan = ScanRun.objects.select_related("commit__repository", "engagement", "submitted_by", "test__environment").get(pk=identifier)
@@ -298,10 +324,12 @@ def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
             ScanRun.objects.filter(pk=scan.pk).update(status=ScanRun.Status.PROCESSING, attempt=scan.attempt, recovery_count=scan.recovery_count, started_at=scan.started_at)
             try:
                 import_scan(scan)
-            except Exception:
+            except Exception as error:
+                if isinstance(error, ObjectTransportError) and defer_storage_retry(kind, identifier):
+                    return
                 # Parser errors may contain report text/secrets. Persist only a stable safe code.
                 with transaction.atomic():
-                    ScanRun.objects.filter(pk=scan.pk).update(status=ScanRun.Status.FAILED, error_code="import_failed", finished_at=timezone.now())
+                    ScanRun.objects.filter(pk=scan.pk, status=ScanRun.Status.PROCESSING, attempt=scan.attempt).update(status=ScanRun.Status.FAILED, error_code="import_failed", finished_at=timezone.now())
                     IngestionJob.objects.filter(scan=scan).delete()
                 telemetry.scan_event(scan.scanner, "failed")
         elif kind == "report":
@@ -311,8 +339,10 @@ def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
             try:
                 generate_report(report)
             except Exception as error:
+                if isinstance(error, ObjectTransportError) and defer_storage_retry(kind, identifier):
+                    return
                 with transaction.atomic():
-                    GeneratedReport.objects.filter(pk=report.pk).update(status=ScanRun.Status.FAILED, error_code="generation_failed")
+                    GeneratedReport.objects.filter(pk=report.pk, status=ScanRun.Status.ACCEPTED).update(status=ScanRun.Status.FAILED, error_code="generation_failed")
                     IngestionJob.objects.filter(report=report).delete()
                 telemetry.report_event("failed")
                 if telemetry.ENABLED and isinstance(error, OSError):

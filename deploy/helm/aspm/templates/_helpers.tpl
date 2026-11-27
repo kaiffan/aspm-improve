@@ -27,6 +27,39 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 - name: DD_ASPM_STORAGE_MIN_FREE_BYTES
   value: {{ .Values.storage.minimumFreeBytes | int64 | quote }}
+- name: DD_ASPM_STORAGE_BACKEND
+  value: {{ .Values.storage.backend | quote }}
+{{- if eq .Values.storage.backend "s3" }}
+{{- with .Values.storage.s3 }}
+{{- if not (hasPrefix "https://" .endpoint) }}
+{{- fail "storage.s3.endpoint must use HTTPS" }}
+{{- end }}
+- {name: DD_ASPM_S3_ENDPOINT, value: {{ .endpoint | quote }}}
+- {name: DD_ASPM_S3_REGION, value: {{ .region | quote }}}
+- {name: DD_ASPM_S3_BUCKET, value: {{ required "storage.s3.bucket is required" .bucket | quote }}}
+- {name: DD_ASPM_S3_PREFIX, value: {{ .prefix | quote }}}
+- {name: DD_ASPM_S3_ADDRESSING_STYLE, value: {{ .addressingStyle | quote }}}
+- {name: DD_ASPM_S3_CONNECT_TIMEOUT, value: {{ .connectTimeoutSeconds | quote }}}
+- {name: DD_ASPM_S3_READ_TIMEOUT, value: {{ .readTimeoutSeconds | quote }}}
+- {name: DD_ASPM_S3_ATTEMPTS, value: {{ .attempts | quote }}}
+- {name: DD_ASPM_S3_MULTIPART_THRESHOLD_MIB, value: {{ .multipartThresholdMiB | quote }}}
+- {name: DD_ASPM_S3_MULTIPART_PART_MIB, value: {{ .multipartPartMiB | quote }}}
+- {name: DD_ASPM_S3_ENCRYPTION, value: {{ .encryption | quote }}}
+- {name: DD_ASPM_S3_KMS_KEY_ID, value: {{ .kmsKeyId | quote }}}
+{{- if .caSecret }}
+- {name: DD_ASPM_S3_CA, value: /app/s3-tls/ca.crt}
+{{- end }}
+{{- $secret := required "storage.s3.credentialsSecret is required" .credentialsSecret }}
+- name: DD_ASPM_S3_ACCESS_KEY_ID
+  valueFrom: {secretKeyRef: {name: {{ $secret | quote }}, key: {{ .accessKeyName | quote }}}}
+- name: DD_ASPM_S3_SECRET_ACCESS_KEY
+  valueFrom: {secretKeyRef: {name: {{ $secret | quote }}, key: {{ .secretKeyName | quote }}}}
+{{- if .sessionTokenKey }}
+- name: DD_ASPM_S3_SESSION_TOKEN
+  valueFrom: {secretKeyRef: {name: {{ $secret | quote }}, key: {{ .sessionTokenKey | quote }}}}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- $secret := .Values.existingSecret }}
 {{- range $env, $key := dict "DD_SECRET_KEY" .Values.secretKeys.secretKey "DD_CREDENTIAL_AES_256_KEY" .Values.secretKeys.credentialKey "DD_DATABASE_URL" .Values.secretKeys.databaseUrl "DD_CELERY_BROKER_URL" .Values.secretKeys.brokerUrl "DD_CACHE_URL" .Values.secretKeys.cacheUrl }}
 - name: {{ $env }}

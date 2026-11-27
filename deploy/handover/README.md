@@ -1,6 +1,6 @@
 # ASPM 1.0.1 Enterprise Delivery
 
-Комплект кандидата содержит исходники, Helm Chart, конфигурации, deployment scripts, русскоязычные руководства, SBOM и результаты квалификации.
+Комплект кандидата содержит исходники, Helm Chart, конфигурации, deployment scripts, русскоязычные руководства и результаты квалификации. SBOM предыдущего образа сохранены для истории. Кандидат rc.11 требует нового сканирования пары release images.
 
 Начните с [START_HERE](START_HERE.md), заполните [анкету инфраструктуры](checklists/INFRASTRUCTURE_INPUT.md) и примените [Standard HA](docs/04_DEPLOYMENT_GUIDE.md) в согласованном staging. Репетиция на одном узле описана в START_HERE. Состояние испытаний и решение по production находятся в [release gates](qualification/RELEASE_GATE.md).
 
@@ -13,4 +13,4 @@
 | Команда CI/CD | [API](docs/11_CICD_INTEGRATION.md) · [Примеры](integration-examples/README.md) |
 | Владелец выпуска | [Паспорт](DELIVERY_MANIFEST.json) · [Сборка и перенос образов](docs/18_BUILD_AND_IMAGE_TRANSFER.md) · [Сообщение о передаче](HANDOVER_MESSAGE.md) |
 
-Сверьте SHA256SUMS. Руководство PDF находится в docs, Markdown остаётся редактируемым источником. Лицензии upstream включены в исходники.
+Сверьте SHA256SUMS. Актуальные инструкции по S3 и DR находятся в Markdown. PDF в docs относится к предыдущей поставке. Лицензии upstream включены в исходники.

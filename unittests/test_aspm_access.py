@@ -176,6 +176,17 @@ class ManagedAuthorizationTests(IngestionFixture, TestCase):
         self.assertContains(classic, reverse("product_report", args=(self.product.pk,)))
         self.assertNotContains(classic, reverse("product_report", args=(self.hidden.pk,)))
 
+    def test_scan_processing_and_system_health_follow_access_rules(self):
+        reader, _ = self._session("user", (GROUP_TEST,))
+        route = reverse("aspm_scan_processing")
+        visible = reader.get(route, {"status": self.scan.status})
+        self.assertEqual([entry.pk for entry in visible.context["entries"]], [self.scan.pk])
+        excluded = reader.get(route, {"q": self.hidden.name})
+        self.assertContains(excluded, "No scan deliveries match these filters.")
+        self.assertEqual(reader.get(reverse("aspm_system_health")).status_code, 403)
+        secops, _ = self._session("secops", ())
+        self.assertContains(secops.get(reverse("aspm_system_health")), "Dependency checks")
+
     def test_repository_branch_filter_and_activity_follow_product_grants(self):
         reader, _ = self._session("user", (GROUP_TEST,))
         commit = self.scan.commit

@@ -2,18 +2,26 @@
   "product": "ASPM",
   "application_version": "1.0.1",
   "upstream_baseline": "DefectDojo OSS 3.5.100",
-  "application_sha": "bef347c845eee8e16fdd6c3b5e8134eb499ece44",
+  "application_sha": "ff30da23b35adadb10b7813095c292bb0344ac26",
   "stabilized_application_sha": "eee10e678c77480deceb794da92a1bc660cd0dee",
   "stabilization_evidence_sha": "6cc4408a3eff3601afe00500c94f2fa6480534d4",
-  "baseline_chart_version": "0.1.0-rc.9",
-  "chart_version": "0.1.0-rc.10",
+  "baseline_chart_version": "0.1.0-rc.10",
+  "chart_version": "0.1.0-rc.11",
   "baseline_chart_source_sha": "b5c7161ed848a7015dca87da43a52bf5f9bc69d7",
   "chart_app_version": "1.0.1-enterprise-rc",
-  "candidate": "aspm-1.0.1-handover-bef347c845ee-chart-rc.9",
-  "release_status": "HANDOVER PACKAGE READY — PRODUCTION HOLD",
+  "candidate": "aspm-1.0.1-final-storage-ff30da23b35a-chart-rc.11",
+  "release_status": "LOCAL QUALIFICATION — PRODUCTION HOLD",
   "generated_on": "2026-11-27",
   "source": "source/aspm-1.0.1-source.tar.gz",
-  "chart": "helm/aspm-0.1.0-rc.10.tgz",
+  "chart": "helm/aspm-0.1.0-rc.11.tgz",
   "images": "provenance/IMAGES.json",
-  "qualification": "qualification/RELEASE_GATE.md"
+  "qualification": "qualification/RELEASE_GATE.md",
+  "current_qualification": "qualification/FINAL_STORAGE.md",
+  "candidate_images": "provenance/RC11_LOCAL_IMAGES.json",
+  "rollback": {
+    "git_ref": "aspm-1.0.1-rollback-rc10",
+    "source_sha": "77a6b79a2e8db817850eba2bfa94a81a756b8b62",
+    "monitoring_image_source_sha": "a4fb9e89926f",
+    "chart_version": "0.1.0-rc.10"
+  }
 }

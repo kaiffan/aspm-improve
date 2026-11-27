@@ -14,6 +14,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST
 
+from dojo.aspm_observability import metrics as telemetry
 from dojo.aspm_access.backend import BACKEND
 from dojo.aspm_access.middleware import FLOW_KEY, SESSION_KEY
 from dojo.aspm_access.oidc import (
@@ -64,7 +65,9 @@ def callback(request):
         claims = exchange_code(code, flow)
         role, groups = session_claims(claims)
         expires = min(int(claims["exp"]), int(time.time()) + settings.ASPM_OIDC_SESSION_AGE)
-    except (ValueError, TypeError, jwt.PyJWTError, requests.RequestException):
+    except (ValueError, TypeError, jwt.PyJWTError, requests.RequestException) as error:
+        if telemetry.ENABLED and isinstance(error, requests.RequestException):
+            telemetry.IDENTITY.labels("provider", "unavailable").inc()
         return HttpResponseBadRequest("The identity provider could not complete sign-in. Start sign-in again.")
     identity = resolve_identity(settings.ASPM_OIDC_ISSUER, claims["sub"])
     user = identity.user

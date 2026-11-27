@@ -19,6 +19,7 @@ from django.utils import timezone
 from dojo.aspm_ingestion.logging import private_import_logs
 from dojo.aspm_ingestion.models import FindingObservation, GeneratedReport, IngestionJob, ScanRun
 from dojo.aspm_ingestion.storage import bounded_text_output, private_path, sync_directories, verify_original
+from dojo.aspm_observability import metrics as telemetry
 from dojo.celery import app
 from dojo.importers.default_importer import DefaultImporter
 from dojo.importers.default_reimporter import DefaultReImporter
@@ -54,11 +55,17 @@ def dispatch_jobs(**kwargs):
             job.deliveries = F("deliveries") + 1
             job.save(update_fields=["next_dispatch_at", "deliveries"])
     for job in jobs:
+        kind = "scan" if job.scan_id else "report"
         try:
-            process_job.apply_async(args=["scan" if job.scan_id else "report", str(job.scan_id or job.report_id)], kwargs={"dispatched_at": timezone.now().isoformat()})
+            process_job.apply_async(args=[kind, str(job.scan_id or job.report_id)], kwargs={"dispatched_at": timezone.now().isoformat()})
         except Exception:
+            if telemetry.ENABLED:
+                telemetry.DISPATCH.labels(kind, "failure").inc()
             # The next periodic dispatch retries, including process death before this send.
             logger.warning("ASPM broker dispatch deferred for job %s", job.pk)
+        else:
+            if telemetry.ENABLED:
+                telemetry.DISPATCH.labels(kind, "sent").inc()
 
     from dojo.webhooks.tasks import dispatch_webhooks  # noqa: PLC0415 -- shared outbox dispatcher
 
@@ -147,7 +154,12 @@ def snapshot_findings(scan):
 
 
 def import_scan(scan):
-    verify_original(scan)
+    try:
+        verify_original(scan)
+    except (ValueError, OSError):
+        if telemetry.ENABLED:
+            telemetry.STORAGE_FAILURES.labels("scan_read").inc()
+        raise
     test = prepare_test(scan)
     timings = dict(scan.timings)
     timings["acceptance_to_start_seconds"] = max(0, (scan.started_at - scan.created_at).total_seconds())
@@ -162,7 +174,7 @@ def import_scan(scan):
         locked = lock_tests_under_import([test.pk])
         try:
             with private_path(scan.artifact_path).open("rb") as source:
-                importer.process_scan(File(source, name=scan.original_name))
+                result = importer.process_scan(File(source, name=scan.original_name))
             if not getattr(importer, "deduplication_complete", False):
                 msg = "deduplication_incomplete"
                 raise RuntimeError(msg)
@@ -171,12 +183,22 @@ def import_scan(scan):
         finally:
             unlock_tests_under_import(locked)
     timings["observation_seconds"] = seconds
+    finished_at = timezone.now()
     with transaction.atomic():
         ScanRun.objects.filter(pk=scan.pk).update(
-            status=ScanRun.Status.COMPLETED, finished_at=timezone.now(), error_code="",
+            status=ScanRun.Status.COMPLETED, finished_at=finished_at, error_code="",
             observation_generation=scan.attempt, finding_count=count, severity_summary=severity, timings=timings,
         )
         IngestionJob.objects.filter(scan=scan).delete()
+    if telemetry.ENABLED:
+        scanner = telemetry.SCANNERS.get(scan.scanner, "other")
+        telemetry.scan_event(scan.scanner, "completed")
+        telemetry.OBSERVATIONS.labels(scanner).inc(count)
+        telemetry.FINDINGS.labels(scanner).inc(result[2])
+        for stage in ("acceptance_to_start_seconds", "queue_wait_seconds", "parser_seconds", "reimport_dedup_seconds", "observation_seconds"):
+            if stage in timings:
+                telemetry.SCAN_PHASE.labels(scanner, stage.removesuffix("_seconds")).observe(timings[stage])
+        telemetry.SCAN_PHASE.labels(scanner, "acceptance_to_completion").observe(max(0, (finished_at - scan.created_at).total_seconds()))
 
 
 def report_observations(report):
@@ -189,6 +211,7 @@ def report_observations(report):
 
 def generate_report(report):
     start = time.monotonic()
+    wait = (timezone.now() - report.created_at).total_seconds()
     prefix = f"reports/{report.pk}/{uuid.uuid4().hex}"
     json_key, html_key = f"{prefix}/report.json", f"{prefix}/report.html"
     json_path, html_path = private_path(json_key), private_path(html_key)
@@ -235,6 +258,12 @@ def generate_report(report):
         json_path.unlink(missing_ok=True)
         html_path.unlink(missing_ok=True)
         raise
+    if telemetry.ENABLED:
+        telemetry.report_event("generated")
+        telemetry.REPORT_PHASE.labels("generated", "generation").observe(time.monotonic() - start)
+        telemetry.REPORT_PHASE.labels("generated", "queue_wait").observe(max(0, wait))
+        telemetry.ARTIFACT_SIZE.labels("json").observe(json_output.bytes_written)
+        telemetry.ARTIFACT_SIZE.labels("html").observe(html_output.bytes_written)
 
 
 @app.task(name="dojo.aspm_ingestion.process_job", acks_late=True, reject_on_worker_lost=True, soft_time_limit=840, time_limit=900, ignore_result=True)
@@ -249,10 +278,12 @@ def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
             recovered = scan.status == ScanRun.Status.PROCESSING
             if recovered:
                 scan.recovery_count += 1
+                telemetry.scan_event(scan.scanner, "recovered")
             if scan.recovery_count >= 3:
                 with transaction.atomic():
                     ScanRun.objects.filter(pk=scan.pk).update(status=ScanRun.Status.FAILED, error_code="worker_recovery_limit", finished_at=timezone.now())
                     IngestionJob.objects.filter(scan=scan).delete()
+                telemetry.scan_event(scan.scanner, "failed")
                 return
             scan.attempt += 1
             scan.started_at = timezone.now()
@@ -272,13 +303,17 @@ def process_job(kind, identifier, *, dispatched_at=None, **kwargs):
                 with transaction.atomic():
                     ScanRun.objects.filter(pk=scan.pk).update(status=ScanRun.Status.FAILED, error_code="import_failed", finished_at=timezone.now())
                     IngestionJob.objects.filter(scan=scan).delete()
+                telemetry.scan_event(scan.scanner, "failed")
         elif kind == "report":
             report = GeneratedReport.objects.get(pk=identifier)
             if report.status in {ScanRun.Status.COMPLETED, ScanRun.Status.FAILED}:
                 return
             try:
                 generate_report(report)
-            except Exception:
+            except Exception as error:
                 with transaction.atomic():
                     GeneratedReport.objects.filter(pk=report.pk).update(status=ScanRun.Status.FAILED, error_code="generation_failed")
                     IngestionJob.objects.filter(report=report).delete()
+                telemetry.report_event("failed")
+                if telemetry.ENABLED and isinstance(error, OSError):
+                    telemetry.STORAGE_FAILURES.labels("report_write").inc()

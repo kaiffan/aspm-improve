@@ -30,3 +30,7 @@ scripts/smoke-test.sh --context orbstack --namespace aspm-lab-handover --release
 ```
 
 Откройте `http://127.0.0.1:18739/login`. Для первоначального лабораторного доступа создайте тестового SecOps интерактивно через `kubectl --context orbstack -n aspm-lab-handover exec -it deployment/aspm-aspm-web -c web -- python manage.py createsuperuser`. Для корпоративного входа настройте [Keycloak](docs/06_KEYCLOAK_AD_SETUP.md).
+
+## Мониторинг
+
+[Helm overlays, VictoriaMetrics и Grafana JSON](monitoring/README.md).

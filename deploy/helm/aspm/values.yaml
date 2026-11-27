@@ -177,11 +177,76 @@ hpa:
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 monitoring:
+  enabled: false
+  interval: 30s
+  timeout: 5s
+  snapshotIntervalSeconds: 60
+  path: /metrics
+  securityPosture: false
+  namespaceSelector: {}
+  podSelector: {}
+  scrapeAuthSecret: ""
+  scrapeTLSSecret: ""
+  scrapeCASecret: ""
+  scrapeServerName: ""
+  relabelings: []
   serviceMonitor:
     enabled: false
     labels: {}
     namespaceSelector: {}
     podSelector: {}
+  podMonitor:
+    enabled: false
+    labels: {}
+  dedicated:
+    enabled: false
+    image: prom/prometheus:v3.5.1
+    retention: 24h
+    retentionSize: 8GB
+    storageSize: 10Gi
+    storageClass: ""
+    resources:
+      requests: {cpu: 250m, memory: 512Mi}
+      limits: {cpu: "1", memory: 1536Mi}
+    externalLabels: {}
+    extraScrapeConfigs: []
+    alertmanagers: []
+  remoteWrite:
+    url: ""
+    timeout: 30s
+    authSecret: ""
+    authType: none
+    tlsSecret: ""
+    customCA: false
+    mutualTLS: false
+    minShards: 1
+    maxShards: 10
+    capacity: 10000
+    maxSamplesPerSend: 2000
+    securityPosture: false
+  rules:
+    enabled: false
+    labels: {}
+    owner: aspm-operations
+    runbookBase: ""
+    grafanaBase: ""
+    thresholds: {}
+  exporters:
+    postgresql:
+      enabled: false
+      image: prometheuscommunity/postgres-exporter:v0.19.1
+      credentialsSecret: ""
+      caSecret: ""
+      pgStatStatements: false
+    broker:
+      enabled: false
+      image: oliver006/redis_exporter:v1.81.0
+      credentialsSecret: ""
+      caSecret: ""
+  grafana:
+    enabled: false
+    labels: {grafana_dashboard: "1"}
+    datasourceUID: ""
 extraEnv: []
 tests:
   enabled: false

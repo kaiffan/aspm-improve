@@ -34,6 +34,12 @@ Helm rendering checks templates. Run preflight, a live Helm test and a restore d
 Read-only containers use explicit writable `/tmp`, runtime, evidence and media mounts. Root-squashed RWX
 ownership must be provisioned for UID 1001/GID 1337. Non-root compatibility still needs CSI qualification.
 
+Monitoring is opt-in. Select ServiceMonitor or PodMonitor for an existing collector,
+or enable the dedicated Prometheus StatefulSet with local TSDB/WAL storage.
+Configure one VictoriaMetrics HTTPS write URL and existing credential/CA references.
+The monitoring port is separate from the user Service. Supply monitoring namespace or
+pod selectors in existing mode. Grafana uses dashboards from observability/dashboards.
+
 This table is generated from values.yaml by tests/generate_readme.py.
 
 | Key | Type | Default |
@@ -192,9 +198,67 @@ This table is generated from values.yaml by tests/generate_readme.py.
 | `hpa.minReplicas` | `int` | `2` |
 | `hpa.maxReplicas` | `int` | `6` |
 | `hpa.targetCPUUtilizationPercentage` | `int` | `70` |
+| `monitoring.enabled` | `bool` | `False` |
+| `monitoring.interval` | `str` | `30s` |
+| `monitoring.timeout` | `str` | `5s` |
+| `monitoring.snapshotIntervalSeconds` | `int` | `60` |
+| `monitoring.path` | `str` | `/metrics` |
+| `monitoring.securityPosture` | `bool` | `False` |
+| `monitoring.namespaceSelector` | `dict` | `{}` |
+| `monitoring.podSelector` | `dict` | `{}` |
+| `monitoring.scrapeAuthSecret` | `str` | `` |
+| `monitoring.scrapeTLSSecret` | `str` | `` |
+| `monitoring.scrapeCASecret` | `str` | `` |
+| `monitoring.scrapeServerName` | `str` | `` |
+| `monitoring.relabelings` | `list` | `[]` |
 | `monitoring.serviceMonitor.enabled` | `bool` | `False` |
 | `monitoring.serviceMonitor.labels` | `dict` | `{}` |
 | `monitoring.serviceMonitor.namespaceSelector` | `dict` | `{}` |
 | `monitoring.serviceMonitor.podSelector` | `dict` | `{}` |
+| `monitoring.podMonitor.enabled` | `bool` | `False` |
+| `monitoring.podMonitor.labels` | `dict` | `{}` |
+| `monitoring.dedicated.enabled` | `bool` | `False` |
+| `monitoring.dedicated.image` | `str` | `prom/prometheus:v3.5.1` |
+| `monitoring.dedicated.retention` | `str` | `24h` |
+| `monitoring.dedicated.retentionSize` | `str` | `8GB` |
+| `monitoring.dedicated.storageSize` | `str` | `10Gi` |
+| `monitoring.dedicated.storageClass` | `str` | `` |
+| `monitoring.dedicated.resources.requests.cpu` | `str` | `250m` |
+| `monitoring.dedicated.resources.requests.memory` | `str` | `512Mi` |
+| `monitoring.dedicated.resources.limits.cpu` | `str` | `1` |
+| `monitoring.dedicated.resources.limits.memory` | `str` | `1536Mi` |
+| `monitoring.dedicated.externalLabels` | `dict` | `{}` |
+| `monitoring.dedicated.extraScrapeConfigs` | `list` | `[]` |
+| `monitoring.dedicated.alertmanagers` | `list` | `[]` |
+| `monitoring.remoteWrite.url` | `str` | `` |
+| `monitoring.remoteWrite.timeout` | `str` | `30s` |
+| `monitoring.remoteWrite.authSecret` | `str` | `` |
+| `monitoring.remoteWrite.authType` | `str` | `none` |
+| `monitoring.remoteWrite.tlsSecret` | `str` | `` |
+| `monitoring.remoteWrite.customCA` | `bool` | `False` |
+| `monitoring.remoteWrite.mutualTLS` | `bool` | `False` |
+| `monitoring.remoteWrite.minShards` | `int` | `1` |
+| `monitoring.remoteWrite.maxShards` | `int` | `10` |
+| `monitoring.remoteWrite.capacity` | `int` | `10000` |
+| `monitoring.remoteWrite.maxSamplesPerSend` | `int` | `2000` |
+| `monitoring.remoteWrite.securityPosture` | `bool` | `False` |
+| `monitoring.rules.enabled` | `bool` | `False` |
+| `monitoring.rules.labels` | `dict` | `{}` |
+| `monitoring.rules.owner` | `str` | `aspm-operations` |
+| `monitoring.rules.runbookBase` | `str` | `` |
+| `monitoring.rules.grafanaBase` | `str` | `` |
+| `monitoring.rules.thresholds` | `dict` | `{}` |
+| `monitoring.exporters.postgresql.enabled` | `bool` | `False` |
+| `monitoring.exporters.postgresql.image` | `str` | `prometheuscommunity/postgres-exporter:v0.19.1` |
+| `monitoring.exporters.postgresql.credentialsSecret` | `str` | `` |
+| `monitoring.exporters.postgresql.caSecret` | `str` | `` |
+| `monitoring.exporters.postgresql.pgStatStatements` | `bool` | `False` |
+| `monitoring.exporters.broker.enabled` | `bool` | `False` |
+| `monitoring.exporters.broker.image` | `str` | `oliver006/redis_exporter:v1.81.0` |
+| `monitoring.exporters.broker.credentialsSecret` | `str` | `` |
+| `monitoring.exporters.broker.caSecret` | `str` | `` |
+| `monitoring.grafana.enabled` | `bool` | `False` |
+| `monitoring.grafana.labels.grafana_dashboard` | `str` | `1` |
+| `monitoring.grafana.datasourceUID` | `str` | `` |
 | `extraEnv` | `list` | `[]` |
 | `tests.enabled` | `bool` | `False` |

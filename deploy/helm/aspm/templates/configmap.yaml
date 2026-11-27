@@ -31,7 +31,8 @@ data:
           add_header Cache-Control "public, max-age=60, must-revalidate";
         }
         location /health/ { return 404; }
-        location /django_metrics { return 404; }
+        location ~ (^|/)django_metrics(/|$) { return 404; }
+        location = /metrics { return 404; }
         location / {
           include /etc/nginx/wsgi_params;
           uwsgi_pass 127.0.0.1:3031;

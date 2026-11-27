@@ -1239,15 +1239,19 @@ PROMETHEUS_EXPORT_MIGRATIONS = False
 if env("DD_DJANGO_METRICS_ENABLED"):
     DJANGO_METRICS_ENABLED = env("DD_DJANGO_METRICS_ENABLED")
     INSTALLED_APPS = (*INSTALLED_APPS, "django_prometheus")
-    MIDDLEWARE = [
-        "django_prometheus.middleware.PrometheusBeforeMiddleware",
-        *MIDDLEWARE,
-        "django_prometheus.middleware.PrometheusAfterMiddleware",
-]
+    if os.environ.get("DD_ASPM_OBSERVABILITY") != "true":
+        MIDDLEWARE = [
+            "django_prometheus.middleware.PrometheusBeforeMiddleware",
+            *MIDDLEWARE,
+            "django_prometheus.middleware.PrometheusAfterMiddleware",
+        ]
     database_engine = DATABASES.get("default").get("ENGINE")
     DATABASES["default"]["ENGINE"] = database_engine.replace("django.", "django_prometheus.", 1)
     # CELERY_RESULT_BACKEND.replace('django.core','django_prometheus.', 1)
     LOGIN_EXEMPT_URLS += (rf"^{URL_PREFIX}django_metrics/",)
+
+if os.environ.get("DD_ASPM_OBSERVABILITY") == "true":
+    MIDDLEWARE = ["dojo.aspm_observability.middleware.MetricsMiddleware", *MIDDLEWARE]
 
 
 # ------------------------------------

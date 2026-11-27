@@ -1,0 +1,451 @@
+groups:
+- name: aspm-recording
+  interval: 30s
+  rules:
+  - record: aspm:http_rps:rate5m
+    expr: sum by (cluster,environment,namespace,release) (rate(aspm_http_requests_total{application="aspm",group!~"internal"}[5m]))
+    labels:
+      application: aspm
+  - record: aspm:http_5xx_ratio:rate5m
+    expr: (sum by (cluster,environment,namespace,release) (rate(aspm_http_requests_total{application="aspm",status=~"5..",group!="internal"}[5m])) or 0 * aspm:http_rps:rate5m) / on (cluster,environment,namespace,release) (aspm:http_rps:rate5m > 0)
+    labels:
+      application: aspm
+  - record: aspm:http_p95_seconds:rate5m
+    expr: histogram_quantile(0.95, sum by (cluster,environment,namespace,release,le) (rate(aspm_http_request_duration_seconds_bucket{application="aspm",group!~"internal"}[5m])))
+    labels:
+      application: aspm
+  - record: aspm:scan_completion_p95_seconds:rate5m
+    expr: histogram_quantile(0.95, sum by (cluster,environment,namespace,release,le) (rate(aspm_scan_phase_seconds_bucket{application="aspm",stage="acceptance_to_completion"}[5m])))
+    labels:
+      application: aspm
+  - record: aspm:scan_completed:rate5m
+    expr: sum by (cluster,environment,namespace,release) (rate(aspm_scan_events_total{application="aspm",result="completed",component="worker"}[5m]))
+    labels:
+      application: aspm
+  - record: aspm:celery_workers:count
+    expr: count by (cluster,environment,namespace,release) ((time() - aspm_celery_heartbeat_timestamp_seconds{application="aspm",component="worker"}) < 20) or 0 * count by (cluster,environment,namespace,release) (up{application="aspm",component="worker"})
+    labels:
+      application: aspm
+  - record: aspm:delivery_lag_seconds
+    expr: max by (cluster,environment,namespace,release) (clamp_min(prometheus_remote_storage_highest_timestamp_in_seconds{application="aspm"} - ignoring(remote_name,url) group_right prometheus_remote_storage_queue_highest_sent_timestamp_seconds{application="aspm",remote_name="aspm-victoriametrics"}, 0))
+    labels:
+      application: aspm
+- name: aspm-alerting
+  interval: 30s
+  rules:
+  - alert: ASPMWebScrapeUnavailable
+    expr: max by (cluster,environment,namespace,release) (up{application="aspm",component="web"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Все scrape targets web недоступны
+      description: Проверьте Pod, NetworkPolicy, TLS и авторизацию scrape.
+      dashboard_uid: aspm-pipeline
+      threshold: max(up) = 0
+      runbook: runbooks/OPERATIONS.md#aspmwebscrapeunavailable
+  - alert: ASPMWorkerScrapeUnavailable
+    expr: max by (cluster,environment,namespace,release) (up{application="aspm",component="worker"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Все scrape targets Celery недоступны
+      description: Проверьте Pod, NetworkPolicy, TLS и авторизацию scrape.
+      dashboard_uid: aspm-pipeline
+      threshold: max(up) = 0
+      runbook: runbooks/OPERATIONS.md#aspmworkerscrapeunavailable
+  - alert: ASPMSingletonScrapeUnavailable
+    expr: max by (cluster,environment,namespace,release) (up{application="aspm",component="beat"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Все scrape targets singleton недоступны
+      description: Проверьте Pod, NetworkPolicy, TLS и авторизацию scrape.
+      dashboard_uid: aspm-pipeline
+      threshold: max(up) = 0
+      runbook: runbooks/OPERATIONS.md#aspmsingletonscrapeunavailable
+  - alert: ASPMPostgreSQLUnavailable
+    expr: max by (cluster,environment,namespace,release) (aspm_dependency_up{application="aspm",source="database"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: PostgreSQL недоступен
+      description: Проверка singleton не вернула свежих данных. Проверьте журнал sidecar и зависимость.
+      dashboard_uid: aspm-postgresql
+      threshold: probe = 0
+      runbook: runbooks/OPERATIONS.md#aspmpostgresqlunavailable
+  - alert: ASPMValkeyUnavailable
+    expr: max by (cluster,environment,namespace,release) (aspm_dependency_up{application="aspm",source="broker"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Valkey недоступен
+      description: Проверка singleton не вернула свежих данных. Проверьте журнал sidecar и зависимость.
+      dashboard_uid: aspm-ingestion
+      threshold: probe = 0
+      runbook: runbooks/OPERATIONS.md#aspmvalkeyunavailable
+  - alert: ASPMEvidenceStorageUnavailable
+    expr: max by (cluster,environment,namespace,release) (aspm_dependency_up{application="aspm",source="storage"}) == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: EvidenceStorage недоступен
+      description: Проверка singleton не вернула свежих данных. Проверьте журнал sidecar и зависимость.
+      dashboard_uid: aspm-kubernetes
+      threshold: probe = 0
+      runbook: runbooks/OPERATIONS.md#aspmevidencestorageunavailable
+  - alert: ASPMNoWorkerHeartbeat
+    expr: aspm:celery_workers:count == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Нет heartbeat от Celery
+      description: Возможны проблемы брокера, остановка процесса или перегрузка worker.
+      dashboard_uid: aspm-ingestion
+      threshold: 0 worker
+      runbook: runbooks/OPERATIONS.md#aspmnoworkerheartbeat
+  - alert: ASPMHighHTTP5xx
+    expr: aspm:http_5xx_ratio:rate5m > 0.05 and on (cluster,environment,namespace,release) aspm:http_rps:rate5m > 1
+    for: 5m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Доля HTTP 5xx выше 5%
+      description: Проверьте ошибки приложения и его зависимости.
+      dashboard_uid: aspm-http-api
+      threshold: '>5% при >1 запроса/с'
+      runbook: runbooks/OPERATIONS.md#aspmhighhttp5xx
+  - alert: ASPMHighAPIP95
+    expr: histogram_quantile(0.95, sum by (cluster,environment,namespace,release,le) (rate(aspm_http_request_duration_seconds_bucket{application="aspm",group=~"api_v2|api_v3|ingestion"}[5m]))) > 2 and on (cluster,environment,namespace,release) aspm:http_rps:rate5m > 1
+    for: 10m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: p95 API выше 2 с
+      description: Проверьте медленные маршруты, БД и конкуренцию за CPU.
+      dashboard_uid: aspm-http-api
+      threshold: '>2 с'
+      runbook: runbooks/OPERATIONS.md#aspmhighapip95
+  - alert: ASPMScanNotProgressing
+    expr: max by (cluster,environment,namespace,release) (aspm_durable_oldest_seconds{application="aspm",kind="scan"}) > 900 and on (cluster,environment,namespace,release) aspm:scan_completed:rate5m == 0
+    for: 5m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: ScanRun не продвигаются
+      description: Проверьте состояние outbox, broker и worker heartbeat.
+      dashboard_uid: aspm-ingestion
+      threshold: старше 15 мин, завершений нет
+      runbook: runbooks/OPERATIONS.md#aspmscannotprogressing
+  - alert: ASPMScanFailures
+    expr: sum by (cluster,environment,namespace,release) (increase(aspm_scan_events_total{application="aspm",component="worker",result="failed"}[15m])) >= 3
+    for: 2m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Повторяющиеся ошибки ScanRun
+      description: Проверьте тип сканера и журнал обработки.
+      dashboard_uid: aspm-ingestion
+      threshold: ≥3 за 15 мин
+      runbook: runbooks/OPERATIONS.md#aspmscanfailures
+  - alert: ASPMBrokerBacklogGrowing
+    expr: sum by (cluster,environment,namespace,release,queue) (deriv(aspm_broker_queue_ready{application="aspm"}[10m])) > 0.1 and sum by (cluster,environment,namespace,release,queue) (aspm_broker_queue_ready{application="aspm"}) > 20
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Очередь Valkey растёт
+      description: Сравните очередь, reserved и active прежде, чем масштабировать workers.
+      dashboard_uid: aspm-ingestion
+      threshold: '>20 и прирост >0,1/с'
+      runbook: runbooks/OPERATIONS.md#aspmbrokerbackloggrowing
+  - alert: ASPMRemoteWriteStalled
+    expr: aspm:delivery_lag_seconds > 120
+    for: 3m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Задержка remote write выше двух минут
+      description: Возможны ошибки доступа, TLS, перегрузка VictoriaMetrics либо проблемы с WAL.
+      dashboard_uid: aspm-pipeline
+      threshold: '>120 с'
+      runbook: runbooks/OPERATIONS.md#aspmremotewritestalled
+  - alert: ASPMRemoteWriteRetries
+    expr: sum by (cluster,environment,namespace,release) (rate(prometheus_remote_storage_samples_retried_total{application="aspm",remote_name="aspm-victoriametrics"}[5m])) > 1
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Prometheus повторяет отправку
+      description: Проверьте ответы remote endpoint и рост очереди.
+      dashboard_uid: aspm-pipeline
+      threshold: '>1 sample/с'
+      runbook: runbooks/OPERATIONS.md#aspmremotewriteretries
+  - alert: ASPMWebhookFailures
+    expr: sum by (cluster,environment,namespace,release) (increase(aspm_webhook_delivery_attempts_total{application="aspm",outcome=~"retry|failed"}[15m])) > 5
+    for: 3m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Повторяющиеся ошибки вебхуков
+      description: Проверьте доступность получателя и очередь повторных попыток.
+      dashboard_uid: aspm-integrations
+      threshold: '>5 за 15 мин'
+      runbook: runbooks/OPERATIONS.md#aspmwebhookfailures
+  - alert: ASPMOIDCConnectivity
+    expr: sum by (cluster,environment,namespace,release) (increase(aspm_identity_events_total{application="aspm",event="provider",result="unavailable"}[10m])) >= 3
+    for: 2m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Ошибки подключения к OIDC
+      description: Проверьте DNS, CA и сетевой доступ Keycloak.
+      dashboard_uid: aspm-integrations
+      threshold: ≥3 за 10 мин
+      runbook: runbooks/OPERATIONS.md#aspmoidcconnectivity
+  - alert: ASPMReducedWebReplicas
+    expr: kube_deployment_spec_replicas{deployment=~".*-web",application="aspm"} - kube_deployment_status_replicas_available{deployment=~".*-web",application="aspm"} > 0
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Реплик web меньше заданного числа
+      description: Проверьте rollout, scheduling, probes и лимиты.
+      dashboard_uid: aspm-kubernetes
+      threshold: available < desired
+      runbook: runbooks/OPERATIONS.md#aspmreducedwebreplicas
+  - alert: ASPMNoReadyWebReplicas
+    expr: kube_deployment_status_replicas_available{deployment=~".*-web",application="aspm"} == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Нет доступных реплик web
+      description: Проверьте deployment и восстановите доступность.
+      dashboard_uid: aspm-kubernetes
+      threshold: available = 0
+      runbook: runbooks/OPERATIONS.md#aspmnoreadywebreplicas
+  - alert: ASPMReducedWorkerReplicas
+    expr: kube_deployment_spec_replicas{deployment=~".*-worker",application="aspm"} - kube_deployment_status_replicas_available{deployment=~".*-worker",application="aspm"} > 0
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Реплик worker меньше заданного числа
+      description: Проверьте rollout, scheduling, probes и лимиты.
+      dashboard_uid: aspm-kubernetes
+      threshold: available < desired
+      runbook: runbooks/OPERATIONS.md#aspmreducedworkerreplicas
+  - alert: ASPMNoReadyWorkerReplicas
+    expr: kube_deployment_status_replicas_available{deployment=~".*-worker",application="aspm"} == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Нет доступных реплик worker
+      description: Проверьте deployment и восстановите доступность.
+      dashboard_uid: aspm-kubernetes
+      threshold: available = 0
+      runbook: runbooks/OPERATIONS.md#aspmnoreadyworkerreplicas
+  - alert: ASPMReducedBeatReplicas
+    expr: kube_deployment_spec_replicas{deployment=~".*-beat",application="aspm"} - kube_deployment_status_replicas_available{deployment=~".*-beat",application="aspm"} > 0
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Реплик beat меньше заданного числа
+      description: Проверьте rollout, scheduling, probes и лимиты.
+      dashboard_uid: aspm-kubernetes
+      threshold: available < desired
+      runbook: runbooks/OPERATIONS.md#aspmreducedbeatreplicas
+  - alert: ASPMMigrationJobFailed
+    expr: kube_job_status_failed{application="aspm",job_name=~".*-migrate.*"} > 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Job миграции завершился ошибкой
+      description: Проверьте журнал migration Job и совместимость схемы.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>0 ошибок Job'
+      runbook: runbooks/OPERATIONS.md#aspmmigrationjobfailed
+  - alert: ASPMEvidenceSpaceLow
+    expr: 1 - (aspm_evidence_filesystem_bytes{application="aspm",state="available"} / ignoring(state) aspm_evidence_filesystem_bytes{application="aspm",state="total"}) > 0.85
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: На файловой системе evidence заканчивается место
+      description: Сверьте PVC capacity и квоты CSI.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>85%'
+      runbook: runbooks/OPERATIONS.md#aspmevidencespacelow
+  - alert: ASPMEvidenceSpaceCritical
+    expr: 1 - (aspm_evidence_filesystem_bytes{application="aspm",state="available"} / ignoring(state) aspm_evidence_filesystem_bytes{application="aspm",state="total"}) > 0.95
+    for: 5m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: На файловой системе evidence заканчивается место
+      description: Сверьте PVC capacity и квоты CSI.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>95%'
+      runbook: runbooks/OPERATIONS.md#aspmevidencespacecritical
+  - alert: ASPMPVCSpaceLow
+    expr: kubelet_volume_stats_used_bytes{application="aspm"} / (kubelet_volume_stats_capacity_bytes{application="aspm"} > 0) > 0.85
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Заполнение PVC
+      description: Сверьте квоту, свободные inodes и доступность расширения.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>85%'
+      runbook: runbooks/OPERATIONS.md#aspmpvcspacelow
+  - alert: ASPMPVCSpaceCritical
+    expr: kubelet_volume_stats_used_bytes{application="aspm"} / (kubelet_volume_stats_capacity_bytes{application="aspm"} > 0) > 0.95
+    for: 5m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Заполнение PVC
+      description: Сверьте квоту, свободные inodes и доступность расширения.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>95%'
+      runbook: runbooks/OPERATIONS.md#aspmpvcspacecritical
+  - alert: ASPMCPUThrottling
+    expr: rate(container_cpu_cfs_throttled_periods_total{application="aspm",container!=""}[5m]) / (rate(container_cpu_cfs_periods_total{application="aspm",container!=""}[5m]) > 0) > 0.25
+    for: 10m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Стойкий CPU throttling
+      description: Сверьте CPU limits и нагрузку pod.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>25% CFS periods'
+      runbook: runbooks/OPERATIONS.md#aspmcputhrottling
+  - alert: ASPMContainerMemoryHigh
+    expr: max by (cluster,environment,namespace,release,pod,container) (container_memory_working_set_bytes{application="aspm",container!=""}) / (max by (cluster,environment,namespace,release,pod,container) (kube_pod_container_resource_limits{application="aspm",resource="memory"}) > 0) > 0.9
+    for: 10m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Рабочая память контейнера близка к лимиту
+      description: Проверьте рост RSS, историю OOMKilled и нагрузку.
+      dashboard_uid: aspm-kubernetes
+      threshold: '>90%'
+      runbook: runbooks/OPERATIONS.md#aspmcontainermemoryhigh
+  - alert: ASPMPostgresExporterUnavailable
+    expr: pg_up{application="aspm"} == 0
+    for: 2m
+    labels:
+      severity: critical
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: PostgreSQL недоступен экспортёру
+      description: Проверьте TLS, сеть и мониторинговую роль.
+      dashboard_uid: aspm-postgresql
+      threshold: pg_up = 0
+      runbook: runbooks/OPERATIONS.md#aspmpostgresexporterunavailable
+  - alert: ASPMPostgresDeadlocks
+    expr: sum by (cluster,environment,namespace,release) (increase(pg_stat_database_deadlocks{application="aspm"}[15m])) >= 2
+    for: 3m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Повторные deadlocks PostgreSQL
+      description: Изучите журнал PostgreSQL и конфликтующие операции.
+      dashboard_uid: aspm-postgresql
+      threshold: ≥2 за 15 мин
+      runbook: runbooks/OPERATIONS.md#aspmpostgresdeadlocks
+  - alert: ASPMPostgresConnectionsHigh
+    expr: sum without(state,datname) (pg_stat_activity_count{application="aspm"}) / pg_settings_max_connections{application="aspm"} > 0.8
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: База ASPM занимает больше 80% лимита соединений
+      description: Проверьте budget пулов и long-running transactions.
+      dashboard_uid: aspm-postgresql
+      threshold: '>80%'
+      runbook: runbooks/OPERATIONS.md#aspmpostgresconnectionshigh
+  - alert: ASPMPostgresLockWaits
+    expr: sum by (cluster,environment,namespace,release) (aspm_postgres_lock_waits{application="aspm"}) > 0
+    for: 5m
+    labels:
+      severity: warning
+      team: aspm-operations
+      application: aspm
+    annotations:
+      summary: Устойчивые lock waits
+      description: Проверьте pg_stat_activity и блокирующие транзакции.
+      dashboard_uid: aspm-postgresql
+      threshold: ожидание >5 мин
+      runbook: runbooks/OPERATIONS.md#aspmpostgreslockwaits

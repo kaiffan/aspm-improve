@@ -185,3 +185,7 @@ def config_loggers(*args, **kwags):
 # logger.debug('registered celery tasks:')
 # for task in tasks:
 #     logger.debug(task)
+
+
+if os.environ.get("DD_ASPM_OBSERVABILITY") == "true":
+    import dojo.aspm_observability.celery  # noqa: F401 -- register Celery signal observers

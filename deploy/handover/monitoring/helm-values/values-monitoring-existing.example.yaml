@@ -1,0 +1,19 @@
+monitoring:
+  enabled: true
+  interval: 30s
+  timeout: 5s
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: monitoring
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  serviceMonitor:
+    enabled: true
+    labels:
+      monitoring-scope: aspm
+  # DNS SAN compatible with Prometheus scraping Pods by IP.
+  # scrapeTLSSecret: aspm-scrape-server
+  # scrapeCASecret: aspm-scrape-ca
+  # scrapeServerName: aspm-metrics.example.invalid
+  # scrapeAuthSecret: aspm-scrape-bearer

@@ -7,7 +7,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 # Kubernetes API subobjects deliberately retain extensible maps.
-EXTENSIBLE = {"resources", "nginxResources", "startupProbe", "readinessProbe", "livenessProbe", "securityContext", "podSecurityContext", "affinity", "nodeSelector", "podLabels", "podAnnotations", "annotations", "labels", "namespaceSelector", "podSelector", "ingressPodSelector"}
+EXTENSIBLE = {"externalLabels", "thresholds", "resources", "nginxResources", "startupProbe", "readinessProbe", "livenessProbe", "securityContext", "podSecurityContext", "affinity", "nodeSelector", "podLabels", "podAnnotations", "annotations", "labels", "namespaceSelector", "podSelector", "ingressPodSelector"}
 
 
 def schema(value, key=""):
@@ -22,6 +22,8 @@ def schema(value, key=""):
         if key == "port":
             result.update(minimum=1, maximum=65535)
         return result
+    if key == "authType":
+        return {"enum": ["none", "basic", "bearer"]}
     if isinstance(value, str):
         result = {"type": "string"}
         if key in {"existingSecret", "existingClaim", "mediaExistingClaim", "repository", "tag", "host", "tlsSecretName"}:

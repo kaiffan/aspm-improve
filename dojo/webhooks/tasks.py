@@ -10,6 +10,7 @@ from django.db.models import Count, Min, Q
 from django.utils import timezone
 
 from dojo.aspm_ingestion.tasks import job_lock
+from dojo.aspm_observability import metrics as telemetry
 from dojo.celery import app
 from dojo.utils import prepare_for_view
 from dojo.webhooks.metrics import ATTEMPTS, DURATION, EXPANDED, OLDEST, PENDING
@@ -45,9 +46,10 @@ def dispatch_webhooks():
         due = list(WebhookDelivery.objects.select_for_update(skip_locked=True).filter(Q(dispatch_until__isnull=True) | Q(dispatch_until__lte=timezone.now()), state__in=ACTIVE, next_attempt_at__lte=timezone.now()).order_by("next_attempt_at").values_list("pk", flat=True)[:100])
         WebhookDelivery.objects.filter(pk__in=due).update(dispatch_until=timezone.now() + timedelta(seconds=120))
     EXPANDED.inc(len(events))
-    backlog = WebhookDelivery.objects.filter(state__in=ACTIVE).aggregate(total=Count("pk"), oldest=Min("created_at"))
-    PENDING.set(backlog["total"])
-    OLDEST.set(max(0, (timezone.now() - backlog["oldest"]).total_seconds()) if backlog["oldest"] else 0)
+    if not telemetry.ENABLED:
+        backlog = WebhookDelivery.objects.filter(state__in=ACTIVE).aggregate(total=Count("pk"), oldest=Min("created_at"))
+        PENDING.set(backlog["total"])
+        OLDEST.set(max(0, (timezone.now() - backlog["oldest"]).total_seconds()) if backlog["oldest"] else 0)
     for identifier in due:
         try:
             deliver_webhook.apply_async(args=[str(identifier)])
@@ -133,4 +135,8 @@ def deliver_webhook(identifier, **kwargs):
             WebhookAttempt.objects.filter(pk=attempt.pk).update(finished_at=now, status_code=status, error_code=error, duration_seconds=time.monotonic() - start)
         ATTEMPTS.labels(outcome="success" if success else ("retry" if state == WebhookDelivery.State.RETRY else "failed")).inc()
         DURATION.observe(time.monotonic() - start)
+        if telemetry.ENABLED:
+            telemetry.WEBHOOK_STATUS.labels(f"{status // 100}xx" if status is not None else "no_response").inc()
+            if row.attempts == 1:
+                telemetry.WEBHOOK_WAIT.observe(max(0, (attempt.started_at - row.created_at).total_seconds()))
         logger.info("ASPM webhook event_id=%s delivery_id=%s state=%s error_code=%s", row.event_id, row.pk, state, error)

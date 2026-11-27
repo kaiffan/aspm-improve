@@ -1,0 +1,15 @@
+# Evaluate from the VictoriaMetrics read network. Set exact scope before enabling.
+groups:
+  - name: aspm-delivery-dead-man
+    interval: 30s
+    rules:
+      - alert: ASPMNoFreshVictoriaMetricsSamples
+        expr: absent_over_time(up{application="aspm",component="web",cluster="REPLACE_CLUSTER",environment="REPLACE_ENVIRONMENT",namespace="REPLACE_NAMESPACE",release="REPLACE_RELEASE"}[3m])
+        for: 2m
+        labels:
+          severity: critical
+          team: aspm-operations
+        annotations:
+          summary: "В VictoriaMetrics нет свежих samples ASPM"
+          description: "Проверьте независимым способом Prometheus scrape, remote write и доступ к VictoriaMetrics."
+          dashboard_uid: aspm-pipeline

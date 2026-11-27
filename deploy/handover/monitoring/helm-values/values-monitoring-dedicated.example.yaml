@@ -1,0 +1,24 @@
+monitoring:
+  enabled: true
+  interval: 30s
+  timeout: 5s
+  snapshotIntervalSeconds: 60
+  dedicated:
+    enabled: true
+    storageSize: 10Gi
+    retention: 24h
+    retentionSize: 8GB
+    externalLabels:
+      cluster: REPLACE_CLUSTER
+      environment: REPLACE_ENVIRONMENT
+  rules:
+    enabled: true
+    owner: aspm-operations
+  exporters:
+    postgresql:
+      enabled: false
+      credentialsSecret: postgres-monitor-role
+      caSecret: aspm-postgres-ca
+    broker:
+      enabled: false
+      credentialsSecret: valkey-monitor-role

@@ -81,6 +81,7 @@ def build_pdf(output, work):
         ("05", "Эксплуатация и диагностика"),
         ("06", "Backup, restore и изменения"),
         ("07", "Статус и передача"),
+        ("08", "Метрики и доставка"),
     ]
     items = [
         Spacer(1, 34), p("КОРПОРАТИВНАЯ ПОСТАВКА  /  26 НОЯБРЯ 2026", "eyebrow"),
@@ -175,6 +176,19 @@ def build_pdf(output, work):
         ("", "DBA __________________________________    IAM __________________________"),
         ("Дополнения", "Выверенные команды и подробные инструкции в редактируемых docs/ и checklists/; журнал чистой установки в qualification/."),
     ])
+    items.append(PageBreak())
+    section(items, "08   /   НАБЛЮДАЕМОСТЬ", "Метрики и доставка",
+            "Prometheus собирает метрики из pods ASPM и согласованных exporters. Внешняя запись поступает в VictoriaMetrics.")
+    table(items, [
+        ("Операция", "Проверка"),
+        ("Подключить сбор", "Выберите existing Prometheus с ServiceMonitor либо отдельный Prometheus с PVC. Метрики доступны на порту 9108, защищённом NetworkPolicy."),
+        ("Подключить VictoriaMetrics", "Укажите полный HTTPS remote_write URL владельца. Используйте ссылки на Secret для bearer или basic auth, CA и пары mTLS при необходимости."),
+        ("Передать дашборды", "Импортируйте JSON из monitoring/dashboards в Grafana с существующим VictoriaMetrics datasource. Выберите cluster, environment, namespace и release."),
+        ("Проверить поток", "Сверьте Targets, прирост метрики после штатной операции, ответ query API VictoriaMetrics и время последней sample."),
+        ("Диагностировать сбой", "Проверьте лаг, очередь remote_write и WAL локально. После восстановления проверьте backfill samples. Длительный сбой может привести к потере данных."),
+        ("Подключить оповещения", "Выберите один evaluator. Согласуйте Alertmanager, routing и SLO. Добавьте независимую проверку свежести данных на стороне VictoriaMetrics."),
+    ], [144, 351])
+    items.append(p("Примеры Helm, локальный прогон и список данных владельца находятся в monitoring/."))
     SimpleDocTemplate(str(output), pagesize=A4, leftMargin=50, rightMargin=50, topMargin=55,
                       bottomMargin=72, title="ASPM 1.0.1 | Развёртывание и эксплуатация",
                       author="ASPM Release Engineering").build(items, onFirstPage=frame, onLaterPages=frame)

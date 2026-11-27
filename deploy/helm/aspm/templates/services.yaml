@@ -11,7 +11,7 @@ spec:
     {{- include "aspm.selector" . | nindent 4 }}
     app.kubernetes.io/component: web
   ports: [{name: http, port: {{ .Values.service.port }}, targetPort: http}]
-{{- if .Values.monitoring.serviceMonitor.enabled }}
+{{- if and .Values.monitoring.serviceMonitor.enabled (not .Values.monitoring.enabled) }}
 ---
 apiVersion: v1
 kind: Service

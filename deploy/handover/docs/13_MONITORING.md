@@ -10,4 +10,4 @@
 | Storage | Свободные байты/inodes, latency, checksum failures | Проверить CSI, доступность и целостность |
 | IdP | Login/callback failures, churn, состояние сертификатов | IAM проверяет issuer, audience, redirect и claims |
 
-Metrics service и ServiceMonitor opt-in через `monitoring.serviceMonitor.enabled` и selectors. Защищайте Django `/django_metrics/metrics` и порт 8081 от пользовательской сети. Настройте экспорт PostgreSQL/Valkey/Ingress средствами владельцев; укажите alert routing, SLO и пороги после измерений staging. Логируйте correlation ID и результаты без токенов и персональных данных.
+Полный [комплект мониторинга](../monitoring/README.md) включает 9 дашбордов, правила и два режима сборщика. Приложение передаёт телеметрию через Prometheus remote_write только на предоставленный URL VictoriaMetrics. Grafana использует существующий источник. JSON импортируются в согласованную папку. Локальные испытания приведены в [VALIDATION](../monitoring/VALIDATION.md).

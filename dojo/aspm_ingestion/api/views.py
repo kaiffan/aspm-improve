@@ -25,7 +25,8 @@ from dojo.aspm_ingestion.api.serializer import (
 )
 from dojo.aspm_ingestion.models import GeneratedReport, IngestionToken, ScanRun
 from dojo.aspm_ingestion.services import accept_scan, finalize_commit, request_report, require_scope, retry_scan
-from dojo.aspm_ingestion.storage import verified_open
+from dojo.aspm_ingestion.storage import EvidenceUnavailable, verified_open
+from dojo.aspm_observability import metrics as telemetry
 from dojo.product.queries import get_authorized_products
 from dojo.scm.api.serializer import CommitSerializer, RepositorySerializer
 from dojo.scm.models import Commit, Repository
@@ -214,7 +215,14 @@ class ReportDownloadView(AspmView):
             msg = "format must be html or json."
             raise ValidationError(msg)
         key = report.html_path if output_format == "html" else report.json_path
-        response = FileResponse(verified_open(key, report.checksums.get(output_format)), as_attachment=True, filename=f"aspm-{report.commit_id}-v{report.version}.{output_format}", content_type="text/html; charset=utf-8" if output_format == "html" else "application/json")
+        try:
+            artifact = verified_open(key, report.checksums.get(output_format), report=True)
+        except EvidenceUnavailable:
+            telemetry.report_event("download_failed")
+            if telemetry.ENABLED:
+                telemetry.STORAGE_FAILURES.labels("report_read").inc()
+            raise
+        response = FileResponse(artifact, as_attachment=True, filename=f"aspm-{report.commit_id}-v{report.version}.{output_format}", content_type="text/html; charset=utf-8" if output_format == "html" else "application/json")
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
         response["Content-Security-Policy"] = "sandbox; default-src 'none'"

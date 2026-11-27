@@ -14,6 +14,7 @@ from django.views import View
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
+from dojo.aspm_observability import metrics as telemetry
 from dojo.authorization.authorization import user_has_permission_or_403
 from dojo.authorization.roles_permissions import Permissions
 from dojo.endpoint.queries import get_authorized_endpoints
@@ -649,9 +650,10 @@ def generate_report(request, obj, *, host_view=False):
     report_form = ReportOptionsForm()
 
     if generate:
+        record_html = telemetry.timed_report("classic")(render)
         report_form = ReportOptionsForm(request.GET)
         if report_format == "HTML":
-            return render(request,
+            return record_html(request,
                           template,
                           {"product_type": product_type,
                            "product": product,

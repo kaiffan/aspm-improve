@@ -51,6 +51,12 @@ Helm rendering checks templates. Run preflight, a live Helm test and a restore d
 Read-only containers use explicit writable `/tmp`, runtime, evidence and media mounts. Root-squashed RWX
 ownership must be provisioned for UID 1001/GID 1337. Non-root compatibility still needs CSI qualification.
 
+Monitoring is opt-in. Select ServiceMonitor or PodMonitor for an existing collector,
+or enable the dedicated Prometheus StatefulSet with local TSDB/WAL storage.
+Configure one VictoriaMetrics HTTPS write URL and existing credential/CA references.
+The monitoring port is separate from the user Service. Supply monitoring namespace or
+pod selectors in existing mode. Grafana uses dashboards from observability/dashboards.
+
 This table is generated from values.yaml by tests/generate_readme.py.
 
 | Key | Type | Default |

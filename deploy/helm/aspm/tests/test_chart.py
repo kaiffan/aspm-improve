@@ -87,6 +87,40 @@ class ChartTests(unittest.TestCase):
                 threshold = next(env["value"] for env in container["env"] if env["name"] == "DD_ASPM_STORAGE_MIN_FREE_BYTES")
                 self.assertEqual(threshold, expected)
 
+    def test_monitoring_dedicated_mounts_private_credentials_and_discovers_pods(self):
+        docs = render(
+            "--set", "monitoring.enabled=true,monitoring.dedicated.enabled=true",
+            "--set", "monitoring.dedicated.externalLabels.cluster=lab,monitoring.dedicated.externalLabels.environment=test",
+            "--set", "monitoring.remoteWrite.url=https://vm.example.invalid/api/v1/write",
+            "--set", "monitoring.remoteWrite.authType=bearer,monitoring.remoteWrite.authSecret=vm-write",
+        )
+        stateful = next(doc for doc in docs if doc["kind"] == "StatefulSet")
+        pod = stateful["spec"]["template"]
+        policy = next(doc for doc in docs if doc["kind"] == "NetworkPolicy" and doc["metadata"]["name"] == "qualification-aspm")
+        allow = next(rule for rule in policy["spec"]["ingress"] if {"port": 9108, "protocol": "TCP"} in rule["ports"])
+        selector = allow["from"][0]["podSelector"]["matchLabels"]
+        self.assertEqual({key: pod["metadata"]["labels"][key] for key in selector}, selector)
+        secret = next(volume["secret"] for volume in pod["spec"]["volumes"] if volume["name"] == "write-auth")
+        self.assertEqual(secret, {"secretName": "vm-write"})
+        config = next(doc["data"]["prometheus.yml"] for doc in docs if doc["kind"] == "ConfigMap" and "prometheus.yml" in doc["data"])
+        parsed = yaml.safe_load(config)
+        write = parsed["remote_write"][0]
+        self.assertEqual(write["authorization"], {"credentials_file": "/etc/aspm-write-auth/token"})
+        self.assertEqual(write["write_relabel_configs"][0]["regex"], "aspm;aspm-test;qualification")
+        self.assertNotIn("aspm_security", write["write_relabel_configs"][-1]["regex"])
+        self.assertEqual({p["metadata"]["name"] for p in docs if p["kind"] == "Service"}, {
+            "qualification-aspm", "qualification-aspm-prom", "qualification-aspm-metrics",
+        })
+
+    def test_monitoring_requires_crd_and_rejects_duplicate_collectors(self):
+        with self.assertRaises(subprocess.CalledProcessError) as raised:
+            render("--set", "monitoring.enabled=true,monitoring.podMonitor.enabled=true,networkPolicy.enabled=false")
+        self.assertIn("PodMonitor CRD is required", raised.exception.stderr)
+        with self.assertRaises(subprocess.CalledProcessError) as raised:
+            render("--set", "monitoring.enabled=true,monitoring.dedicated.enabled=true,monitoring.serviceMonitor.enabled=true",
+                   "--set", "monitoring.dedicated.externalLabels.cluster=lab,monitoring.dedicated.externalLabels.environment=test")
+        self.assertIn("Select exactly one ASPM scrape mode", raised.exception.stderr)
+
     def test_component_switches(self):
         for component in ("web", "worker", "beat", "migrations"):
             with self.subTest(component=component):

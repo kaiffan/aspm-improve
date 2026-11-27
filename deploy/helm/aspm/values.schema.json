@@ -632,6 +632,49 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string"
+        },
+        "snapshotIntervalSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": "string"
+        },
+        "securityPosture": {
+          "type": "boolean"
+        },
+        "namespaceSelector": {
+          "type": "object"
+        },
+        "podSelector": {
+          "type": "object"
+        },
+        "scrapeAuthSecret": {
+          "type": "string"
+        },
+        "scrapeTLSSecret": {
+          "type": "string"
+        },
+        "scrapeCASecret": {
+          "type": "string"
+        },
+        "scrapeServerName": {
+          "type": "string"
+        },
+        "relabelings": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
         "serviceMonitor": {
           "type": "object",
           "additionalProperties": false,
@@ -655,10 +698,277 @@
             "namespaceSelector",
             "podSelector"
           ]
+        },
+        "podMonitor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "enabled",
+            "labels"
+          ]
+        },
+        "dedicated": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "image": {
+              "type": "string"
+            },
+            "retention": {
+              "type": "string"
+            },
+            "retentionSize": {
+              "type": "string"
+            },
+            "storageSize": {
+              "type": "string"
+            },
+            "storageClass": {
+              "type": "string"
+            },
+            "resources": {
+              "type": "object"
+            },
+            "externalLabels": {
+              "type": "object"
+            },
+            "extraScrapeConfigs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "alertmanagers": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "enabled",
+            "image",
+            "retention",
+            "retentionSize",
+            "storageSize",
+            "storageClass",
+            "resources",
+            "externalLabels",
+            "extraScrapeConfigs",
+            "alertmanagers"
+          ]
+        },
+        "remoteWrite": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "string"
+            },
+            "authSecret": {
+              "type": "string"
+            },
+            "authType": {
+              "enum": [
+                "none",
+                "basic",
+                "bearer"
+              ]
+            },
+            "tlsSecret": {
+              "type": "string"
+            },
+            "customCA": {
+              "type": "boolean"
+            },
+            "mutualTLS": {
+              "type": "boolean"
+            },
+            "minShards": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxShards": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "capacity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxSamplesPerSend": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "securityPosture": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "url",
+            "timeout",
+            "authSecret",
+            "authType",
+            "tlsSecret",
+            "customCA",
+            "mutualTLS",
+            "minShards",
+            "maxShards",
+            "capacity",
+            "maxSamplesPerSend",
+            "securityPosture"
+          ]
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "object"
+            },
+            "owner": {
+              "type": "string"
+            },
+            "runbookBase": {
+              "type": "string"
+            },
+            "grafanaBase": {
+              "type": "string"
+            },
+            "thresholds": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "enabled",
+            "labels",
+            "owner",
+            "runbookBase",
+            "grafanaBase",
+            "thresholds"
+          ]
+        },
+        "exporters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "postgresql": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "image": {
+                  "type": "string"
+                },
+                "credentialsSecret": {
+                  "type": "string"
+                },
+                "caSecret": {
+                  "type": "string"
+                },
+                "pgStatStatements": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "enabled",
+                "image",
+                "credentialsSecret",
+                "caSecret",
+                "pgStatStatements"
+              ]
+            },
+            "broker": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "image": {
+                  "type": "string"
+                },
+                "credentialsSecret": {
+                  "type": "string"
+                },
+                "caSecret": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "image",
+                "credentialsSecret",
+                "caSecret"
+              ]
+            }
+          },
+          "required": [
+            "postgresql",
+            "broker"
+          ]
+        },
+        "grafana": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "object"
+            },
+            "datasourceUID": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "labels",
+            "datasourceUID"
+          ]
         }
       },
       "required": [
-        "serviceMonitor"
+        "enabled",
+        "interval",
+        "timeout",
+        "snapshotIntervalSeconds",
+        "path",
+        "securityPosture",
+        "namespaceSelector",
+        "podSelector",
+        "scrapeAuthSecret",
+        "scrapeTLSSecret",
+        "scrapeCASecret",
+        "scrapeServerName",
+        "relabelings",
+        "serviceMonitor",
+        "podMonitor",
+        "dedicated",
+        "remoteWrite",
+        "rules",
+        "exporters",
+        "grafana"
       ]
     },
     "extraEnv": {

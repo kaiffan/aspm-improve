@@ -1,7 +1,7 @@
 apiVersion: v2
 name: aspm
 description: ASPM API ingestion, private evidence and durable integrations
-version: 0.1.0-rc.9
+version: 0.1.0-rc.10
 appVersion: "1.0.1-enterprise-rc"
 type: application
 kubeVersion: ">=1.27.0-0"
@@ -26,3 +26,5 @@ annotations:
       description: Add component-scoped preferred anti-affinity and complete the corporate HA example
     - kind: fixed
       description: Apply release placement rules to migration and test hooks
+    - kind: added
+      description: Add private ASPM metrics, Prometheus collection and scoped VictoriaMetrics remote write

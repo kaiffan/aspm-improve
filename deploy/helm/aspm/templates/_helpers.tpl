@@ -79,3 +79,50 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{- define "aspm.monitoring.relabel" -}}
+- targetLabel: application
+  replacement: aspm
+- targetLabel: release
+  replacement: {{ .Release.Name | quote }}
+- targetLabel: namespace
+  replacement: {{ .Release.Namespace | quote }}
+- sourceLabels: [__meta_kubernetes_pod_name]
+  targetLabel: pod
+- sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+  targetLabel: component
+{{- range $key, $value := .Values.monitoring.dedicated.externalLabels }}
+- targetLabel: {{ $key }}
+  replacement: {{ $value | quote }}
+{{- end }}
+{{- with .Values.monitoring.relabelings }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{- define "aspm.monitoring.endpoint" -}}
+port: aspm-metrics
+path: {{ .Values.monitoring.path | quote }}
+interval: {{ .Values.monitoring.interval | quote }}
+scrapeTimeout: {{ .Values.monitoring.timeout | quote }}
+{{- with .Values.monitoring }}
+{{- if .scrapeAuthSecret }}
+authorization:
+  credentials: {name: {{ .scrapeAuthSecret | quote }}, key: token}
+{{- end }}
+{{- if .scrapeTLSSecret }}
+scheme: https
+tlsConfig:
+  ca:
+    secret: {name: {{ required "monitoring.scrapeCASecret is required for TLS" .scrapeCASecret | quote }}, key: ca.crt}
+  {{- if .scrapeServerName }}
+  serverName: {{ .scrapeServerName | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+relabelings: {{ include "aspm.monitoring.relabel" . | nindent 2 }}
+{{- end -}}
+
+{{- define "aspm.monitoring.allowlist" -}}
+(up|scrape_(duration_seconds|samples_scraped|samples_post_metric_relabeling|series_added)|aspm:(http|scan|report|webhook|pvc|postgres|celery|delivery)_[a-z0-9_:]+|aspm_{{ if not .Values.monitoring.remoteWrite.securityPosture }}(http|ingestion|scan|artifact|report|storage|outbox|webhook|identity|celery|durable|dependency|broker|evidence|postgres)_[a-z0-9_]+{{ else }}[a-z0-9_]+{{ end }}|pg_[a-z0-9_]+|redis_(up|connected_clients|memory_used_bytes|memory_max_bytes|rejected_connections_total|evicted_keys_total|commands_processed_total)|kube_(deployment|pod|node|horizontalpodautoscaler|poddisruptionbudget|job)_[a-z0-9_]+|kubelet_volume_stats_[a-z0-9_]+|container_(cpu|memory|network)_[a-z0-9_]+|node_(cpu_seconds_total|memory_MemAvailable_bytes|memory_MemTotal_bytes|disk_io_time_seconds_total)|traefik_(service|entrypoint)_[a-z0-9_]+|prometheus_(remote_storage|tsdb)_[a-z0-9_]+|process_(cpu_seconds_total|resident_memory_bytes)|ALERTS)
+{{- end -}}

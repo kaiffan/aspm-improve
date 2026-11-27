@@ -1,5 +1,7 @@
 from prometheus_client import Counter, Gauge, Histogram
 
+from dojo.aspm_observability.metrics import ENABLED
+
 ATTEMPTS = Counter("aspm_webhook_delivery_attempts_total", "Webhook HTTP attempts by bounded outcome", ["outcome"])
 DURATION = Histogram("aspm_webhook_delivery_duration_seconds", "Webhook HTTP attempt duration", buckets=(0.1, 0.5, 1, 2, 5, 10, 30, 60))
 EXPANDED = Counter("aspm_webhook_events_expanded_total", "Durable events expanded by this process")
@@ -51,4 +53,5 @@ class DurableOutboxCollector:
 def register_outbox_collector():
     from prometheus_client import REGISTRY  # noqa: PLC0415 -- explicit registry setup after models load
 
-    REGISTRY.register(DurableOutboxCollector())
+    if not ENABLED:
+        REGISTRY.register(DurableOutboxCollector())

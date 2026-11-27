@@ -1,0 +1,15 @@
+# Apply on top of values-monitoring-dedicated.example.yaml.
+monitoring:
+  remoteWrite:
+    url: https://REPLACE_HOST/api/v1/write
+    timeout: 30s
+    authType: bearer
+    authSecret: vm-write-credentials
+    customCA: true
+    tlsSecret: vm-write-tls
+    # mutualTLS: true
+    minShards: 1
+    maxShards: 10
+    capacity: 10000
+    maxSamplesPerSend: 2000
+    securityPosture: false

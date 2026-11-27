@@ -11,6 +11,8 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousFileOperation
 from rest_framework.exceptions import APIException, ValidationError
 
+from dojo.aspm_observability import metrics as telemetry
+
 
 def private_path(name):
     root = Path(settings.ASPM_ARTIFACT_ROOT).resolve()
@@ -56,7 +58,7 @@ def check_capacity(path):
         raise EvidenceUnavailable
 
 
-def verified_open(key, expected_sha256, expected_size=None):
+def verified_open(key, expected_sha256, expected_size=None, *, report=False):
     source = None
     try:
         source = private_path(key).open("rb")
@@ -66,6 +68,8 @@ def verified_open(key, expected_sha256, expected_size=None):
             size += len(chunk)
             digest.update(chunk)
         if not expected_sha256 or digest.hexdigest() != expected_sha256 or (expected_size is not None and size != expected_size):
+            if report:
+                telemetry.report_event("integrity_failed")
             raise EvidenceUnavailable
         source.seek(0)
     except BaseException as error:
@@ -87,6 +91,7 @@ class BoundedTextOutput:
     def write(self, value):
         self.bytes_written += len(value.encode("utf-8"))
         if self.bytes_written > settings.ASPM_MAX_REPORT_BYTES:
+            telemetry.report_event("size_limit")
             msg = "report_size_limit"
             raise ValueError(msg)
         if self.bytes_written - self.last_capacity_check >= 1024 * 1024:
@@ -133,7 +138,9 @@ def save_original(upload):
         # Persist the directory entry before acknowledging acceptance.
         sync_directories(path)
         return key, digest.hexdigest(), size, time.monotonic() - start
-    except BaseException:
+    except BaseException as error:
+        if telemetry.ENABLED and isinstance(error, (EvidenceUnavailable, OSError)):
+            telemetry.STORAGE_FAILURES.labels("upload_write").inc()
         path.unlink(missing_ok=True)
         raise
 

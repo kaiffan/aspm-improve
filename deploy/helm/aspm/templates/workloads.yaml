@@ -2,6 +2,8 @@
 {{- range $component := list "web" "worker" "beat" }}
 {{- $cfg := index $root.Values $component }}
 {{- if $cfg.enabled }}
+{{- $metrics := $root.Values.monitoring }}
+{{- $instrument := and $metrics.enabled (ne $component "beat") }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -34,6 +36,9 @@ spec:
         {{- end }}
         {{- include "aspm.selector" $root | nindent 8 }}
         app.kubernetes.io/component: {{ $component }}
+        {{- if $metrics.enabled }}
+        aspm.io/metrics: "true"
+        {{- end }}
       annotations:
         checksum/config: {{ toJson $root.Values.config | sha256sum }}
         {{- if eq $component "web" }}
@@ -109,8 +114,13 @@ spec:
           image: {{ include "aspm.image" $root.Values.image | quote }}
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
           {{- if eq $component "web" }}
+          {{- if $instrument }}
+          command: [python, -m, dojo.aspm_observability.launch]
+          args: [uwsgi, --stats, /run/aspm-metrics/uwsgi.sock, --master,
+          {{- else }}
           command: [uwsgi]
-          args: [--master, --need-app, --die-on-term, --enable-threads, --disable-logging, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, {{ $cfg.processes | quote }}, --threads, {{ $cfg.threads | quote }}, --buffer-size, "16384", --reload-mercy, "60"]
+          args: [--master,
+          {{- end }} --need-app, --die-on-term, --enable-threads, --disable-logging, --socket, "127.0.0.1:3031", --http, "0.0.0.0:8081", --http-to, "127.0.0.1:3031", --wsgi, "dojo.wsgi:application", --processes, {{ $cfg.processes | quote }}, --threads, {{ $cfg.threads | quote }}, --buffer-size, "16384", --reload-mercy, "60"]
           ports: [{name: health, containerPort: 8081}]
           startupProbe: {{ toYaml $cfg.startupProbe | nindent 12 }}
           readinessProbe: {{ toYaml $cfg.readinessProbe | nindent 12 }}
@@ -124,8 +134,13 @@ spec:
               exec: {command: [sleep, "130"]}
           {{- end }}
           {{- else if eq $component "worker" }}
+          {{- if $instrument }}
+          command: [python, -m, dojo.aspm_observability.launch]
+          args: [celery, --app=dojo,
+          {{- else }}
           command: [celery]
-          args: [--app=dojo, worker, --loglevel=INFO, --pool=prefork, {{ printf "--concurrency=%v" $cfg.concurrency | quote }}, --prefetch-multiplier=1, {{ printf "--queues=%s" $cfg.queues | quote }}]
+          args: [--app=dojo,
+          {{- end }} worker, --loglevel=INFO, --pool=prefork, {{ printf "--concurrency=%v" $cfg.concurrency | quote }}, --prefetch-multiplier=1, {{ printf "--queues=%s" $cfg.queues | quote }}]
           {{- if $cfg.readinessProbeEnabled }}
           readinessProbe:
             exec:
@@ -139,6 +154,10 @@ spec:
           command: [python, manage.py, aspm_beat]
           {{- end }}
           env: {{ include "aspm.env" $root | nindent 12 }}
+          {{- if $instrument }}
+            - {name: DD_ASPM_OBSERVABILITY, value: "true"}
+            - {name: PROMETHEUS_MULTIPROC_DIR, value: /run/aspm-metrics}
+          {{- end }}
           {{- if and (eq $component "web") $root.Values.oidc.enabled }}
           {{- include "aspm.oidc.env" $root | nindent 12 }}
           {{- end }}
@@ -149,12 +168,64 @@ spec:
             - {name: media, mountPath: /app/media}
             - {name: tmp, mountPath: /tmp}
             - {name: run, mountPath: /var/run/defectdojo}
+            {{- if $instrument }}
+            - {name: metrics, mountPath: /run/aspm-metrics}
+            {{- end }}
             {{- if and (eq $component "web") $root.Values.oidc.enabled $root.Values.oidc.existingCaSecret }}
             - {name: oidc-ca, mountPath: /app/idp-tls, readOnly: true}
             {{- end }}
             {{- if $root.Values.databaseTLS.existingSecret }}
             - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
             {{- end }}
+        {{- if $metrics.enabled }}
+        - name: metrics
+          image: {{ include "aspm.image" $root.Values.image | quote }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          command: [python, -m, dojo.aspm_observability.serve]
+          ports: [{name: aspm-metrics, containerPort: 9108}]
+          env:
+            - {name: ASPM_METRICS_PATH, value: {{ $metrics.path | quote }}}
+          {{- if $instrument }}
+            - {name: PROMETHEUS_MULTIPROC_DIR, value: /run/aspm-metrics}
+            {{- if eq $component "web" }}
+            - {name: ASPM_UWSGI_STATS, value: /run/aspm-metrics/uwsgi.sock}
+            {{- end }}
+          {{- else }}
+            {{- include "aspm.env" $root | nindent 12 }}
+            - {name: DD_ASPM_OBSERVABILITY, value: "true"}
+            - {name: ASPM_METRICS_SINGLETON, value: "true"}
+            - {name: ASPM_METRICS_QUEUES, value: {{ $root.Values.worker.queues | quote }}}
+            - {name: ASPM_METRICS_INTERVAL, value: {{ $metrics.snapshotIntervalSeconds | quote }}}
+            - {name: ASPM_METRICS_SECURITY, value: {{ $metrics.securityPosture | quote }}}
+          {{- end }}
+          {{- if $metrics.scrapeAuthSecret }}
+            - {name: ASPM_METRICS_BEARER_FILE, value: /etc/aspm-scrape-auth/token}
+          {{- end }}
+          {{- if $metrics.scrapeTLSSecret }}
+            - {name: ASPM_METRICS_CERT_FILE, value: /etc/aspm-scrape-tls/tls.crt}
+            - {name: ASPM_METRICS_KEY_FILE, value: /etc/aspm-scrape-tls/tls.key}
+          {{- end }}
+          securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
+          resources:
+            requests: {cpu: 25m, memory: {{ ternary "192Mi" "32Mi" (eq $component "beat") }}}
+            limits: {cpu: 150m, memory: {{ ternary "384Mi" "96Mi" (eq $component "beat") }}}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+            {{- if $instrument }}
+            - {name: metrics, mountPath: /run/aspm-metrics}
+            {{- else }}
+            - {name: evidence, mountPath: /app/aspm-private}
+            {{- if $root.Values.databaseTLS.existingSecret }}
+            - {name: db-tls, mountPath: /app/db-tls, readOnly: true}
+            {{- end }}
+            {{- end }}
+            {{- if $metrics.scrapeAuthSecret }}
+            - {name: scrape-auth, mountPath: /etc/aspm-scrape-auth, readOnly: true}
+            {{- end }}
+            {{- if $metrics.scrapeTLSSecret }}
+            - {name: scrape-tls, mountPath: /etc/aspm-scrape-tls, readOnly: true}
+            {{- end }}
+        {{- end }}
         {{- if eq $component "web" }}
         - name: nginx
           image: {{ include "aspm.image" $root.Values.nginxImage | quote }}
@@ -185,6 +256,17 @@ spec:
             - {name: nginx-tmp, mountPath: /tmp}
         {{- end }}
       volumes:
+        {{- if $instrument }}
+        - {name: metrics, emptyDir: {sizeLimit: 64Mi}}
+        {{- end }}
+        {{- if and $metrics.enabled $metrics.scrapeAuthSecret }}
+        - name: scrape-auth
+          secret: {secretName: {{ $metrics.scrapeAuthSecret | quote }}}
+        {{- end }}
+        {{- if and $metrics.enabled $metrics.scrapeTLSSecret }}
+        - name: scrape-tls
+          secret: {secretName: {{ $metrics.scrapeTLSSecret | quote }}}
+        {{- end }}
         {{- if and (eq $component "web") $root.Values.oidc.enabled $root.Values.oidc.existingCaSecret }}
         - name: oidc-ca
           secret:

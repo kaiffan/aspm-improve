@@ -6,6 +6,7 @@ from django.http import HttpResponseForbidden
 from django.utils.deprecation import MiddlewareMixin
 
 from dojo.aspm_access.backend import BACKEND
+from dojo.aspm_observability import metrics as telemetry
 
 SESSION_KEY = "aspm_oidc_access"
 FLOW_KEY = "aspm_oidc_flow"
@@ -100,6 +101,8 @@ class ManagedSessionMiddleware(MiddlewareMixin):
             or not access or identity.issuer != settings.ASPM_OIDC_ISSUER or identity.issuer != access.get("issuer")
             or time.time() >= min(access["expires"], access["checked"] + settings.ASPM_OIDC_GROUP_TTL)
         ):
+            if telemetry.ENABLED:
+                telemetry.IDENTITY.labels("session", "expired").inc()
             logout(request)
             if request.path_info.lstrip("/").startswith(("api/", f"{settings.URL_PREFIX}api/")):
                 return HttpResponseForbidden()

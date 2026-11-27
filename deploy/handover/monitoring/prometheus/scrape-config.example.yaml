@@ -1,0 +1,20 @@
+# Merge this job into scrape_configs for a plain corporate Prometheus.
+# Role pods: read/list/watch only in the application namespace.
+- job_name: aspm
+  scrape_interval: 30s
+  scrape_timeout: 5s
+  metrics_path: /metrics
+  kubernetes_sd_configs:
+    - role: pod
+      namespaces: {names: [REPLACE_NAMESPACE]}
+  relabel_configs:
+    - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name, __meta_kubernetes_pod_label_app_kubernetes_io_instance, __meta_kubernetes_pod_container_port_name, __meta_kubernetes_pod_phase]
+      regex: 'aspm;REPLACE_RELEASE;aspm-metrics;Running'
+      action: keep
+    - {target_label: application, replacement: aspm}
+    - {target_label: cluster, replacement: REPLACE_CLUSTER}
+    - {target_label: environment, replacement: REPLACE_ENVIRONMENT}
+    - {source_labels: [__meta_kubernetes_namespace], target_label: namespace}
+    - {source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance], target_label: release}
+    - {source_labels: [__meta_kubernetes_pod_name], target_label: pod}
+    - {source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component], target_label: component}

@@ -1,0 +1,82 @@
+{{- if .Values.monitoring.enabled }}
+{{- $monitor := .Values.monitoring }}
+{{- $name := include "aspm.fullname" . }}
+{{- if or (and $monitor.serviceMonitor.enabled $monitor.podMonitor.enabled) (and $monitor.dedicated.enabled (or $monitor.serviceMonitor.enabled $monitor.podMonitor.enabled)) }}
+{{- fail "Select exactly one ASPM scrape mode" }}
+{{- end }}
+{{- if and .Values.networkPolicy.enabled (not $monitor.dedicated.enabled) (not $monitor.namespaceSelector) (not $monitor.podSelector) }}
+{{- fail "Scope metrics ingress with monitoring.namespaceSelector or monitoring.podSelector" }}
+{{- end }}
+{{- if not (regexMatch "^/[A-Za-z0-9/_-]+$" $monitor.path) }}
+{{- fail "monitoring.path must be an absolute URL path" }}
+{{- end }}
+{{- if and $monitor.scrapeAuthSecret (not $monitor.scrapeTLSSecret) }}
+{{- fail "Use scrapeTLSSecret when enabling bearer authentication" }}
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-metrics
+  labels:
+    {{- include "aspm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "aspm.selector" . | nindent 4 }}
+    aspm.io/metrics: "true"
+  ports:
+    - {name: aspm-metrics, port: 9108, targetPort: aspm-metrics}
+{{- if $monitor.serviceMonitor.enabled }}
+{{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor") }}
+{{- fail "ServiceMonitor CRD is required for monitoring.serviceMonitor.enabled" }}
+{{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $name }}
+  labels: {{ toYaml $monitor.serviceMonitor.labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "aspm.selector" . | nindent 6 }}
+      app.kubernetes.io/component: metrics
+  endpoints:
+    - {{ include "aspm.monitoring.endpoint" . | nindent 6 | trim }}
+{{- end }}
+{{- if $monitor.podMonitor.enabled }}
+{{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PodMonitor") }}
+{{- fail "PodMonitor CRD is required for monitoring.podMonitor.enabled" }}
+{{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ $name }}
+  labels: {{ toYaml $monitor.podMonitor.labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "aspm.selector" . | nindent 6 }}
+  podMetricsEndpoints:
+    - {{ include "aspm.monitoring.endpoint" . | nindent 6 | trim }}
+{{- end }}
+{{- if $monitor.grafana.enabled }}
+{{- range $path, $_ := .Files.Glob "observability/dashboards/*.json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name | trunc 35 | trimSuffix "-" }}-{{ base $path | trimSuffix ".json" | trunc 25 | trimSuffix "-" }}
+  labels: {{ toYaml $monitor.grafana.labels | nindent 4 }}
+data:
+  {{ base $path }}: |
+    {{- $datasource := required "monitoring.grafana.datasourceUID is required" $monitor.grafana.datasourceUID }}
+    {{- $dashboard := $.Files.Get $path | fromJson }}
+    {{- $_ := unset $dashboard "__inputs" }}
+    {{- $json := toJson $dashboard | replace "\"${DS_PROMETHEUS}\"" (toJson $datasource) }}
+    {{- $json | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

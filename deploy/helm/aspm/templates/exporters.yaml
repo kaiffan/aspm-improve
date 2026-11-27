@@ -1,0 +1,83 @@
+{{- if .Values.monitoring.enabled }}
+{{- $root := . }}
+{{- range $id, $config := .Values.monitoring.exporters }}
+{{- if $config.enabled }}
+{{- $pg := eq $id "postgresql" }}
+{{- $port := ternary 9187 9121 $pg }}
+{{- $name := printf "%s-%s" (include "aspm.fullname" $root | trunc 50 | trimSuffix "-") $id }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aspm.selector" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $id }}
+  template:
+    metadata:
+      labels:
+        {{- include "aspm.selector" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $id }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: {{ $id }}
+          image: {{ $config.image | quote }}
+          {{- if $pg }}
+          args:
+            - --collector.stat_checkpointer
+            - --collector.stat_activity_autovacuum
+            - --collector.long_running_transactions
+            {{- if $config.pgStatStatements }}
+            - --collector.stat_statements
+            {{- end }}
+          {{- else if $config.caSecret }}
+          args: [--tls-ca-cert-file=/etc/aspm-exporter-ca/ca.crt]
+          {{- end }}
+          env:
+            - name: {{ ternary "DATA_SOURCE_NAME" "REDIS_ADDR" $pg }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required (printf "monitoring.exporters.%s.credentialsSecret is required" $id) $config.credentialsSecret | quote }}
+                  key: {{ ternary "dsn" "url" $pg }}
+            {{- if and $pg $config.caSecret }}
+            - {name: PGSSLROOTCERT, value: /etc/aspm-exporter-ca/ca.crt}
+            {{- end }}
+          ports: [{name: metrics, containerPort: {{ $port }}}]
+          securityContext: {{ toYaml $root.Values.securityContext | nindent 12 }}
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+            limits: {cpu: 150m, memory: 128Mi}
+          {{- if $config.caSecret }}
+          volumeMounts:
+            - {name: ca, mountPath: /etc/aspm-exporter-ca, readOnly: true}
+          {{- end }}
+      {{- if $config.caSecret }}
+      volumes:
+        - name: ca
+          secret: {secretName: {{ $config.caSecret | quote }}}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "aspm.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $id }}
+spec:
+  selector:
+    {{- include "aspm.selector" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $id }}
+  ports: [{name: metrics, port: {{ $port }}}]
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,41 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.rules.enabled }}
+{{- $options := .Values.monitoring.rules }}
+{{- $dedicated := .Values.monitoring.dedicated.enabled }}
+{{- $name := include "aspm.fullname" . }}
+{{- $data := .Files.Get "observability/rules.yaml" | fromYaml }}
+{{- range $group := $data.groups }}
+{{- range $rule := $group.rules }}
+{{- if hasKey $rule "alert" }}
+{{- $override := default (dict) (get $options.thresholds $rule.alert) }}
+{{- with $override.expr }}{{- $_ := set $rule "expr" . }}{{- end }}
+{{- with $override.duration }}{{- $_ := set $rule "for" . }}{{- end }}
+{{- $_ := set $rule.labels "team" $options.owner }}
+{{- if $options.runbookBase }}
+{{- $_ := set $rule.annotations "runbook_url" (printf "%s/%s" (trimSuffix "/" $options.runbookBase) $rule.alert) }}
+{{- end }}
+{{- if $options.grafanaBase }}
+{{- $_ := set $rule.annotations "dashboard_url" (printf "%s/d/%s" (trimSuffix "/" $options.grafanaBase) $rule.annotations.dashboard_uid) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $dedicated }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-prom-rules
+data:
+  rules.yaml: |
+    {{- toYaml $data | nindent 4 }}
+{{- else }}
+{{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PrometheusRule") }}
+{{- fail "PrometheusRule CRD is required for monitoring.rules.enabled with an existing collector" }}
+{{- end }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ $name }}
+  labels: {{ toYaml $options.labels | nindent 4 }}
+spec: {{ toYaml $data | nindent 2 }}
+{{- end }}
+{{- end }}

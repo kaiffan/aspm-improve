@@ -15,11 +15,13 @@ from dojo.aspm_ingestion.engagements import resolve_engagement
 from dojo.aspm_ingestion.models import CommitScanSet, GeneratedReport, IngestionJob, IngestionToken, ScanRun
 from dojo.aspm_ingestion.selection import SCAN_FIELDS, live_selection
 from dojo.aspm_ingestion.storage import private_path, safe_name, save_original
+from dojo.aspm_observability import metrics as telemetry
 from dojo.scm.identity_v1 import repository_provider
 from dojo.scm.models import Commit, Repository
 from dojo.site_url import absolute_url
 
 SCOPES = {"submit", "status", "read", "finalize", "reports", "engagement:select"}
+
 logger = logging.getLogger(__name__)
 
 
@@ -112,8 +114,16 @@ def accept_scan(token, data, upload, *, correlation_id=None):
             if not created:
                 if scan.fingerprint != fingerprint or scan.submitted_by_id != token.user_id:
                     raise Conflict
+                if telemetry.ENABLED:
+                    transaction.on_commit(lambda: telemetry.scan_event(scan.scanner, "duplicate"))
                 return scan, False
             IngestionJob.objects.create(scan=scan, next_dispatch_at=timezone.now())
+            if telemetry.ENABLED:
+                def record_acceptance():
+                    telemetry.scan_event(scan.scanner, "accepted")
+                    telemetry.ARTIFACT_SIZE.labels("scan").observe(size)
+
+                transaction.on_commit(record_acceptance)
             transaction.on_commit(wake_dispatcher)
         retained = True
         return scan, True
@@ -197,6 +207,8 @@ def request_report(commit, scan_set_id=None, *, scan_ids=None, pipeline=None, ex
     )
     IngestionJob.objects.create(report=report, next_dispatch_at=timezone.now())
     transaction.on_commit(wake_dispatcher)
+    if telemetry.ENABLED:
+        transaction.on_commit(lambda: telemetry.report_event("requested"))
     return report
 
 
@@ -213,4 +225,6 @@ def retry_scan(scan):
         scan.save(update_fields=["status", "error_code", "recovery_count"])
         IngestionJob.objects.update_or_create(scan=scan, defaults={"next_dispatch_at": timezone.now()})
         transaction.on_commit(wake_dispatcher)
+    if telemetry.ENABLED:
+        transaction.on_commit(lambda: telemetry.scan_event(scan.scanner, "retry"))
     return scan

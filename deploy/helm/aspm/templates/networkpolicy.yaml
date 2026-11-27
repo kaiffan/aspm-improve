@@ -17,7 +17,26 @@ spec:
           podSelector: {{ toYaml . | nindent 12 }}
           {{- end }}
       ports: [{protocol: TCP, port: 8080}]
-    {{- if .Values.monitoring.serviceMonitor.enabled }}
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        {{- if .Values.monitoring.dedicated.enabled }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name | quote }}
+              app.kubernetes.io/component: prometheus
+        {{- else }}
+        - namespaceSelector: {{ toYaml .Values.monitoring.namespaceSelector | nindent 12 }}
+          podSelector: {{ toYaml .Values.monitoring.podSelector | nindent 12 }}
+        {{- end }}
+      ports:
+        - {protocol: TCP, port: 9108}
+        {{- if .Values.monitoring.exporters.postgresql.enabled }}
+        - {protocol: TCP, port: 9187}
+        {{- end }}
+        {{- if .Values.monitoring.exporters.broker.enabled }}
+        - {protocol: TCP, port: 9121}
+        {{- end }}
+    {{- else if .Values.monitoring.serviceMonitor.enabled }}
     - from:
         - namespaceSelector: {{ toYaml .Values.monitoring.serviceMonitor.namespaceSelector | nindent 12 }}
           podSelector: {{ toYaml .Values.monitoring.serviceMonitor.podSelector | nindent 12 }}

@@ -1,0 +1,762 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "VictoriaMetrics",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "uid": "aspm-ingestion",
+  "title": "ASPM Scanner Ingestion & Celery",
+  "description": "ASPM 1.0.1 · эксплуатационная телеметрия",
+  "schemaVersion": 40,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "tags": [
+    "aspm",
+    "operations"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Источник",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "text": "${DS_PROMETHEUS}",
+          "value": "${DS_PROMETHEUS}"
+        },
+        "refresh": 1,
+        "options": []
+      },
+      {
+        "name": "cluster",
+        "label": "cluster",
+        "type": "query",
+        "query": "label_values(up{application=\"aspm\"}, cluster)",
+        "definition": "label_values(up{application=\"aspm\"}, cluster)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      },
+      {
+        "name": "environment",
+        "label": "environment",
+        "type": "query",
+        "query": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\"}, environment)",
+        "definition": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\"}, environment)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      },
+      {
+        "name": "namespace",
+        "label": "namespace",
+        "type": "query",
+        "query": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\"}, namespace)",
+        "definition": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\"}, namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      },
+      {
+        "name": "release",
+        "label": "release",
+        "type": "query",
+        "query": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\"}, release)",
+        "definition": "label_values(up{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\"}, release)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      },
+      {
+        "name": "scanner",
+        "label": "scanner",
+        "type": "query",
+        "query": "label_values(aspm_scan_events_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}, scanner)",
+        "definition": "label_values(aspm_scan_events_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}, scanner)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      },
+      {
+        "name": "queue",
+        "label": "queue",
+        "type": "query",
+        "query": "label_values(aspm_broker_queue_ready{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}, queue)",
+        "definition": "label_values(aspm_broker_queue_ready{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}, queue)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1,
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "ScanRun и стадии",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "title": "Принятые, дубликаты, завершённые, ошибки",
+      "description": "События за минуту. Повторная попытка учитывается отдельно.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (result) (rate(aspm_scan_events_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",result=~\"accepted|duplicate|completed|failed|retry|recovered\"}[$__rate_interval])) * 60",
+          "legendFormat": "{{result}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "short",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Findings и наблюдения/с",
+      "description": "Новые Findings от импортера и отдельно опубликованные observations.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (scanner) (rate(aspm_scan_findings_imported_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",component=\"worker\"}[$__rate_interval]))",
+          "legendFormat": "{{scanner}} findings",
+          "instant": false,
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (scanner) (rate(aspm_scan_observations_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",component=\"worker\"}[$__rate_interval]))",
+          "legendFormat": "{{scanner}} observations",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "ops",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Стадии ScanRun · p95",
+      "description": "Parser, reimport с dedup, snapshot, и время от принятия до запуска и завершения.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le,stage) (rate(aspm_scan_phase_seconds_bucket{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",component=\"worker\"}[$__rate_interval])))",
+          "legendFormat": "{{stage}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "s",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Доля успешных терминальных попыток",
+      "description": "Повторные исполнения учитываются отдельно.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (scanner) (rate(aspm_scan_events_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",component=\"worker\",result=\"completed\"}[$__rate_interval])) / (sum by (scanner) (rate(aspm_scan_events_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",scanner=~\"${scanner:regex}\",component=\"worker\",result=~\"completed|failed\"}[$__rate_interval])) > 0)",
+          "legendFormat": "{{scanner}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Доставка, очередь и workers",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "title": "Durable jobs по состоянию",
+      "description": "Лимит выборки 10 001 строка на snapshot.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "aspm_durable_jobs{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}",
+          "legendFormat": "{{kind}} · {{state}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "short",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Возраст durable job",
+      "description": "Старейшая запись из ограниченной выборки.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "aspm_durable_oldest_seconds{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}",
+          "legendFormat": "{{kind}} · {{state}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "s",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 8,
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Valkey ready / unacked",
+      "description": "Ready для заданных очередей, unacked по отдельному broker keyspace.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "aspm_broker_queue_ready{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",queue=~\"${queue:regex}\"}",
+          "legendFormat": "ready {{queue}}",
+          "instant": false,
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "aspm_broker_unacked{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}",
+          "legendFormat": "unacked",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "short",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Celery active / reserved",
+      "description": "Reserved исключает active, только свежие heartbeat.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(state) (aspm_celery_worker_tasks{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",component=\"worker\"} and ignoring(state) (time() - aspm_celery_heartbeat_timestamp_seconds{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",component=\"worker\"} < 20))",
+          "legendFormat": "{{state}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "short",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 10,
+      "gridPos": {
+        "x": 12,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Возраст heartbeat",
+      "description": "Последний heartbeat от каждого worker.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - aspm_celery_heartbeat_timestamp_seconds{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\",component=\"worker\"}",
+          "legendFormat": "{{pod}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "s",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Celery · опубликовано и исполнено",
+      "description": "Успешно опубликованные задачи и результаты выполнения.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (task) (rate(aspm_celery_published_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}[$__rate_interval]))",
+          "legendFormat": "pub {{task}}",
+          "instant": false,
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (task,result) (rate(aspm_celery_tasks_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}[$__rate_interval]))",
+          "legendFormat": "{{task}} · {{result}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "ops",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 12,
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Celery · время выполнения p95",
+      "description": "Время выполнения по ограниченному типу задачи.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le,task) (rate(aspm_celery_task_seconds_bucket{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}[$__rate_interval])))",
+          "legendFormat": "{{task}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "s",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 13,
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "title": "Outbox · попытки отправки",
+      "description": "Публикации durable jobs в broker.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (kind,result) (rate(aspm_outbox_dispatch_total{application=\"aspm\",cluster=~\"${cluster:regex}\",environment=~\"${environment:regex}\",namespace=~\"${namespace:regex}\",release=~\"${release:regex}\"}[$__rate_interval]))",
+          "legendFormat": "{{kind}} · {{result}}",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [],
+        "defaults": {
+          "unit": "ops",
+          "noValue": "Нет данных",
+          "mappings": []
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 14,
+      "gridPos": {
+        "x": 12,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      }
+    }
+  ],
+  "links": [
+    {
+      "title": "ASPM dashboards",
+      "type": "dashboards",
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "aspm"
+      ]
+    }
+  ]
+}

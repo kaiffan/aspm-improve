@@ -1,0 +1,28 @@
+# Merge the entry into spec.remoteWrite of the administrator-owned Prometheus CR.
+# This is a configuration fragment. Preserve existing destinations and labels.
+spec:
+  remoteWrite:
+    - name: aspm-victoriametrics
+      url: https://REPLACE_HOST/api/v1/write
+      remoteTimeout: 30s
+      authorization:
+        credentials: {name: vm-write-credentials, key: token}
+      tlsConfig:
+        ca:
+          secret: {name: vm-write-tls, key: ca.crt}
+      queueConfig:
+        minShards: 1
+        maxShards: 10
+        capacity: 10000
+        maxSamplesPerSend: 2000
+        retryOnRateLimit: true
+      writeRelabelConfigs:
+        - action: keep
+          sourceLabels: [application, namespace, release]
+          regex: 'aspm;REPLACE_NAMESPACE;REPLACE_RELEASE'
+        - action: drop
+          sourceLabels: [__name__]
+          regex: '(pg_stat_statements_.*|kube_.*_(labels|annotations))'
+        - action: keep
+          sourceLabels: [__name__]
+          regex: '(up|scrape_(duration_seconds|samples_scraped|samples_post_metric_relabeling|series_added)|aspm:(http|scan|report|webhook|pvc|postgres|celery|delivery)_[a-z0-9_:]+|aspm_(http|ingestion|scan|artifact|report|storage|outbox|webhook|identity|celery|durable|dependency|broker|evidence|postgres)_[a-z0-9_]+|pg_[a-z0-9_]+|redis_(up|connected_clients|memory_used_bytes|memory_max_bytes|rejected_connections_total|evicted_keys_total|commands_processed_total)|kube_(deployment|pod|node|horizontalpodautoscaler|poddisruptionbudget|job)_[a-z0-9_]+|kubelet_volume_stats_[a-z0-9_]+|container_(cpu|memory|network)_[a-z0-9_]+|node_(cpu_seconds_total|memory_MemAvailable_bytes|memory_MemTotal_bytes|disk_io_time_seconds_total)|traefik_(service|entrypoint)_[a-z0-9_]+|prometheus_(remote_storage|tsdb)_[a-z0-9_]+|process_(cpu_seconds_total|resident_memory_bytes)|ALERTS)'

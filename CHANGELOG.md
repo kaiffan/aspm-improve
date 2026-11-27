@@ -1,10 +1,24 @@
 # ASPM changelog
 
-## 1.0.1-rc2
+## 1.0.1 · 27 ноября 2026
+
+ASPM 1.0.1 на базе DefectDojo OSS 3.5.100 опубликован в `master` для тестового развёртывания. Helm Chart `0.1.0-rc.11`. Production остаётся **HOLD**.
+
+- Добавили приём сканов из CI/CD через API с привязкой к Product, Repository и Commit. Отчёты формируются автоматически после обработки сканов.
+- Обновили пространства Classic, DevSecOps и администрирования. Добавили адаптивную навигацию, темы, вход через Keycloak и подписанные вебхуки.
+- Сократили работу с БД на страницах Findings и Dashboard. Исправили пагинацию, подсчёт результатов и конкурентные изменения Findings.
+- Добавили частное S3-хранилище, совместимые файловые профили, резервное копирование и восстановление. В поставку вошли Helm-профили, мониторинг и руководство по развёртыванию.
+- Убрали уязвимый системный `libxml2` и `pip` из Django runtime. Обновили `setuptools`. Повторили Django, JavaScript, Helm и установочные проверки.
+
+[Полный changelog 1.0.1](release/1.0.1/CHANGELOG.md) · [Начало работы](deploy/handover/START_HERE.md) · [Условия выпуска](release-report/aspm-final-qualification/RELEASE_GATE.md)
+
+## История кандидатов
+
+### 1.0.1-rc2
 
 Release hardening: filter reset, deterministic bounded UI pagination, collection fallback, Select2 labels, regression/isolation guards and exact build provenance. See [RC2 results](release/1.0.1/RC2_REPORT.md). Candidate remains gated by two inherited discovery errors.
 
-## 1.0.1-rc1
+### 1.0.1-rc1
 
 Corporate light/dark/system UI, original replaceable ASPM branding, accessible mobile navigation and locally served assets. Preserves the DefectDojo OSS 3.5.100 API and all Round 1–5 performance changes.
 

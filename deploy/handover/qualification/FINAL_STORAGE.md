@@ -6,7 +6,7 @@
 |---|---|
 | Django | 35 регрессионных тестов файлового профиля и SSO/RBAC. Проверены миграции и OpenAPI |
 | S3 contract | 9 тестов с versioned Moto по HTTPS и отдельной CA. Условная запись, pinned version, ошибка при потере версии, 48 MiB, HTML/JSON более 32 MiB, прерванный multipart, обе части отчёта, Classic media, повтор outbox и возобновляемый перенос filesystem → S3 |
-| Compose HTTP | Три одновременные загрузки, включая 50 331 648 байт. Повтор той же доставки HTTP 200, cross-Product download HTTP 404, сверены исходные SHA-256 и оба формата отчёта. Проверены Scan Processing, System Health и Reports |
+| Compose HTTP | Три одновременные загрузки, включая 50 331 648 байт. Повтор той же доставки HTTP 200, cross-Product download HTTP 404, сверены исходные SHA-256 и оба формата отчёта. Клиент получил 48 MiB с правильным SHA-256 во время перезапуска worker. Проверены Scan Processing, System Health и Reports |
 | Helm | 23 проверки рендера. Helm HTTP smoke пройден в отдельном namespace. После восстановления узла запущены 2 web, 3 worker и 1 Beat. Единственный PVC тестового S3-профиля использовался локальной PostgreSQL |
 | Disaster Recovery | Согласованы PostgreSQL dump, deployment description и контрольные суммы файлов. В новом Kubernetes namespace восстановлены пустая БД и 10 файлов в другой S3 bucket/prefix. Проверены SHA-256, Classic-вложение и завершение восстановленного pending ScanRun. REST после восстановления выдал три исходных файла и оба формата отчёта |
 | Chromium | Scan Processing, System Health и Reports проверены при 1440 и 390 пикселях с доступной таблицей и без переполнения страницы |

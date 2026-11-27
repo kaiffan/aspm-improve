@@ -40,3 +40,9 @@
 ### Границы стенда
 
 Компактное испытание включает замену web/worker pod при rollout и повторный scrape. Отдельный сценарий broker outage с рабочей очередью, HTTP retry вебхука, живой Keycloak, корпоративный Alertmanager routing, mTLS/basic/bearer на стороне корпоративной VictoriaMetrics и проверка vmalert остаются открыты. cAdvisor, Traefik, внешние node и CSI metrics требуют соответствующих источников. В Security Posture проверены проекты, репозитории, active Findings и активность сканеров. Coverage и stale scan требуют утверждённой политики ожидаемых сканеров, а тренды false positive/mitigation требуют отдельной истории переходов. Production qualification и Linux/AMD64 image qualification остаются открыты.
+
+### Проверка переноса и своего registry
+
+С исходным архивом и runtime patch выполнены сборка двух release-образов ARM64, push во временный registry, pull и сравнение по digest. В новом namespace Kubernetes скачал образы из registry с Always. Команда deploy.sh выбрала Helm 0.1.0-rc.10 из манифеста, прошла preflight и миграции, подтвердила три health HTTP 200, Helm test и рабочий /login. Web, worker, Beat и Prometheus стали UP в Targets. Registry в доказательствах локальный и относится к испытанию. [Результаты переноса](evidence/portable-build.json) · [Команды для другого компьютера](../docs/18_BUILD_AND_IMAGE_TRANSFER.md)
+
+Оба образа отдельно собраны без кэша BuildKit. В Django проверен импорт exporter, в nginx проверены исполняемый файл и статические файлы ASPM. Свежая пара также прошла push и pull с проверкой registry digest.

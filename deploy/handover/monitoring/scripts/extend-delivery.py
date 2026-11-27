@@ -15,10 +15,12 @@ def main():
     parser.add_argument("original", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--sha", required=True)
+    parser.add_argument("--runtime-sha", help="Runtime source revision if packaging changes are separate")
     parser.add_argument("--chart", type=Path, required=True)
     parser.add_argument("--guide", type=Path, required=True)
     parser.add_argument("--date", type=date.fromisoformat, required=True)
     args = parser.parse_args()
+    runtime_sha = args.runtime_sha or args.sha
     handover = Path(__file__).resolve().parents[2]
     repo = handover.parents[1]
     module = importlib.util.spec_from_file_location("assembler", handover / "scripts/assemble-delivery.py")
@@ -31,7 +33,11 @@ def main():
     manifest_file = root / "DELIVERY_MANIFEST.json"
     manifest = json.loads(manifest_file.read_text())
     shutil.copytree(handover / "monitoring", root / "monitoring", dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
-    for source in ("START_HERE.md", "docs/13_MONITORING.md", "scripts/render-guide.py"):
+    for source in (
+        "START_HERE.md", "docs/04_DEPLOYMENT_GUIDE.md", "docs/13_MONITORING.md",
+        "docs/18_BUILD_AND_IMAGE_TRANSFER.md", "scripts/render-guide.py", "scripts/build-images.sh",
+        "scripts/deployment.py", "scripts/prepare-monitoring-source.py", "scripts/publish-images.sh",
+    ):
         shutil.copy2(handover / source, root / source)
     shutil.copy2(args.guide, root / "docs" / args.guide.name)
     shutil.rmtree(root / "helm/aspm")
@@ -42,7 +48,7 @@ def main():
     patch = root / "monitoring/source/aspm-monitoring.patch"
     patch.parent.mkdir()
     patch.write_bytes(subprocess.check_output(
-        ["git", "-C", str(repo), "diff", "--binary", manifest["application_sha"], args.sha, "--", "dojo"],
+        ["git", "-C", str(repo), "diff", "--binary", manifest["application_sha"], runtime_sha, "--", "dojo"],
     ))
     if not patch.stat().st_size:
         msg = "No monitoring runtime patch was found"
@@ -55,7 +61,7 @@ def main():
         "generated_on": args.date.isoformat(),
         "release_status": "MONITORING HANDOVER — PRODUCTION HOLD",
         "monitoring": {
-            "source_sha": args.sha,
+            "source_sha": runtime_sha,
             "baseline_application_sha": manifest["application_sha"],
             "runtime_patch": str(patch.relative_to(root)),
             "runtime_patch_sha256": assembler.digest(patch),

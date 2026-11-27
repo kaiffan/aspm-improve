@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-27",
+  "platform": "linux/arm64",
+  "chart": "0.1.0-rc.10",
+  "source_preparation": "baseline archive and runtime patch verified and applied in a fresh directory",
+  "image_source_sha": "a4fb9e89926f0f6e84aa5db1b1848a3da9d041b3",
+  "local_registry": {
+    "image": "127.0.0.1:15041/portability/aspm/django@sha256:706e6393930030bd24a29f7092e798ce93a9d4b89068451f6629457d8f15c0c1",
+    "nginxImage": "127.0.0.1:15041/portability/aspm/nginx@sha256:e8348fd605fecc47258e54d42279a498dd84dbb376a6b3e0e785a6e284890ead"
+  },
+  "push_and_pull_by_digest": "PASS",
+  "kubernetes_image_pull_policy": "Always",
+  "preflight": "PASS",
+  "migration_job": "Succeeded",
+  "helm_test": "Succeeded",
+  "health_http": {
+    "live": 200,
+    "startup": 200,
+    "ready": 200
+  },
+  "login_http": 200,
+  "prometheus_targets": {
+    "beat": "up",
+    "web": "up",
+    "worker": "up",
+    "prometheus": "up"
+  },
+  "no_cache_build": {
+    "django": "PASS, monitoring module imported",
+    "nginx": "PASS, nginx executable and ASPM CSS present",
+    "push_and_pull_by_digest": "PASS",
+    "registry_digests": {
+      "image": "sha256:9c4daafa27c8bd8afdfcb7999bb14b8e3f28b6e1a40c0dd5a57b279a87641081",
+      "nginxImage": "sha256:9f628f3b1b0050cf11d94fd7b1adae4e0dd461923e27ded539f2124ca016d151"
+    }
+  }
+}

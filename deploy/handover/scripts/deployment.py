@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Operate on a single explicitly selected Kubernetes release."""
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -121,7 +122,7 @@ def require_secret_keys(args, secrets):
 
 def get_manifest(args):
     run("helm", "lint", "--strict", str(args.chart), *profile(args))
-    rendered = helm(args, "template", args.release, str(args.chart), *profile(args), capture=True)
+    rendered = helm(args, "template", args.release, str(args.chart), "--dry-run=server", *profile(args), capture=True)
     return [item for item in yaml.safe_load_all(rendered) if item]
 
 
@@ -129,12 +130,72 @@ def env_map(container):
     return {entry["name"]: entry.get("value") for entry in container["env"] if "value" in entry}
 
 
+def web_containers(spec):
+    named = {container["name"]: container for container in spec["containers"]}
+    return named["web"], named["nginx"]
+
+
+def require_manifest_secrets(args, manifest, secrets):
+    prom_configs = [
+        item["data"]["prometheus.yml"] for item in manifest
+        if item["kind"] == "ConfigMap" and "prometheus.yml" in item.get("data", {})
+    ]
+    prom_config = "\n".join(prom_configs)
+    volume_keys = {
+        "db-tls": {"ca.crt"}, "oidc-ca": {"ca.crt"}, "ca": {"ca.crt"},
+        "scrape-auth": {"token"}, "scrape-tls": {"tls.crt", "tls.key"},
+        "scrape-ca": {"ca.crt"},
+        "write-auth": {name for name in ("username", "password", "token")
+                       if f"/etc/aspm-write-auth/{name}" in prom_config},
+        "write-tls": {name for name in ("ca.crt", "tls.crt", "tls.key")
+                      if f"/etc/aspm-write-tls/{name}" in prom_config},
+    }
+    for item in manifest:
+        if item["kind"] in {"Deployment", "StatefulSet", "Job"}:
+            spec = item["spec"]["template"]["spec"]
+        elif item["kind"] == "Pod":
+            spec = item["spec"]
+        elif item["kind"] in {"ServiceMonitor", "PodMonitor"}:
+            endpoints = item["spec"].get("endpoints", item["spec"].get("podMetricsEndpoints", []))
+            for endpoint in endpoints:
+                for ref in (
+                    endpoint.get("authorization", {}).get("credentials"),
+                    endpoint.get("tlsConfig", {}).get("ca", {}).get("secret"),
+                ):
+                    if ref:
+                        secrets.setdefault(ref["name"], set()).add(ref["key"])
+            continue
+        else:
+            continue
+        for volume in spec.get("volumes", []):
+            if ref := volume.get("secret"):
+                secrets.setdefault(ref["secretName"], set()).update(volume_keys.get(volume["name"], set()))
+        for ref in spec.get("imagePullSecrets", []):
+            secrets.setdefault(ref["name"], set()).add(".dockerconfigjson")
+        for container in spec.get("containers", []) + spec.get("initContainers", []):
+            for entry in container.get("env", []):
+                if ref := entry.get("valueFrom", {}).get("secretKeyRef"):
+                    if not ref.get("optional"):
+                        secrets.setdefault(ref["name"], set()).add(ref["key"])
+    require_secret_keys(args, secrets)
+
+
+def packaged_chart():
+    manifest = json.loads((ROOT / "DELIVERY_MANIFEST.json").read_text())
+    chart = (ROOT / manifest["chart"]).resolve()
+    if not chart.is_relative_to(ROOT) or not chart.is_file():
+        raise ValueError("The chart listed in the delivery manifest is missing")
+    if hashlib.sha256(chart.read_bytes()).hexdigest() != manifest["chart_sha256"]:
+        raise ValueError("The packaged Helm chart failed its SHA-256 check")
+    return chart
+
+
 def validate_preflight(args, manifest):
     by_kind = lambda kind: [item for item in manifest if item["kind"] == kind]
-    web, = [item for item in by_kind("Deployment") if item["metadata"]["labels"]["app.kubernetes.io/component"] == "web"]
+    web, = [item for item in by_kind("Deployment") if item["metadata"].get("labels", {}).get("app.kubernetes.io/component") == "web"]
     pods = web["spec"]["template"]
     spec = pods["spec"]
-    django, nginx = spec["containers"]
+    django, nginx = web_containers(spec)
     env = env_map(django)
     site = urlsplit(env["DD_SITE_URL"])
     if not site.hostname or site.scheme not in ("http", "https") or site.hostname.endswith(".invalid"):
@@ -160,13 +221,6 @@ def validate_preflight(args, manifest):
             if storage_class := pvc["spec"].get("storageClassName"):
                 get(args, "storageclass", storage_class)
             print(f"PVC {name}: {pvc.get('status', {}).get('phase', 'unbound')}", flush=True)
-        if source := v.get("secret"):
-            secrets.setdefault(source["secretName"], set()).add("ca.crt")
-    for ref in spec.get("imagePullSecrets", []):
-        secrets.setdefault(ref["name"], set()).add(".dockerconfigjson")
-    for entry in django["env"]:
-        if ref := entry.get("valueFrom", {}).get("secretKeyRef"):
-            secrets.setdefault(ref["name"], set()).add(ref["key"])
     for kind in by_kind("Ingress"):
         ingress = kind["spec"]
         if cls := ingress.get("ingressClassName"):
@@ -175,13 +229,13 @@ def validate_preflight(args, manifest):
             raise ValueError("DD_SITE_URL and Ingress host disagree.")
         for item in ingress.get("tls", []):
             secrets.setdefault(item["secretName"], set()).update(("tls.crt", "tls.key"))
-    require_secret_keys(args, secrets)
+    require_manifest_secrets(args, manifest, secrets)
     return pods, site.geturl()
 
 
 def probe_dependencies(args, pods):
     spec = pods["spec"]
-    django, nginx = spec["containers"]
+    django, nginx = web_containers(spec)
     name = "aspm-preflight-" + uuid.uuid4().hex[:10]
     selected = {k: spec[k] for k in ("securityContext", "imagePullSecrets", "nodeSelector", "tolerations", "affinity") if k in spec}
     selected.setdefault("nodeSelector", {})["kubernetes.io/arch"] = args.arch
@@ -189,9 +243,18 @@ def probe_dependencies(args, pods):
     selected.update(automountServiceAccountToken=False, restartPolicy="Never", activeDeadlineSeconds=120, volumes=volumes,
                     initContainers=[{k: nginx[k] for k in ("name", "image", "imagePullPolicy", "securityContext", "resources")}
                                     | {"command": ["nginx", "-v"]}])
+    probe = PROBE
+    if any(container["name"] == "metrics" for container in spec["containers"]):
+        probe = (
+            "import importlib.util\n"
+            "if importlib.util.find_spec('dojo.aspm_observability') is None:\n"
+            "    raise SystemExit('Monitoring is enabled. Rebuild the Django image with build-images.sh --monitoring.')\n"
+            "print('Django monitoring runtime: OK', flush=True)\n"
+            + probe
+        )
     selected["containers"] = [{k: django[k] for k in
                                ("name", "image", "imagePullPolicy", "securityContext", "resources", "env", "volumeMounts")}
-                              | {"command": ["python", "-c", PROBE]}]
+                              | {"command": ["python", "-c", probe]}]
     obj = {"apiVersion": "v1", "kind": "Pod",
            "metadata": {"name": name, "labels": pods["metadata"]["labels"] | {"app.kubernetes.io/component": "preflight"}},
            "spec": selected}
@@ -280,10 +343,7 @@ def main():
     parser.add_argument("--confirm-target", help="Exact context/namespace/release/revision.")
     args = parser.parse_args()
     if args.chart is None and args.operation in ("deploy", "preflight"):
-        charts = list((ROOT / "helm").glob("aspm-*.tgz"))
-        if len(charts) != 1:
-            parser.error("supply --chart when there is no single packaged chart")
-        args.chart = charts[0]
+        args.chart = packaged_chart()
     if not re.fullmatch(r"[1-9][0-9]*[ms]", args.timeout):
         parser.error("timeout must be a nonzero number followed by m or s")
     if args.url:

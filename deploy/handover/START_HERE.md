@@ -1,6 +1,6 @@
 # ASPM 1.0.1 | Начало работы
 
-ASPM объединяет классическое управление уязвимостями DefectDojo и приём результатов CI/CD с привязкой к репозиторию и коммиту. Версия приложения 1.0.1, Helm 0.1.0-rc.9. Статусы и идентификаторы кандидата указаны в [паспорте](DELIVERY_MANIFEST.json) и [решении о выпуске](qualification/RELEASE_GATE.md).
+ASPM объединяет классическое управление уязвимостями DefectDojo и приём результатов CI/CD с привязкой к репозиторию и коммиту. Версия приложения 1.0.1, Helm 0.1.0-rc.10. Статусы и идентификаторы кандидата указаны в [паспорте](DELIVERY_MANIFEST.json) и [решении о выпуске](qualification/RELEASE_GATE.md).
 
 1. Распакуйте архив в новый каталог. В корне пакета выполните `shasum -a 256 -c SHA256SUMS` или `sha256sum -c SHA256SUMS`. Каждая строка должна содержать `OK`.
 2. Заполните [анкету инфраструктуры](checklists/INFRASTRUCTURE_INPUT.md). Для корпоративного staging используйте Standard HA и подготовьте согласованные registry, namespace, внешний PostgreSQL с CA, broker/cache, два RWX PVC, Ingress TLS и Keycloak.
@@ -8,9 +8,11 @@ ASPM объединяет классическое управление уязв
 4. Выполните preflight, установку и smoke по руководству. Проверьте Keycloak на тестовых аккаунтах и завершите [единый чеклист](checklists/DEPLOYMENT_CHECKLIST.md).
 5. При сбое сохраните состояние Helm и Kubernetes events и откройте [runbook](docs/16_TROUBLESHOOTING.md). Для решений о запуске используйте release gates.
 
+На другой машине начните со [сборки из архива и публикации в свой registry](docs/18_BUILD_AND_IMAGE_TRANSFER.md). Этот порядок готовит Django image с мониторингом и Helm values с проверенными registry digests.
+
 ## Отдельная лаборатория на одном узле OrbStack
 
-Нужны Helm, kubectl, Python 3.10+ с PyYAML и четыре доступных узлу образа. Загрузите два образа ASPM из отдельного ARM64 архива или соберите их из исходников. PostgreSQL 18.6 и Valkey 9.1.2 получаются из утверждённого registry. При необходимости замените их ссылки на доступные узлу копии. Получите точные теги из паспорта образов. Следующая команда создаёт новый namespace и отдельные зависимости. Выберите новый namespace. Для другого локального порта укажите ASPM_LAB_PORT до prepare-lab и используйте его в port-forward и --url. Профиль использует HTTP на loopback, RWO и тестовую PostgreSQL.
+Нужны Helm, kubectl, Python 3.10+ с PyYAML и четыре доступных узлу образа. Для проверки мониторинга соберите образы из архива по руководству переноса. Пример ниже использует базовые образы для репетиции приложения. PostgreSQL 18.6 и Valkey 9.1.2 получаются из утверждённого registry. При необходимости замените их ссылки на доступные узлу копии. Получите точные теги из паспорта образов. Следующая команда создаёт новый namespace и отдельные зависимости. Выберите новый namespace. Для другого локального порта укажите ASPM_LAB_PORT до prepare-lab и используйте его в port-forward и --url. Профиль использует HTTP на loopback, RWO и тестовую PostgreSQL.
 
 ```bash
 scripts/prepare-lab.sh orbstack aspm-lab-handover local-path \

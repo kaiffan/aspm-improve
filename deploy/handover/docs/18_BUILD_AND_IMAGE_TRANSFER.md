@@ -1,29 +1,61 @@
-# 18 | Сборка и перенос образов
+# 18 | Сборка, публикация и установка на другой машине
 
-Паспорт [IMAGES.json](../provenance/IMAGES.json) хранит точный source SHA, локальные OCI index/config ID и ссылки на CycloneDX. Worker, Beat и migration используют Django image. Registry digests заполняются после публикации в согласованный внутренний registry и проверки manifest архитектуры.
+Этот путь собирает два образа ASPM 1.0.1 с мониторингом. Kubernetes использует Django image для web, workers, Beat, миграций и metrics sidecars. Второй образ запускает nginx. Для сборки нужны Bash, Python 3.10+, Git, tar, Docker с Buildx, свободное место и доступ к базовым образам, PyPI, APT/APK и Yarn. Выберите архитектуру Kubernetes-узлов. На ARM64 используйте linux/arm64, на AMD64 используйте linux/amd64. Для корпоративной поставки собирайте на runner нужной архитектуры.
 
-## Лаборатория Linux/ARM64
+## 1. Перенести комплект
 
-Для отдельного файла ASPM-1.0.1-linux-arm64-images.tar.gz выполните проверку SHA-256 из его sidecar и импорт. Образы PostgreSQL/Valkey подключаются отдельно. Для OrbStack Docker context должен использовать тот же image store, что и лабораторный узел.
-
-```bash
-shasum -a 256 -c ASPM-1.0.1-linux-arm64-images.tar.gz.sha256
-docker load --input ASPM-1.0.1-linux-arm64-images.tar.gz
-docker image inspect aspm-qualified/django:bef347c845ee-arm64 --format '{{.Os}}/{{.Architecture}} {{.Id}}'
-docker image inspect aspm-qualified/nginx:bef347c845ee-arm64 --format '{{.Os}}/{{.Architecture}} {{.Id}}'
-```
-
-## Сборка из архива
-
-Сверьте SHA256SUMS и распакуйте исходный архив в отдельную директорию. На машине утверждённой архитектуры запустите build script из корня поставки. Нужны Docker BuildKit, доступ к pinned base digests, PyPI, APT/APK и Yarn, а также approved registry prefix или локальный prefix.
+Скопируйте на другую машину архив ASPM-1.0.1-Enterprise-Delivery.tar.gz и соседний файл .sha256. В каталоге с обоими файлами выполните:
 
 ```bash
-tar -xzf source/aspm-1.0.1-source.tar.gz -C "$ASPM_BUILD_DIR"
-scripts/build-images.sh linux/amd64 aspm-build "$ASPM_BUILD_DIR/aspm-1.0.1-source"
+shasum -a 256 -c ASPM-1.0.1-Enterprise-Delivery.tar.gz.sha256
+tar -xzf ASPM-1.0.1-Enterprise-Delivery.tar.gz
+cd ASPM-1.0.1-Enterprise-Delivery
+shasum -a 256 -c SHA256SUMS
 ```
 
-Для ARM64 замените платформу на linux/arm64. Скрипт собирает два release target, записывает OCI source labels, проверяет platform и показывает локальные IDs. Нативную AMD64 сборку выполняйте на согласованном runner. После сборки сверяйте зависимости, запускайте SBOM, vulnerability scan и deployment smoke с той же парой образов. APT/APK и разрешение транзитивных библиотек могут изменяться со временем. Для передачи точных ARM64 образов используйте архив с проверенными IDs.
+На Linux с GNU coreutils вместо shasum -a 256 используйте sha256sum. Хеш архива сверяйте с контрольной суммой, полученной по доверенному каналу.
 
-Исходный срез позволяет повторить build из указанного коммита. Исторические отчёты и перечисленные в source/EXCLUDED_FIXTURES.txt тестовые fixtures с секретоподобными строками или путями локального компьютера убраны. Для полного upstream test suite используйте разрешённый checkout этого SHA с fixtures.
+## 2. Собрать и отправить образы
 
-Для release engineering есть scripts/assemble-delivery.py. Он принимает checkout, испытанный chart .tgz, каталог qualification inputs и evidence SHA, проверяет содержимое Chart, относительные ссылки, безопасные пути tar и SHA-256. В рабочем каталоге assembly должны быть rc-source из application SHA, Trivy результаты и SBOM, images.json, готовый PDF и очищенные evidence. Raw credentials, state и base dumps остаются вне staging доставки.
+Укажите hostname и project вашего registry. В Harbor заранее создайте проект и выдайте build runner право push. Kubernetes достаточно отдельного доступа pull.
+
+```bash
+ASPM_ARCH=amd64
+ASPM_REGISTRY=registry.example.com
+ASPM_IMAGE_PREFIX="$ASPM_REGISTRY/platform/aspm"
+ASPM_BUILD_DIR="$PWD/aspm-build"
+
+SOURCE_DIR=$(python3 scripts/prepare-monitoring-source.py "$ASPM_BUILD_DIR")
+scripts/build-images.sh --monitoring "linux/$ASPM_ARCH" "$ASPM_IMAGE_PREFIX" "$SOURCE_DIR"
+
+docker login "$ASPM_REGISTRY"
+scripts/publish-images.sh "linux/$ASPM_ARCH" "$ASPM_IMAGE_PREFIX" images.registry.yaml
+```
+
+Подготовка проверяет SHA-256 исходного архива и патча, применяет патч в чистом каталоге и записывает ревизию мониторинга. Повторную сборку можно выполнить в уже подготовленном SOURCE_DIR, а новую распаковку запускайте с новым ASPM_BUILD_DIR. Для CI передавайте registry token в docker login --password-stdin из хранилища секретов.
+
+Скрипт публикации проверяет platform и source label обоих образов до push, затем забирает каждый образ по digest и сравнивает image ID. Файл images.registry.yaml содержит два repository@sha256 и DD_ASPM_GIT_SHA в форме Helm values. Сохраните его рядом с release evidence. Сборка и публикация ограничены одной архитектурой за запуск. Выпускайте образ и overlay отдельно для каждой архитектуры. Исторический [паспорт образов](../provenance/IMAGES.json) относится к исходному кандидату, а новые digests создаёт ваш registry. После сборки выполняйте сканирование и SBOM с той же парой образов.
+
+## 3. Развернуть
+
+Подготовьте Kubernetes 1.27+, context и namespace. Установите PyYAML, kubectl и Helm с поддержкой dry-run=server. Для production-профиля заполните [site values и зависимости](04_DEPLOYMENT_GUIDE.md). В namespace должен существовать Secret для pull из private registry. Если узлам нужен частный CA registry, доверьте его в container runtime узлов. Такой CA отличается от CA для remote_write в VictoriaMetrics.
+
+Добавьте в site.yaml имя существующего pull secret, если registry закрыт.
+
+```yaml
+imagePullSecrets:
+  - name: aspm-registry-pull
+```
+
+Скопируйте [overlay существующего Prometheus](../monitoring/helm-values/values-monitoring-existing.example.yaml) в monitoring.site.yaml и заполните selectors, если сбор выполняет корпоративный Prometheus Operator. Его администратор настраивает [отдельное назначение VictoriaMetrics](../monitoring/prometheus/remote-write.operator.example.yaml). Для отдельного Prometheus используйте [dedicated overlay](../monitoring/helm-values/values-monitoring-dedicated.example.yaml) и [remote write overlay](../monitoring/helm-values/values-victoriametrics-remote-write.example.yaml) с вашим URL и Secret. Включайте один collector для релиза.
+
+```bash
+ASPM_CONTEXT=my-staging
+ASPM_NAMESPACE=aspm
+
+scripts/deploy.sh --context "$ASPM_CONTEXT" --namespace "$ASPM_NAMESPACE" \
+  --release aspm --profile ha --arch "$ASPM_ARCH" \
+  -f site.yaml -f images.registry.yaml -f monitoring.site.yaml --apply
+```
+
+Команда сама выполняет preflight, deploy и smoke. Для preflight без установки используйте scripts/preflight.sh с теми же параметрами и без --apply. Чарт выбирается по манифесту поставки и сверяется с его SHA-256. Helm overlays передаются в показанном порядке, чтобы images.registry.yaml перекрыл примеры registry из site.yaml. В корпоративной Grafana импортируйте [готовые JSON](../monitoring/provisioning/README.md).

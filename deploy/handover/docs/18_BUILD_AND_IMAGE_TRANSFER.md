@@ -2,15 +2,36 @@
 
 Этот путь собирает два образа ASPM 1.0.1 с мониторингом. Kubernetes использует Django image для web, workers, Beat, миграций и metrics sidecars. Второй образ запускает nginx. Для сборки нужны Bash, Python 3.11+, Git, tar, Docker с Buildx, свободное место и доступ к базовым образам, PyPI, APT/APK и Yarn. Выберите архитектуру Kubernetes-узлов. На ARM64 используйте linux/arm64, на AMD64 используйте linux/amd64. Для корпоративной поставки собирайте на runner нужной архитектуры.
 
-## 1. Перенести комплект
+## 1. Получить исходники
 
-Скопируйте на другую машину архив ASPM-1.0.1-Enterprise-Delivery.tar.gz и соседний файл .sha256. В каталоге с обоими файлами выполните:
+Для доставки из Git подставьте в `ASPM_RELEASE_REF` и `ASPM_EXPECTED_SHA` опубликованную ветку и согласованный SHA итогового дерева. Установите Bash, Git, tar, Python 3.11+ с PyYAML, Docker с Buildx, Helm и kubectl.
+
+```bash
+git clone https://github.com/kaiffan/aspm-improve.git
+cd aspm-improve
+git switch "$ASPM_RELEASE_REF"
+test "$(git rev-parse HEAD)" = "$ASPM_EXPECTED_SHA"
+cd deploy/handover
+
+ASPM_APP_SHA=$(python3 -c 'import json; print(json.load(open("DELIVERY_MANIFEST.json"))["application_sha"])')
+git merge-base --is-ancestor "$ASPM_APP_SHA" HEAD
+SOURCE_DIR=$(mktemp -d)
+git archive "$ASPM_APP_SHA" | tar -xf - -C "$SOURCE_DIR"
+printf '%s\n' "$ASPM_APP_SHA" > "$SOURCE_DIR/.aspm-source-revision"
+ASPM_CHART_ARGS=(--chart ../helm/aspm)
+```
+
+Для доставки архивом скопируйте ASPM-1.0.1-Enterprise-Delivery.tar.gz и соседний файл .sha256. В каталоге с обоими файлами выполните следующие команды.
 
 ```bash
 shasum -a 256 -c ASPM-1.0.1-Enterprise-Delivery.tar.gz.sha256
 tar -xzf ASPM-1.0.1-Enterprise-Delivery.tar.gz
 cd ASPM-1.0.1-Enterprise-Delivery
 shasum -a 256 -c SHA256SUMS
+ASPM_CHART_ARGS=()
+ASPM_BUILD_DIR=$(mktemp -d)
+tar -xzf source/aspm-1.0.1-source.tar.gz -C "$ASPM_BUILD_DIR"
+SOURCE_DIR="$ASPM_BUILD_DIR/aspm-1.0.1-source"
 ```
 
 На Linux с GNU coreutils вместо shasum -a 256 используйте sha256sum. Хеш архива сверяйте с контрольной суммой, полученной по доверенному каналу.
@@ -23,18 +44,13 @@ shasum -a 256 -c SHA256SUMS
 ASPM_ARCH=amd64
 ASPM_REGISTRY=registry.example.com
 ASPM_IMAGE_PREFIX="$ASPM_REGISTRY/platform/aspm"
-ASPM_BUILD_DIR="$PWD/aspm-build"
-
-mkdir -p "$ASPM_BUILD_DIR"
-tar -xzf source/aspm-1.0.1-source.tar.gz -C "$ASPM_BUILD_DIR"
-SOURCE_DIR="$ASPM_BUILD_DIR/aspm-1.0.1-source"
 scripts/build-images.sh "linux/$ASPM_ARCH" "$ASPM_IMAGE_PREFIX" "$SOURCE_DIR"
 
 docker login "$ASPM_REGISTRY"
 scripts/publish-images.sh "linux/$ASPM_ARCH" "$ASPM_IMAGE_PREFIX" images.registry.yaml
 ```
 
-Текущий архив уже включает код мониторинга и S3. Сверьте SHA-256 на первом шаге. Скрипт сборки проверяет .aspm-source-revision по манифесту поставки. При повторной распаковке используйте новый ASPM_BUILD_DIR. Для CI передавайте registry token в docker login --password-stdin из хранилища секретов.
+Исходники rc.11 включают мониторинг и S3. Скрипты сборки и публикации по умолчанию используют `application_sha` из манифеста. Для прежнего комплекта с отдельной ревизией мониторинга передайте `--monitoring` обоим скриптам. Для CI передавайте registry token в `docker login --password-stdin` из хранилища секретов.
 
 Скрипт публикации проверяет platform и source label обоих образов до push, затем забирает каждый образ по digest и сравнивает image ID. Файл images.registry.yaml содержит два repository@sha256 и DD_ASPM_GIT_SHA в форме Helm values. Сохраните его рядом с release evidence. Сборка и публикация ограничены одной архитектурой за запуск. Выпускайте образ и overlay отдельно для каждой архитектуры. Исторический [паспорт образов](../provenance/IMAGES.json) относится к исходному кандидату, а новые digests создаёт ваш registry. После сборки выполняйте сканирование и SBOM с той же парой образов.
 
@@ -58,8 +74,8 @@ ASPM_CONTEXT=my-staging
 ASPM_NAMESPACE=aspm
 
 scripts/deploy.sh --context "$ASPM_CONTEXT" --namespace "$ASPM_NAMESPACE" \
-  --release aspm --profile ha --arch "$ASPM_ARCH" \
+  --release aspm --profile ha --arch "$ASPM_ARCH" "${ASPM_CHART_ARGS[@]}" \
   -f site.yaml -f images.registry.yaml -f monitoring.site.yaml -f storage.site.yaml --apply
 ```
 
-Команда сама выполняет preflight, deploy и smoke. Для preflight без установки используйте scripts/preflight.sh с теми же параметрами и без --apply. Чарт выбирается по манифесту поставки и сверяется с его SHA-256. Helm overlays передаются в показанном порядке, чтобы images.registry.yaml перекрыл примеры registry из site.yaml. В корпоративной Grafana импортируйте [готовые JSON](../monitoring/provisioning/README.md).
+Команда выполняет preflight, deploy и smoke. Для отдельного preflight запустите `scripts/preflight.sh` с теми же параметрами без `--apply`. Из checkout используется чарт в `deploy/helm/aspm`. Для архива скрипт сверяет SHA-256 чарта с манифестом. Сохраните показанный порядок overlays, чтобы `images.registry.yaml` перекрыл ссылки на образы из `site.yaml`. В Grafana импортируйте [поставляемые JSON](../monitoring/provisioning/README.md).

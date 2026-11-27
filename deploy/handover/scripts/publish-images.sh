@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+revision=application
+if [[ ${1:-} == --monitoring ]]; then
+  revision=monitoring
+  shift
+fi
 if [[ ${1:-} == --help || $# != 3 ]]; then
-  echo 'Usage: publish-images.sh linux/amd64|linux/arm64 REGISTRY/PROJECT IMAGE_VALUES_FILE'
-  echo 'Pushes the two monitoring images, verifies their digests and writes Helm image values.'
+  echo 'Usage: publish-images.sh [--monitoring] linux/amd64|linux/arm64 REGISTRY/PROJECT IMAGE_VALUES_FILE'
+  echo 'Pushes the two application images, verifies their digests and writes Helm image values.'
   [[ ${1:-} == --help ]] && exit 0
   exit 2
 fi
@@ -19,15 +24,28 @@ if [[ -e "$output" || -L "$output" ]]; then
   echo 'Choose a new image values file.' >&2
   exit 2
 fi
-sha=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["monitoring"]["source_sha"])' "$root/DELIVERY_MANIFEST.json")
-[[ "$sha" =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid monitoring revision.' >&2; exit 2; }
+sha=$(python3 - "$root/DELIVERY_MANIFEST.json" "$revision" <<'PYTHON'
+import json
+import sys
+from pathlib import Path
+
+manifest = json.loads(Path(sys.argv[1]).read_text())
+if sys.argv[2] == "monitoring":
+    if "monitoring" not in manifest:
+        raise SystemExit("This package has no monitoring source revision.")
+    print(manifest["monitoring"]["source_sha"])
+else:
+    print(manifest["application_sha"])
+PYTHON
+)
+[[ "$sha" =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid source revision.' >&2; exit 2; }
 tag="${sha:0:12}-${platform##*/}"
 layout='{{.Id}} {{.Os}}/{{.Architecture}} {{index .Config.Labels "org.opencontainers.image.revision"}}'
 for name in django nginx; do
   ref="$prefix/$name:$tag"
   read -r image_id actual_platform revision < <(docker image inspect "$ref" --format "$layout")
   if [[ -z "$image_id" || "$actual_platform" != "$platform" || "$revision" != "$sha" ]]; then
-    echo "Build $ref for $platform from the monitoring revision first." >&2
+    echo "Build $ref for $platform from source revision $sha first." >&2
     exit 1
   fi
   if [[ "$name" == django ]]; then django_id=$image_id; else nginx_id=$image_id; fi

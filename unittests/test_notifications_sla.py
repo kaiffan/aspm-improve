@@ -193,6 +193,8 @@ class TestSlaComputeAndNotify(SlaNotifyTestBase):
     @patch("dojo.notifications.helper.create_notification")
     def test_query_count_does_not_grow_with_each_notified_finding(self, mock_create_notification):
         self._finding("one", -1)
+        # Resolve any duplicate system notification rows before measuring steady-state queries.
+        notifications_helper.get_manager_class_instance()
         with CaptureQueriesContext(connection) as one:
             sla_compute_and_notify()
 
@@ -380,6 +382,7 @@ class TestSlaNotificationBatching(SlaNotifyTestBase):
         # Real notifications, nothing mocked: the per-finding cost used to be the system
         # notifications row, the product's recipients and an alert INSERT, every time.
         self._finding("one", -1)
+        notifications_helper.get_manager_class_instance()
         with CaptureQueriesContext(connection) as one:
             sla_compute_and_notify()
 

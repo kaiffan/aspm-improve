@@ -1,11 +1,10 @@
 # Развёртывание на другом ПК
 
-Master будет доступен для этого процесса после публикации. До неё используйте этот документ как воспроизводимый порядок установки, а SHA и ветку согласуйте с отчётом о публикации.
+Для тестового развёртывания получите опубликованный `master`. Установите `ASPM_EXPECTED_SHA` в согласованный SHA ветки.
 
 ```bash
-git clone https://github.com/kaiffan/aspm-improve.git
+git clone --single-branch --branch master https://github.com/kaiffan/aspm-improve.git
 cd aspm-improve
-git switch master
 git rev-parse HEAD
 test "$(git rev-parse HEAD)" = "$ASPM_EXPECTED_SHA"
 ```

@@ -1,9 +1,25 @@
 # Проверки безопасности
 
-Разрешения проверены на синтетических данных изолированного ASPM. Файлы шести сканеров прочитаны своим scoped token, запросы из другого проекта получили 404. Локальные Reader grants проверены на браузерных страницах. System Health отклонял Reader с 403. Тесты Django проверяют scope, Keycloak protocol и проверку данных отчёта. 111 тестов за 30.468 с · OK. Обнаружено по группам: 111.
+## Исправления в e2f3f244f478
 
-Gitleaks не нашёл совпадений в двух новых коммитах с исправлениями. Проверка унаследованной истории сканировала 92 непубличных коммита и выдал 72 совпадения. В снимке исходного checkout для квалификации выдал 1 541 совпадение, включая 1 302 в unittests, 193 в perf-report и 28 в Django fixtures. Значения скрыты в raw evidence. Ручная оценка всех совпадений и проверка исторических бинарных артефактов остаются открыты. Текущий release gate по секретам не пройден. Trivy 0.70.0: django {'LOW': 107, 'HIGH': 68, 'MEDIUM': 100, 'UNKNOWN': 24, 'CRITICAL': 1}, совпадений secret scan 0 / nginx {}, совпадений secret scan 0 CycloneDX SBOM и полный отчёт по digest сохранены в локальных QA evidence. Оценка применимости CVE остаётся открытой. Проверки касались только локальной среды.
+- Удалили неиспользуемый CLI XMLSec из Dockerfiles. В Debian-образе он подтягивал системный `libxml2` с CVE-2026-6653. Проверили отсутствие установленного пакета, бинарника и системной библиотеки. Python wheel `lxml` использует libxml2 2.14.6 и проходит разбор XML. Диапазон CVE заканчивается перед 2.11.0. [Debian Security Tracker](https://security-tracker.debian.org/tracker/CVE-2026-6653) · [Бюллетень Ubuntu](https://ubuntu.com/security/CVE-2026-6653)
+- Из Django release-стадий удалили `pip` и `ensurepip`. Это исключает из файловой системы runtime уязвимые vendored версии `msgpack`, `urllib3` и `setuptools`. Проверка `pip check` выполняется при сборке. Тестовые стадии используют `pip`.
+- Обновили установленный `setuptools` до 84.2.1. Python-зависимость `urllib3` использует 2.8.0. [Бюллетень setuptools](https://github.com/pypa/setuptools/security/advisories/GHSA-xmj3-9gf7-h52w) · [Версия PyPI](https://pypi.org/project/setuptools/84.2.1/)
 
-Trivy классифицировал CVE-2026-6653 как CRITICAL. В sandbox подтверждён libxml2 2.12.7+dfsg+really2.9.14-2.1+deb13u3. Debian помечает пакеты trixie и trixie-security как vulnerable. Тот же трекер указывает no-dsa с низким приоритетом для trixie. Образ также содержит зависимости libxslt и xmlsec от системного libxml2. [Debian Security Tracker](https://security-tracker.debian.org/tracker/CVE-2026-6653).
+## Повторный скан Linux/ARM64
 
-Обычный Python import использует urllib3 2.8.0, setuptools 84.0.0 и lxml с libxml 2.14.6. В pip vendor manifest обнаружены msgpack 1.1.2 и setuptools 70.3.0. Уязвимости системной библиотеки, bundled lxml и vendored Python-пакетов оцениваются по своим путям загрузки.
+Trivy 0.70.0 использовал базу от 27 ноября 2026 года. Полные результаты по digest и CycloneDX SBOM основной пары образов сохранены в локальных QA evidence.
+
+| Образ | CRITICAL | HIGH | MEDIUM | LOW | UNKNOWN | Секреты |
+|---|---:|---:|---:|---:|---:|---:|
+| Django Debian | 0 | 56 | 95 | 99 | 16 | 0 |
+| nginx | 0 | 0 | 0 | 0 | 0 | 0 |
+| Django Alpine | 0 | 0 | 0 | 0 | 0 | 0 |
+
+В Debian-образе ноль находок в Python-зависимостях. Для оставшихся системных находок база сканера не указывает исправленных версий. Чистый установочный smoke использовал Django Debian и nginx. Для альтернативного Django Alpine прошли сборка, скан и проверка XML-разбора и версии PostgreSQL client. Production остаётся HOLD.
+
+## История Git и разграничение доступа
+
+Gitleaks просканировал непубличный диапазон истории. Разбор 72 текстовых совпадений выявил хеши файлов, строки `Sort Key` из планов PostgreSQL, OCI references и шаблон схемы. В 149 исторических архивах и PDF проверено одно совпадение с синтетическим Docker tag. В уже опубликованной истории находится старый dev-ключ сертификата. В итоговом дереве этот файл отсутствует. Скан исправлений и артефактов задокументирован без раскрытия значений.
+
+На исходном квалифицированном runtime проверили разрешения с синтетическими данными. Файлы шести сканеров доступны с токеном своего проекта. Запросы из другого проекта получили HTTP 404. System Health отклонял Reader с HTTP 403. Django suite включает проверки scope, Keycloak и данных отчёта. [Регрессия](FINAL_REGRESSION.md)

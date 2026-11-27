@@ -1,6 +1,7 @@
 """Render the Russian deployment overview with ReportLab and the delivered SVGs."""
 import argparse
 import json
+from datetime import date
 from pathlib import Path
 import subprocess
 import tempfile
@@ -74,6 +75,8 @@ def figure(items, work, stem):
 
 def build_pdf(output, work):
     manifest = json.loads((ROOT / "DELIVERY_MANIFEST.json").read_text())
+    issued = date.fromisoformat(manifest["generated_on"])
+    months = ("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря")
     notes = [
         ("02", "Архитектура и потоки"),
         ("03", "Подготовка инфраструктуры"),
@@ -84,7 +87,7 @@ def build_pdf(output, work):
         ("08", "Метрики и доставка"),
     ]
     items = [
-        Spacer(1, 34), p("КОРПОРАТИВНАЯ ПОСТАВКА  /  26 НОЯБРЯ 2026", "eyebrow"),
+        Spacer(1, 34), p(f"КОРПОРАТИВНАЯ ПОСТАВКА  /  {issued.day} {months[issued.month - 1].upper()} {issued.year}", "eyebrow"),
         p("ASPM 1.0.1", "cover"),
         p("Развёртывание и эксплуатация", "subtitle"),
         Spacer(1, 14), p("Рабочий экземпляр для SRE, DBA, IAM и владельца ASPM."),
@@ -93,7 +96,7 @@ def build_pdf(output, work):
         ("Идентификация", "Значение"),
         ("Приложение", "1.0.1 · DefectDojo OSS 3.5.100"),
         ("Helm", manifest["chart_version"] + " · appVersion 1.0.1-enterprise-rc"),
-        ("Кандидат", manifest["application_sha"][:12] + " · Linux/ARM64"),
+        ("Базовый образ", manifest["application_sha"][:12] + " · Linux/ARM64"),
         ("Статус", "PRODUCTION HOLD"),
     ], [147, 348])
     items.append(p("Содержание", "header"))

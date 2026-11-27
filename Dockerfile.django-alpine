@@ -16,7 +16,6 @@ RUN \
     build-base \
     bind-tools \
     postgresql18-client \
-    xmlsec \
     git \
     util-linux \
     curl-dev \
@@ -33,7 +32,7 @@ COPY requirements.txt ./
 RUN export PYCURL_SSL_LIBRARY=openssl && \
     CPUCOUNT=1 pip3 wheel --wheel-dir=/tmp/wheels -r ./requirements.txt
 
-FROM base AS release
+FROM base AS runtime
 WORKDIR /app
 ARG uid=1001
 ARG gid=1337
@@ -46,7 +45,6 @@ RUN \
     openjpeg \
     jpeg \
     bind-tools \
-    xmlsec \
     git \
     util-linux \
     postgresql18-client \
@@ -154,7 +152,15 @@ ENV \
   DD_UWSGI_NUM_OF_THREADS="4"
 ENTRYPOINT ["/entrypoint-uwsgi.sh"]
 
-FROM release AS development
+FROM runtime AS release
+USER root
+# Retain dependency installers in the development image only.
+RUN python3 -m pip check && \
+    python3 -m pip uninstall --yes pip && \
+    python3 -c 'import shutil, sysconfig; from pathlib import Path; shutil.rmtree(Path(sysconfig.get_path("stdlib")) / "ensurepip")'
+USER ${uid}
+
+FROM runtime AS development
 USER root
 COPY \
   requirements-dev.txt \
